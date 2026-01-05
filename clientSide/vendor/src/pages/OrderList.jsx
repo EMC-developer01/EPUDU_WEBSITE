@@ -2,7 +2,50 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Header from "../components/Header";
 
+const isSameDay = (d1, d2) =>
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate();
+
+const getRowClass = (eventDate) => {
+    const today = new Date();
+    const tomorrow = new Date();
+    const dayAfterTomorrow = new Date();
+
+    tomorrow.setDate(today.getDate() + 1);
+    dayAfterTomorrow.setDate(today.getDate() + 2);
+
+    const event = new Date(eventDate);
+
+    if (isSameDay(event, today)) return "bg-red-300";
+    if (isSameDay(event, tomorrow)) return "bg-orange-300";
+    if (isSameDay(event, dayAfterTomorrow)) return "bg-yellow-300";
+
+    return "";
+};
+
+const getPriority = (eventDate) => {
+    const today = new Date();
+    const tomorrow = new Date();
+    const dayAfterTomorrow = new Date();
+
+    tomorrow.setDate(today.getDate() + 1);
+    dayAfterTomorrow.setDate(today.getDate() + 2);
+
+    const event = new Date(eventDate);
+
+    if (isSameDay(event, today)) return 1;
+    if (isSameDay(event, tomorrow)) return 2;
+    if (isSameDay(event, dayAfterTomorrow)) return 3;
+
+    return 4; // other dates
+};
+
 const VendorOrdersList = () => {
+    const [search, setSearch] = useState("");
+    const [sortBy, setSortBy] = useState("latest");
+    const [statusFilter, setStatusFilter] = useState("all");
+
     let vendorId = localStorage.getItem("vendorId");
     vendorId = vendorId.replace(/"/g, "");
 
@@ -66,6 +109,31 @@ const VendorOrdersList = () => {
         }
     };
 
+    const filteredOrders = orders
+        .filter(o => {
+            const searchText = search.toLowerCase();
+            const matchesSearch =
+                o.itemName?.toLowerCase().includes(searchText) ||
+                o.category?.toLowerCase().includes(searchText) ||
+                o.venueCity?.toLowerCase().includes(searchText);
+
+            const matchesStatus =
+                statusFilter === "all" || o.status === statusFilter;
+
+            return matchesSearch && matchesStatus;
+        })
+        .sort((a, b) => {
+            const p1 = getPriority(a.eventDate);
+            const p2 = getPriority(b.eventDate);
+
+            if (p1 !== p2) return p1 - p2;
+
+            // fallback date sort
+            return sortBy === "latest"
+                ? new Date(b.eventDate) - new Date(a.eventDate)
+                : new Date(a.eventDate) - new Date(b.eventDate);
+        });
+
     return (
         <div className="min-h-screen w-screen bg-gray-50 m-0 p-0">
 
@@ -100,6 +168,41 @@ const VendorOrdersList = () => {
                 {/* TABLE */}
                 <section className="rounded-xl bg-white shadow p-6 w-full px-6">
                     <h2 className="text-xl font-semibold mb-4">Latest Orders</h2>
+                    <div className="flex flex-col md:flex-row gap-4 px-6">
+
+                        {/* Search */}
+                        <input
+                            type="text"
+                            placeholder="Search by item, category, city..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="border px-4 py-2 rounded-lg w-full md:w-1/3"
+                        />
+
+                        {/* Sort by Date */}
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                            className="border px-4 py-2 rounded-lg"
+                        >
+                            <option value="latest">Latest First</option>
+                            <option value="oldest">Oldest First</option>
+                        </select>
+
+                        {/* Filter by Status */}
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="border px-4 py-2 rounded-lg"
+                        >
+                            <option value="all">All Status</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Completed">Completed</option>
+                            <option value="CancelledByVendor">Cancelled by Vendor</option>
+                            <option value="CancelledByClient">Cancelled by Client</option>
+                        </select>
+
+                    </div>
 
                     {/* DESKTOP TABLE */}
                     <div className="hidden md:block overflow-x-auto">
@@ -120,8 +223,8 @@ const VendorOrdersList = () => {
                             </thead>
 
                             <tbody>
-                                {orders.map((o, index) => (
-                                    <tr key={o._id} className="border-b">
+                                {filteredOrders.map((o, index) => (
+                                    <tr key={o._id} className={`border-b ${getRowClass(o.eventDate)}`}>
                                         <td className="p-3">{index + 1}</td>
 
                                         <td className="p-3 font-medium">{o.itemName}</td>
@@ -187,8 +290,11 @@ const VendorOrdersList = () => {
 
                     {/* MOBILE VIEW */}
                     <div className="md:hidden space-y-4">
-                        {orders.map((o, index) => (
-                            <div key={o._id} className="border rounded-xl p-4 shadow-sm bg-white">
+                        {filteredOrders.map((o, index) => (
+                            <div
+                                key={o._id}
+                                className={`border rounded-xl p-4 shadow-sm ${getRowClass(o.eventDate)}`}
+                            >
                                 <p className="text-gray-500 text-sm">S.No: {index + 1}</p>
                                 <p className="font-bold text-lg">{o.itemName}</p>
                                 <p className="text-gray-600">{o.category}</p>

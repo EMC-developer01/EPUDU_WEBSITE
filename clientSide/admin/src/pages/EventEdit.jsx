@@ -1,15 +1,21 @@
-// src/pages/EventEdit.jsx
-import React, { useEffect, useMemo, useState } from "react";
+"use client";
+
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import Header from "@/components/Header";
-import Sidebar from "@/components/Sidebar";
-import { Button } from "@/components/ui/button";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import Sidebar from "../Components/Sidebar";
+import Header from "../Components/Header";
+import { Button } from "../Components/ui/button";
+import { Input } from "../Components/ui/input";
+import { ArrowLeft, Save } from "lucide-react";
 
-export default function EventEdit() {
+const BASE_URL = "http://localhost:4000/api/client";
+
+const EventEdits = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-
     const [formData, setFormData] = useState({
         celebrantName: "",
         age: "",
@@ -35,33 +41,48 @@ export default function EventEdit() {
             mealTime: "",
             cuisine: "",
             welcomeDrinks: [],
-            starters: [],
-            desserts: [],
-            snacks: [],
-            beverages: [],
-            fruits: [],
-            mainCourse: [],
             welcomeDrinksOther: "",
+            welcome_drinks: [],
+            starters: [],
             startersOther: "",
+            desserts: [],
             dessertsOther: "",
+            snacks: [],
             snacksOther: "",
+            beverages: [],
             beveragesOther: "",
+            fruits: [],
             fruitsOther: "",
+            mainCourse: [],
             mainCourseOther: "",
+            main_course: [],
             seating: [],
             seatingOther: "",
             cutleryTeam: "",
-            cutleryTeamOther: "",
+            cutleryTeamOther: ""
         },
         entertainment: {
-            emceeRequired: "",
-            emceeDetails: "",
+            CartoonCharacter: [],
+            CartoonCharacterOther: "",
+            Dance: [],
+            DanceOther: "",
+            LivePerformance: [],
+            LivePerformanceOther: "",
+            MagicShow: [],
+            MagicShowOther: "",
+            Music_DJ_SoundSystem: [],
+            Music_DJ_SoundSystemOther: "",
+            PuppetShow: [],
+            PuppetShowOther: "",
             activities: [],
+            activitiesSelected: [],
             activitiesOther: "",
-            music: [],
+            emceeRequired: "No",
+            emceeDetails: "",
+            music: [],        // optional, can be used for music category if needed
             musicOther: "",
-            shows: [],
-            showsOther: "",
+            shows: [],        // optional, can be used for LivePerformance / MagicShow / PuppetShow if needed
+            showsOther: ""
         },
         photography: {
             photoTeam: "",
@@ -87,1442 +108,1270 @@ export default function EventEdit() {
         },
 
         budget: {
-            totalBudget: "",
-            advancePayment: "",
-            balancePayment: "",
+            originalCost: 0,
+            gstAmount: 0,
+            cgstAmount: 0,
+            totalBudget: 0,
+            advancePayment: 0,
+            balancePayment: 0,
             aidAmount: "",
         },
+
 
         paymentStatus: "Pending", // "Pending", "Advance Paid", or "Full Paid"
         bookingStatus: "Pending", // "Pending" or "Booked"
         balanceAmount: "",         // Auto-calculated balance
 
         notes: "",
-
+        step: 1,
     });
 
-    const [loading, setLoading] = useState(true);
+    const [costs, setCosts] = useState({
+        venue: 0,
+
+        decoration: {
+            themeScheme: 0,
+            stageDesign: 0,
+            entranceDecor: 0,
+            photoBoothDesign: 0,
+            tableDecor: 0,
+            cakeSetup: 0,
+            lighting: 0,
+            total: 0
+        },
+
+        foodArrangements: {
+            welcomeDrinks: 0,
+            starters: 0,
+            desserts: 0,
+            snacks: 0,
+            beverages: 0,
+            fruits: 0,
+            mainCourse: 0,
+            total: 0
+        },
+
+        entertainment: {
+            CartoonCharacter: 0,
+            Dance: 0,
+            LivePerformance: 0,
+            MagicShow: 0,
+            Music_DJ_SoundSystem: 0,
+            PuppetShow: 0,
+            activities: 0,
+            emceeRequired: 0,
+            total: 0
+        },
+
+        photography: {
+            packageType: 0,
+            instantPhoto: 0,
+            photoTeam: 0,
+            total: 0
+        },
+
+        returnGifts: {
+            giftType: 0,
+            quantity: 0,
+            budget: 0,
+            total: 0,
+        },
+        eventStaff: {
+            foodServers: 0,
+            welcomeStaff: 0,
+            maintenanceTeam: 0,
+            otherRoles: 0,
+            total: 0,
+        },
+
+        total: 0
+    });
+
+
     const [sidebarOpen, setSidebarOpen] = useState(true);
-    const [originalTotal, setOriginalTotal] = useState(0);
-    // const [updatedTotal, setUpdatedTotal] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [stageItems, setStageItems] = useState([]);
+    const [entranceItems, setEntranceItems] = useState([]);
+    const [photoBoothItems, setPhotoBoothItems] = useState([]);
+    const [tableDecorItems, setTableDecorItems] = useState([]);
+    const [cakeTableItems, setCakeTableItems] = useState([]);
+    const [lightingItems, setLightingItems] = useState([]);
 
-    const [initialVenues] = useState([
-        { id: 1, name: "Grand Indoor Hall", type: "Indoor", location: "Hyderabad", fee: 20000, lat: 17.387, lng: 78.486 },
-        { id: 2, name: "City Party Hall", type: "Party Hall", location: "Hyderabad", fee: 30000, lat: 17.389, lng: 78.482 },
-        { id: 3, name: "Green Park Lawn", type: "Outdoor", location: "Hyderabad", fee: 25000, lat: 17.383, lng: 78.488 },
-    ]);
 
-    const BASE_URL = "http://localhost:4000/api/client";
 
-    // ----- fetch event by id on mount -----
+    /* ================= FETCH EVENT ================= */
+    const fetchEvent = async () => {
+        try {
+            setLoading(true);
+            const res = await axios.get(`${BASE_URL}/birthday/order/${id}`);
+            console.log(res.data);
+            setFormData(res.data);
+        } catch (err) {
+            console.error("❌ Fetch failed", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        (async function fetchEvent() {
-            try {
-                setLoading(true);
-                const res = await axios.get(`${BASE_URL}/birthday/order/${id}`);
-                let data = res.data;
-                console.log("Fetched data:", data);
-
-                // ✅ Sanitize all null values before merging
-                data = sanitizeNulls(data);
-
-                const normalized = { ...formData, ...data };
-                normalized.budget = normalized.budget || formData.budget;
-                normalized.foodArrangements = { ...formData.foodArrangements, ...normalized.foodArrangements };
-                normalized.decoration = { ...formData.decoration, ...normalized.decoration };
-                normalized.entertainment = { ...formData.entertainment, ...normalized.entertainment };
-                normalized.returnGifts = { ...formData.returnGifts, ...normalized.returnGifts };
-                normalized.eventStaff = { ...formData.eventStaff, ...normalized.eventStaff };
-
-                setFormData(normalized);
-
-                const orig = parseFloat(normalized.budget?.totalBudget) || calculateTotal(normalized);
-                setOriginalTotal(Number.isFinite(orig) ? orig : 0);
-            } catch (err) {
-                console.error("Error loading event:", err);
-                alert("Failed to load event. Check console.");
-            } finally {
-                setLoading(false);
-            }
-        })();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        fetchEvent();
     }, [id]);
 
 
-    // Utility: Replace all null values (deeply) with empty strings
-    const sanitizeNulls = (obj) => {
-        if (Array.isArray(obj)) {
-            return obj.map(sanitizeNulls);
-        } else if (obj && typeof obj === "object") {
-            return Object.fromEntries(
-                Object.entries(obj).map(([key, value]) => [key, sanitizeNulls(value)])
-            );
-        } else {
-            return obj === null ? "" : obj;
-        }
-    };
+    useEffect(() => {
+        const fetchDecorations = async () => {
+            const res = await axios.get("http://localhost:4000/api/vendor/items/getitems");
+            const allItems = res.data.items;
+            const decorationItems = allItems.filter(i => i.category === "Decoration");
+
+            const stageItem = decorationItems.filter(i => i.subcategory === "Stage");
+            setStageItems(stageItem);
+            const entranceItem = decorationItems.filter(i => i.subcategory === "Entrance");
+            setEntranceItems(entranceItem);
+            const photoBoothItem = decorationItems.filter(i => i.subcategory === "Photo Booth");
+            setPhotoBoothItems(photoBoothItem);
+            const tableDecorItem = decorationItems.filter(i => i.subcategory === "Table Decor");
+            setTableDecorItems(tableDecorItem);
+            const caketableItem = decorationItems.filter(i => i.subcategory === "Cake Setup");
+            setCakeTableItems(caketableItem);
+            const lightingItem = decorationItems.filter(i => i.subcategory === "Lighting");
+            setLightingItems(lightingItem);
+            // const SeatingItem = decorationItems.filter(i => i.subcategory === "seating");
+            // setSeatingItems(SeatingItem);
+        };
+
+        fetchDecorations();
+    }, []);
 
 
-    const handleChange = (path) => (e) => {
-        const value = e?.target ? e.target.value : e;
-        const keys = path.split(".");
-        setFormData((prev) => {
-            const copy = JSON.parse(JSON.stringify(prev));
-            let ptr = copy;
-            for (let i = 0; i < keys.length - 1; i++) {
-                if (ptr[keys[i]] === undefined) ptr[keys[i]] = {};
-                ptr = ptr[keys[i]];
-            }
-            ptr[keys[keys.length - 1]] = value;
-            return copy;
+    /* ================= UNIVERSAL UPDATE ================= */
+    const updateField = (path, value) => {
+        setFormData(prev => {
+            const updated = structuredClone(prev);
+            let ref = updated;
+            const keys = path.split(".");
+
+            keys.slice(0, -1).forEach(k => {
+                ref[k] = ref[k] ?? {};
+                ref = ref[k];
+            });
+
+            ref[keys[keys.length - 1]] = value;
+            return updated;
         });
     };
 
-    const handleCustomChange = (field, value) => {
-        // Ensure value is always defined and not null
-        const safeValue = value === null || value === undefined ? "" : value;
+    /* ================= PRICE CALC ================= */
+    const sumItems = (items = []) =>
+        items.reduce((t, i) => t + Number(i.price || 0), 0);
 
-        setFormData((prev) => ({
-            ...prev,
-            [field]: safeValue,
-        }));
+    const calculateTotal = () => {
+        if (!formData) return 0;
+        const { decoration, foodArrangements, entertainment, photography } = formData;
+
+        let total = 0;
+
+        Object.values(decoration || {}).forEach(v => Array.isArray(v) && (total += sumItems(v)));
+        Object.values(foodArrangements || {}).forEach(v => Array.isArray(v) && (total += sumItems(v)));
+        Object.values(entertainment || {}).forEach(v => Array.isArray(v) && (total += sumItems(v)));
+        total += sumItems(photography?.packageType);
+
+        return total;
     };
 
+    /* ================= AUTO BUDGET UPDATE ================= */
+    useEffect(() => {
+        // ⛔ formData not loaded yet
+        if (!formData || !formData.budget) return;
 
+        const original = Number(formData.budget.originalCost || 0);
+        const gst = Number(formData.budget.gstAmount || 0);
+        const cgst = Number(formData.budget.cgstAmount || 0);
+        const advance = Number(formData.budget.advancePayment || 0);
+        const aid = Number(formData.budget.aidAmount || 0);
 
+        const total = original + gst + cgst + aid;
+        const balance = total - advance;
 
-    const calculateTotal = (f = formData) => {
-        // 🏠 Venue Fee
-        const venueFee = initialVenues.find((v) => v.name === f?.venue?.name)?.fee || 0;
+        updateField("budget.totalBudget", total.toFixed(2));
+        updateField("budget.balancePayment", balance.toFixed(2));
+    }, [
+        formData?.budget?.originalCost,
+        formData?.budget?.gstAmount,
+        formData?.budget?.cgstAmount,
+        formData?.budget?.advancePayment,
+        formData?.budget?.aidAmount
+    ]);
 
-        // 👥 Capacity & Meal Type
-        const capacity = Number(f?.timings?.capacity) || 0;
-        const perHeadRates = { Veg: 200, "Non-Veg": 300, Mixed: 275 };
-        const mealRate = perHeadRates[f?.foodArrangements?.mealType] || 0;
-        const cateringCost = capacity * mealRate;
-
-        // 🎉 Decoration Cost
-        const dec = f?.decoration || {};
-        const decoCount =
-            (dec.stageDesign?.length || 0) +
-            (dec.entranceDecor?.length || 0) +
-            (dec.photoBoothDesign?.length || 0) +
-            (dec.tableDecor?.length || 0) +
-            (dec.cakeSetup?.length || 0) +
-            (dec.lighting?.length || 0);
-        const decorationCost = decoCount * 1500;
-
-        // 📸 Photography Packages
-        const photoPackages = f?.photography?.packageType?.length || 0;
-        const photographyCost = photoPackages * 4000;
-
-        // 🧑‍🤝‍🧑 Event Staff
-        const staffCount =
-            (f?.eventStaff?.foodServers ? 1 : 0) +
-            (f?.eventStaff?.welcomeStaff ? 1 : 0) +
-            (f?.eventStaff?.maintenanceTeam ? 1 : 0);
-        const staffFee = staffCount * 1500;
-
-        // 🎁 Return Gifts
-        const returnGiftBudget = Number(f?.returnGifts?.budget) || 0;
-
-        // 💰 Final Total
-        const total =
-            venueFee +
-            cateringCost +
-            decorationCost +
-            photographyCost +
-            staffFee +
-            returnGiftBudget;
-
-        return Math.round(total * 100) / 100;
-    };
-
-    const [updatedTotal, setUpdatedTotal] = useState(0);
-
-    // setUpdatedTotal(useMemo(() => calculateTotal(formData), [formData]));
-    const difference = Math.round((updatedTotal - (originalTotal || 0)) * 100) / 100;
-
+    /* ================= SAVE ================= */
     const handleSave = async () => {
         try {
-            // 🧮 Ensure total is always recalculated before saving
-            const total = calculateTotal(formData);
-            const advance = Number(formData.budget?.advancePayment) || 0;
-            const balance = Math.max(0, total - advance);
-
-            const payload = {
-                ...formData,
-                birthdayId: id,
-                budget: {
-                    ...formData.budget,
-                    totalBudget: String(total),
-                    balancePayment: String(balance),
-                },
-                balanceAmount: String(balance), // keep consistency between fields
-            };
-            try {
-                await axios.put(`${BASE_URL}/birthday/update/admin/${id}`, payload);
-            } catch (e) {
-                console.log(e)
-            }
-
-
-            alert("✅ Event updated successfully");
-            setOriginalTotal(total);
-            setFormData(payload);
+            await axios.put(`${BASE_URL}/birthday/update/admin/${id}`, formData);
             navigate("/events");
         } catch (err) {
-            console.error("Error saving event:", err);
-            alert("❌ Failed to update event. Check console.");
+            console.error("❌ Update failed", err);
         }
     };
 
-    useEffect(() => {
-        setUpdatedTotal(calculateTotal(formData));
-    }, [formData]);
+    const handleCheckboxChange = (parent, field, item, price = 0, multiplyByGuests = false) => {
 
-    if (loading) return <div>Loading...</div>;
-    const handleCheckboxChange = (parent, field, item) => {
+        const safeField = field.replace(/\s+/g, "");
         setFormData((prev) => {
-            const currentArray = prev[parent][field] || [];
-            const updatedArray = currentArray.includes(item)
-                ? currentArray.filter((i) => i !== item) // uncheck → remove
-                : [...currentArray, item];               // check → add
 
-            return {
+            const existingList = prev[parent]?.[safeField] || [];
+
+            // Check if item already exists
+            const exists = existingList.some((i) => i._id === item._id);
+
+            let updatedList;
+
+            if (exists) {
+                // REMOVE the item
+                updatedList = existingList.filter((i) => i._id !== item._id);
+            } else {
+                // ADD the item with all required details
+                updatedList = [
+                    ...existingList,
+                    {
+                        _id: item._id,
+                        vendorId: item.vendorId,
+                        name: item.name,
+                        price: multiplyByGuests ? price * (prev.guests || 1) : price,
+                        image: item.image,
+                    },
+                ];
+            }
+
+
+            const updatedFormData = {
                 ...prev,
                 [parent]: {
                     ...prev[parent],
-                    [field]: updatedArray,
+                    [safeField]: updatedList,
                 },
+            };
+
+            return updatedFormData;
+        });
+
+        // UPDATE PRICE FUNCTION
+        updateCost(parent, field, price, !formData[parent]?.[field]?.some(i => i._id === item._id), multiplyByGuests);
+    };
+
+    const updateCost = (category, subCategory, price, isAdding, multiplyByGuests = false) => {
+        const guestCount = Number(formData.timings.capacity) || 0;
+
+        const finalPrice = multiplyByGuests ? price * guestCount : price;
+
+        setCosts(prev => {
+            const updatedSubCost = isAdding
+                ? prev[category][subCategory] + finalPrice
+                : prev[category][subCategory] - finalPrice;
+
+            const updatedCategoryTotal =
+                prev[category].total +
+                (isAdding ? finalPrice : -finalPrice);
+
+            return {
+                ...prev,
+
+                [category]: {
+                    ...prev[category],
+                    [subCategory]: updatedSubCost,
+                    total: updatedCategoryTotal
+                },
+
+                total: prev.total + (isAdding ? finalPrice : -finalPrice),
+
             };
         });
     };
-    // ---------- helper: getMainCourseItems ----------
-    const getMainCourseItems = (mealType, mealTime, cuisine) => {
-        if (!mealType || !mealTime || !cuisine) return {};
 
-        const menus = {
-            "South Indian": {
-                Tiffin: { "Tiffin Dishes": ["Idli", "Vada", "Dosa", "Pongal", "Upma"] },
-                Lunch: {
-                    "Rice Items": ["Sambar Rice", "Curd Rice", "Veg Biryani", "Tomato Rice"],
-                    "Curries": ["Aloo Fry", "Bendakaya Curry", "Dal", "Sambar"],
-                    "Flour Items": ["Chapati", "Parota", "Puri"],
-                },
-                Dinner: {
-                    "Rice Items": ["Lemon Rice", "Jeera Rice", "Biryani"],
-                    "Curries": ["Kurma", "Tomato Curry", "Paneer Masala"],
-                    "Flour Items": ["Chapati", "Naan", "Roti"],
-                },
-            },
+    // const ItemCard = ({ image, name, price }) => {
+    //     const imageUrl = image.startsWith("http") ? image : `http://localhost:4000/${image}`;
 
-            "North Indian": {
-                Tiffin: { "Snacks": ["Paratha", "Poha", "Aloo Tikki", "Chole Bhature"] },
-                Lunch: {
-                    "Curries": ["Dal Makhani", "Paneer Butter Masala", "Aloo Gobi"],
-                    "Rice Items": ["Jeera Rice", "Veg Pulao", "Biryani"],
-                    "Flour Items": ["Naan", "Roti", "Paratha"],
-                },
-                Dinner: {
-                    "Main Course": ["Rajma Chawal", "Butter Chicken", "Kadai Paneer"],
-                    "Flour Items": ["Tandoori Roti", "Butter Naan", "Missi Roti"],
-                },
-            },
+    //     return (
+    //         <Card className="w-40 h-56 flex flex-col items-center justify-between p-4 cursor-pointer hover:scale-105 transition-transform duration-300">
+    //             <img src={imageUrl} alt={name} className="w-full h-32 object-cover rounded-lg mb-2" />
+    //             <CardContent className="text-center">
+    //                 <CardTitle className="text-sm font-semibold">{name}</CardTitle>
+    //                 <CardDescription className="text-pink-600 font-bold">₹ {price}</CardDescription>
+    //             </CardContent>
+    //         </Card>
+    //     );
+    // };
 
-            Italian: {
-                Lunch: {
-                    Pasta: ["Penne Alfredo", "Spaghetti Arrabiata"],
-                    Pizza: ["Margherita", "Veg Supreme"],
-                },
-                Dinner: {
-                    Pasta: ["Lasagna", "Fettuccine"],
-                    Pizza: ["Pepperoni", "Cheese Burst"],
-                },
-            },
+    const ItemCard = ({ image, name, price }) => {
+        const IMAGE_BASE_URL = "http://localhost:4000/uploads/vendorItems/";
 
-            Chinese: {
-                Lunch: {
-                    "Rice & Noodles": ["Fried Rice", "Hakka Noodles"],
-                    "Sides": ["Manchurian", "Chilli Paneer", "Spring Rolls"],
-                },
-                Dinner: {
-                    "Rice & Noodles": ["Schezwan Rice", "Garlic Noodles"],
-                    "Sides": ["Momos", "Crispy Corn", "Honey Chilli Potato"],
-                },
-            },
+        const finalPrice = (price * 1.5).toFixed(2);
 
-            Japanese: {
-                Lunch: {
-                    Sushi: ["California Roll", "Nigiri"],
-                    Soups: ["Miso Soup"],
-                },
-                Dinner: { Dishes: ["Ramen", "Tempura", "Teriyaki Chicken"] },
-            },
+        return (
+            <div className="w-40 bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden border border-gray-100">
 
-            French: {
-                Lunch: {
-                    Specials: ["Quiche", "Ratatouille"],
-                    Desserts: ["Crème Brûlée"],
-                },
-                Dinner: { "Main Course": ["Coq au Vin", "Boeuf Bourguignon"] },
-            },
-        };
+                {/* Image */}
+                <div className="h-28 w-full overflow-hidden rounded-t-2xl">
+                    <img
+                        src={IMAGE_BASE_URL + image}
+                        alt={name}
+                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                    />
+                </div>
 
-        return menus[cuisine]?.[mealTime] || {};
+                {/* Content */}
+                <div className="p-3">
+
+                    {/* Item Name */}
+                    <h3 className="text-sm font-semibold text-gray-800 truncate">
+                        {name}
+                    </h3>
+
+                    {/* Price */}
+                    <p className="text-xs font-bold text-pink-600 mt-1">
+                        ₹ {finalPrice}
+                    </p>
+
+                </div>
+            </div>
+        );
+    }
+
+    const DecorationSection = ({ title, items = [], selected = [], onSelect }) => {
+        return (
+            <div className="mb-6 w-full">
+                <h3 className="font-semibold text-lg mb-4 text-pink-600">{title} Options</h3>
+
+                <Swiper
+                    loop={false}
+                    spaceBetween={8}
+                    slidesPerView={2}
+                    breakpoints={{
+                        640: { slidesPerView: 3 },
+                        768: { slidesPerView: 3 },
+                        1024: { slidesPerView: 4 },
+                        1280: { slidesPerView: 5 },
+                    }}
+                    className="w-full"
+                >
+                    {items.map((item) => {
+                        const isSelected = selected?.some((i) => i._id === item._id);
+
+                        return (
+                            <SwiperSlide key={item._id} className="flex justify-center">
+                                <div
+                                    onClick={() => onSelect(item)}
+                                    className={`relative cursor-pointer transition-all duration-300
+                  ${isSelected ? "scale-105 ring-4 ring-pink-500 rounded-2xl" : ""}
+                `}
+                                >
+                                    <ItemCard image={item.image} name={item.name} price={item.price} />
+
+                                    {isSelected && (
+                                        <div className="absolute top-2 right-2 bg-pink-600 text-white rounded-full p-1 text-xs">
+                                            ✔
+                                        </div>
+                                    )}
+                                </div>
+                            </SwiperSlide>
+                        );
+                    })}
+                </Swiper>
+            </div>
+        );
     };
 
-    // ---------- helper: getFoodItems ----------
-    const getFoodItems = (category, mealType, mealTime) => {
-        const foodOptions = {
-            "Welcome Drinks": {
-                default: ["Lassi", "Juice", "Mocktail", "Soft Drinks", "Cold Coffee"],
-                Veg: ["Fresh Juice", "Lemon Soda", "Butter Milk", "Rose Milk"],
-                "Non-Veg": ["Fruit Punch", "Cold Coffee", "Soft Drinks"],
-                Mixed: ["Fruit Punch", "Lemon Soda", "Mocktail"],
-            },
-            Starters: {
-                default: ["Paneer Tikka", "Chicken Wings", "Spring Rolls", "Veg Manchurian", "Fish Fingers"],
-                Veg: ["Paneer Tikka", "Veg Manchurian", "Spring Rolls"],
-                "Non-Veg": ["Chicken Wings", "Fish Fingers", "Chicken 65"],
-                Mixed: ["Paneer Tikka", "Chicken Wings", "Spring Rolls"],
-            },
-            Snacks: ["Samosa", "Cutlet", "Sandwich", "Pakora", "Popcorn"],
-            Desserts: ["Gulab Jamun", "Ice Cream", "Rasmalai", "Cake", "Payasam"],
-            "Beverages & Hot Drinks": ["Tea", "Coffee", "Green Tea", "Hot Chocolate"],
-            Fruits: ["Apple", "Banana", "Watermelon", "Mango", "Pineapple"],
-        };
-
-        const entry = foodOptions[category];
-        if (!entry) return [];
-        if (Array.isArray(entry)) return entry;
-        return entry[mealType] || entry.default || [];
-    };
-
-    // ---------- Food Section list ----------
-    const foodSections = [
-        { title: "🥤 Welcome Drinks", field: "welcomeDrinks", category: "Welcome Drinks" },
-        { title: "🍢 Starters", field: "starters", category: "Starters" },
-        { title: "🍰 Desserts & Sweets", field: "desserts", category: "Desserts" },
-        { title: "🍪 Snacks", field: "snacks", category: "Snacks" },
-        { title: "☕ Beverages & Hot Drinks", field: "beverages", category: "Beverages & Hot Drinks" },
-        { title: "🍎 Fruits", field: "fruits", category: "Fruits" },
-    ];
-
-
+    if (!formData) return <p className="p-6">Loading...</p>;
 
     return (
         <div className="flex h-screen w-screen bg-gray-50 overflow-hidden">
             <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+
             <div className="flex-1 flex flex-col h-full overflow-hidden">
                 <Header title="Edit Event" />
+
                 <main className="flex-1 overflow-y-auto px-6 py-6">
-                    <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6 space-y-6">
+                    <div className="max-w-6xl mx-auto bg-white rounded-xl shadow p-6 space-y-6">
 
-                        {/* Basic Info */}
-                        <h2 className="text-xl font-semibold text-gray-700">🎉 Basic Details</h2>
+                        {/* ACTIONS */}
+                        <div className="flex justify-between">
+                            <Button variant="outline" onClick={() => navigate(-1)}>
+                                <ArrowLeft size={16} /> Back
+                            </Button>
+                            <Button onClick={handleSave} disabled={loading}>
+                                <Save size={16} /> Save
+                            </Button>
+                        </div>
+
+                        {/* BASIC DETAILS */}
                         <div className="grid grid-cols-2 gap-4">
-                            <input value={formData.celebrantName ?? ""} onChange={handleChange("celebrantName")} placeholder="Celebrant Name" className="p-3 border rounded-lg" />
-                            <input value={formData.age ?? ""} onChange={handleChange("age")} placeholder="Age" className="p-3 border rounded-lg" />
-                            <select value={formData.gender ?? ""} onChange={handleChange("gender")} className="p-3 border rounded-lg">
-                                <option value="">Select Gender</option>
-                                <option value="Girl">Girl</option>
-                                <option value="Boy">Boy</option>
-                                <option value="Other">Other</option>
-                            </select>
-                            <input value={formData.phone ?? ""} onChange={handleChange("phone")} placeholder="Phone" className="p-3 border rounded-lg" />
-                            <input value={formData.email ?? ""} onChange={handleChange("email")} placeholder="Email" className="p-3 border rounded-lg" />
-                            <input type="date" value={formData.eventDate ?? ""} onChange={handleChange("eventDate")} className="p-3 border rounded-lg" />
-                            <input value={formData.themePreference ?? ""} onChange={handleChange("themePreference")} placeholder="Theme Preference" className="p-3 border rounded-lg" />
-                        </div>
-
-                        {/* Venue */}
-                        <h2 className="text-xl font-semibold text-gray-700">🏛 Venue</h2>
-                        <input
-                            value={formData.venue?.name ?? ""}
-                            onChange={(e) => handleCustomChange("venue", { ...formData.venue, name: e.target.value })}
-                            placeholder="Venue Name"
-                            className="w-full p-3 border rounded-lg"
-                        />
-                        <input
-                            value={formData.venue?.address ?? ""}
-                            onChange={(e) => handleCustomChange("venue", { ...formData.venue, address: e.target.value })}
-                            placeholder="Venue Address"
-                            className="w-full p-3 border rounded-lg mt-2"
-                        />
-                        <input
-                            value={formData.venue?.city ?? ""}
-                            onChange={(e) => handleCustomChange("venue", { ...formData.venue, city: e.target.value })}
-                            placeholder="Venue City"
-                            className="w-full p-3 border rounded-lg mt-2"
-                        />
-
-                        {/* Timings & Capacity */}
-                        <h2 className="text-xl font-semibold text-gray-700">⏱ Timings & Capacity</h2>
-                        <div className="grid grid-cols-3 gap-4">
-                            <input value={formData.timings?.time ?? ""} onChange={handleChange("timings.time")} placeholder="Time" className="p-3 border rounded-lg" />
-                            <input value={formData.timings?.date ?? ""} onChange={handleChange("timings.date")} placeholder="Date" className="p-3 border rounded-lg" />
-                            <input value={formData.timings?.capacity ?? ""} onChange={handleChange("timings.capacity")} placeholder="Capacity" type="number" className="p-3 border rounded-lg" />
-                        </div>
-
-
-
-                        {/* Decoration */}
-                        <h2 className="text-xl font-semibold text-gray-700">🎨 Decoration</h2>
-                        <input
-                            value={formData.decoration?.themeScheme ?? ""}
-                            onChange={handleChange("decoration.themeScheme")}
-                            placeholder="Theme Scheme"
-                            className="p-3 border rounded-lg mb-4"
-                        />
-
-                        {[
-                            {
-                                key: "stageDesign",
-                                title: "Stage Design",
-                                items: ["Backdrop", "Name Board", "Balloon Arch", "Props & Cutouts", "LED Screen", "Flower Arrangement"],
-                            },
-                            {
-                                key: "entranceDecor",
-                                title: "Entrance Decoration",
-                                items: ["Floral Arch", "Balloon Arch", "Welcome Board", "LED Lights", "Carpet Path", "Flower Garlands"],
-                            },
-                            {
-                                key: "photoBoothDesign",
-                                title: "Photo Booth / Selfie Corner",
-                                items: ["Neon Frame", "Floral Frame", "LED Mirror", "Balloon Backdrop", "Theme Props"],
-                            },
-                            {
-                                key: "tableDecor",
-                                title: "Table / Ceiling / Seating Decor",
-                                items: [
-                                    "Flower Centerpieces",
-                                    "Balloon Ceiling",
-                                    "Chair Ribbons",
-                                    "Table Covers",
-                                    "Hanging Lights",
-                                    "Table Props",
-                                    "Chairs",
-                                    "Tables",
-                                ],
-                            },
-                            {
-                                key: "cakeSetup",
-                                title: "Cake Table Setup",
-                                items: ["Cake Stand", "Theme Backdrop", "Candles & Lights", "Mini Balloons", "Cutlery & Props", "Flowers", "Table Skirting"],
-                            },
-                            {
-                                key: "lighting",
-                                title: "Lighting Requirements",
-                                items: ["Fairy Lights", "LED Lights", "Spotlights", "Stage Lights", "Color Wash", "Chandeliers"],
-                            },
-                        ].map(({ key, title, items }) => (
-                            <div key={key} className="mb-4 border p-3 rounded-lg bg-white">
-                                <label className="font-semibold text-gray-700">{title}</label>
-
-                                {/* Render checkboxes dynamically */}
-                                <div className="grid grid-cols-2 gap-2 mt-2">
-                                    {items.map((option) => {
-                                        const isChecked = formData.decoration[key]?.includes(option);
-                                        return (
-                                            <label key={option} className="flex items-center gap-2">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={!!isChecked}
-                                                    onChange={(e) => {
-                                                        const updatedArray = e.target.checked
-                                                            ? [...(formData.decoration[key] || []), option]
-                                                            : (formData.decoration[key] || []).filter((item) => item !== option);
-
-                                                        handleCustomChange("decoration", {
-                                                            ...formData.decoration,
-                                                            [key]: updatedArray,
-                                                        });
-                                                    }}
-                                                />
-                                                <span>{option}</span>
-                                            </label>
-                                        );
-                                    })}
-                                </div>
-
-                                {/* "Other" custom field */}
-                                <input
-                                    value={formData.decoration?.[`${key}Other`] || ""}
-                                    onChange={(e) =>
-                                        handleCustomChange("decoration", {
-                                            ...formData.decoration,
-                                            [`${key}Other`]: e.target.value,
-                                        })
-                                    }
-                                    placeholder={`Other ${title}`}
-                                    className="p-2 border rounded-lg mt-3 w-full"
+                            <div>
+                                <label>Celebrant Name</label>
+                                <Input
+                                    placeholder="Celebrant Name"
+                                    value={formData.celebrantName}
+                                    onChange={e => updateField("celebrantName", e.target.value)}
                                 />
                             </div>
-                        ))}
-
-                        {/* ----------- Food Arrangements Dynamic Edit Section ----------- */}
-                        <h2 className="text-xl font-semibold text-gray-700 mb-4">🍽 Food Arrangements</h2>
-
-                        {/* Basic Inputs */}
-                        <div className="grid grid-cols-2 gap-3">
-                            {/* Meal Type */}
-                            <select
-                                value={formData.foodArrangements?.mealType || ""}
-                                onChange={(e) =>
-                                    handleCustomChange("foodArrangements", {
-                                        ...formData.foodArrangements,
-                                        mealType: e.target.value,
-                                    })
-                                }
-                                className="p-3 border rounded-lg bg-white"
-                            >
-                                <option value="">Select Meal Type</option>
-                                <option value="Veg">Veg</option>
-                                <option value="Non-Veg">Non-Veg</option>
-                                <option value="Mixed">Mixed</option>
-                            </select>
-
-                            {/* Meal Time */}
-                            <select
-                                value={formData.foodArrangements?.mealTime || ""}
-                                onChange={(e) =>
-                                    handleCustomChange("foodArrangements", {
-                                        ...formData.foodArrangements,
-                                        mealTime: e.target.value,
-                                    })
-                                }
-                                className="p-3 border rounded-lg bg-white"
-                            >
-                                <option value="">Select Meal Time</option>
-                                <option value="Breakfast">Breakfast</option>
-                                <option value="Lunch">Lunch</option>
-                                <option value="Dinner">Dinner</option>
-                                <option value="Snacks">Snacks</option>
-                            </select>
-
-                            {/* Cuisine */}
-                            <select
-                                value={formData.foodArrangements?.cuisine || ""}
-                                onChange={(e) =>
-                                    handleCustomChange("foodArrangements", {
-                                        ...formData.foodArrangements,
-                                        cuisine: e.target.value,
-                                    })
-                                }
-                                className="p-3 border rounded-lg bg-white"
-                            >
-                                <option value="">Select Cuisine</option>
-                                <option value="South Indian">South Indian</option>
-                                <option value="North Indian">North Indian</option>
-                                <option value="Chinese">Chinese</option>
-                                <option value="Continental">Continental</option>
-                                <option value="Mixed">Mixed</option>
-                            </select>
-                        </div>
-
-                        {/* Conditional food sections */}
-                        {formData.foodArrangements?.mealType &&
-                            formData.foodArrangements?.mealTime && (
-                                <div className="mt-6 space-y-6">
-                                    {foodSections.map((section) => {
-                                        const items = getFoodItems(
-                                            section.category,
-                                            formData.foodArrangements.mealType,
-                                            formData.foodArrangements.mealTime
-                                        );
-                                        return (
-                                            <div key={section.field}>
-                                                <h4 className="font-semibold text-gray-800 mb-2">{section.title}</h4>
-                                                <div className="grid md:grid-cols-3 gap-2">
-                                                    {[...items, "Other"].map((item) => (
-                                                        <label key={item} className="flex items-center gap-2">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={
-                                                                    Array.isArray(formData.foodArrangements[section.field]) &&
-                                                                    formData.foodArrangements[section.field].includes(item)
-                                                                }
-                                                                onChange={() =>
-                                                                    handleCheckboxChange("foodArrangements", section.field, item)
-                                                                }
-                                                            />
-                                                            {item}
-                                                        </label>
-                                                    ))}
-                                                </div>
-
-                                                {/* Other input */}
-                                                {Array.isArray(formData.foodArrangements[section.field]) &&
-                                                    formData.foodArrangements[section.field].includes("Other") && (
-                                                        <input
-                                                            type="text"
-                                                            className="border p-2 rounded w-full mt-2"
-                                                            placeholder={`Other ${section.title}`}
-                                                            value={formData.foodArrangements[`${section.field}Other`] || ""}
-                                                            onChange={(e) =>
-                                                                handleCustomChange("foodArrangements", {
-                                                                    ...formData.foodArrangements,
-                                                                    [`${section.field}Other`]: e.target.value,
-                                                                })
-                                                            }
-                                                        />
-                                                    )}
-                                            </div>
-                                        );
-                                    })}
-
-                                    {/* ---------- Main Course Section ---------- */}
-                                    <div>
-                                        <h4 className="text-lg font-semibold text-gray-800 mt-4">🍛 Main Course</h4>
-                                        {Object.entries(
-                                            getMainCourseItems(
-                                                formData.foodArrangements.mealType,
-                                                formData.foodArrangements.mealTime,
-                                                formData.foodArrangements.cuisine
-                                            )
-                                        ).map(([group, groupItems]) => (
-                                            <div key={group} className="mt-2">
-                                                <p className="font-medium">{group}</p>
-                                                <div className="grid md:grid-cols-3 gap-2 mt-1">
-                                                    {[...groupItems, "Other"].map((item) => (
-                                                        <label key={item} className="flex items-center gap-2">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={
-                                                                    Array.isArray(formData.foodArrangements.mainCourse) &&
-                                                                    formData.foodArrangements.mainCourse.includes(`${group}_${item}`)
-                                                                }
-                                                                onChange={() =>
-                                                                    handleCheckboxChange(
-                                                                        "foodArrangements",
-                                                                        "mainCourse",
-                                                                        `${group}_${item}`
-                                                                    )
-                                                                }
-                                                            />
-                                                            {item}
-                                                        </label>
-                                                    ))}
-                                                </div>
-
-                                                {/* Other input for this group */}
-                                                {Array.isArray(formData.foodArrangements.mainCourse) &&
-                                                    formData.foodArrangements.mainCourse.includes(`${group}_Other`) && (
-                                                        <input
-                                                            type="text"
-                                                            className="border p-2 rounded w-full mt-2"
-                                                            placeholder={`Specify your ${group}`}
-                                                            value={formData.foodArrangements[`mainCourseOther_${group}`] || ""}
-                                                            onChange={(e) =>
-                                                                handleCustomChange("foodArrangements", {
-                                                                    ...formData.foodArrangements,
-                                                                    [`mainCourseOther_${group}`]: e.target.value,
-                                                                })
-                                                            }
-                                                        />
-                                                    )}
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* ---------- Seating & Cutlery Section ---------- */}
-                                    <div className="mt-6">
-                                        <h3 className="text-lg font-semibold text-gray-800 mb-2">🪑 Seating & Cutlery</h3>
-
-                                        {/* Seating */}
-                                        <div className="mb-4">
-                                            <label className="block font-semibold mb-2">Seating</label>
-                                            <div className="flex gap-3 flex-wrap">
-                                                {["Chairs", "Tables", "Stage Setup", "Other"].map((s) => (
-                                                    <label key={s} className="flex items-center gap-2">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={
-                                                                Array.isArray(formData.foodArrangements.seating) &&
-                                                                formData.foodArrangements.seating.includes(s)
-                                                            }
-                                                            onChange={() =>
-                                                                handleCheckboxChange("foodArrangements", "seating", s)
-                                                            }
-                                                        />
-                                                        {s}
-                                                    </label>
-                                                ))}
-                                            </div>
-                                            {Array.isArray(formData.foodArrangements.seating) &&
-                                                formData.foodArrangements.seating.includes("Other") && (
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Specify seating"
-                                                        value={formData.foodArrangements.seatingOther || ""}
-                                                        onChange={(e) =>
-                                                            setFormData((prev) => ({
-                                                                ...prev,
-                                                                foodArrangements: {
-                                                                    ...prev.foodArrangements,
-                                                                    seatingOther: e.target.value,
-                                                                },
-                                                            }))
-                                                        }
-                                                        className="border p-2 rounded w-full mt-2"
-                                                    />
-                                                )}
-                                        </div>
-
-                                        {/* Cutlery Team */}
-                                        <div>
-                                            <label className="block font-semibold mb-2">Cutlery Team</label>
-                                            <select
-                                                value={formData.foodArrangements.cutleryTeam || ""}
-                                                onChange={(e) =>
-                                                    setFormData((prev) => ({
-                                                        ...prev,
-                                                        foodArrangements: { ...prev.foodArrangements, cutleryTeam: e.target.value },
-                                                    }))
-                                                }
-                                                className="border p-2 rounded w-full"
-                                            >
-                                                <option value="">Select</option>
-                                                <option value="Provided by Venue">Provided by Venue</option>
-                                                <option value="Provided by Event Team">Provided by Event Team</option>
-                                                <option value="Other">Other</option>
-                                            </select>
-
-                                            {formData.foodArrangements.cutleryTeam === "Other" && (
-                                                <input
-                                                    type="text"
-                                                    placeholder="Specify cutlery team"
-                                                    value={formData.foodArrangements.cutleryTeamOther || ""}
-                                                    onChange={(e) =>
-                                                        setFormData((prev) => ({
-                                                            ...prev,
-                                                            foodArrangements: {
-                                                                ...prev.foodArrangements,
-                                                                cutleryTeamOther: e.target.value,
-                                                            },
-                                                        }))
-                                                    }
-                                                    className="border p-2 rounded w-full mt-2"
-                                                />
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                        {/* 🎉 Entertainment & Activities */}
-                        {/* ----------- Entertainment / Activities Dynamic Edit Section ----------- */}
-                        <h2 className="text-xl font-semibold text-gray-700 mb-4">🎉 Entertainment & Activities</h2>
-
-                        {/* Basic Input: Emcee Required */}
-                        <div className="grid grid-cols-2 gap-3">
-
-                            {/* Emcee Required */}
-                            <select
-                                value={formData.entertainment?.emceeRequired || ""}
-                                onChange={(e) =>
-                                    handleCustomChange("entertainment", {
-                                        ...formData.entertainment,
-                                        emceeRequired: e.target.value,
-                                        emceeDetails: "",
-                                    })
-                                }
-                                className="p-3 border rounded-lg bg-white"
-                            >
-                                <option value="">Emcee / Anchor Required?</option>
-                                <option value="Yes">Yes</option>
-                                <option value="No">No</option>
-                            </select>
-                        </div>
-
-                        {/* If emcee is required – show details input */}
-                        {formData.entertainment?.emceeRequired === "Yes" && (
-                            <input
-                                type="text"
-                                placeholder="Specify emcee preferences"
-                                className="border p-2 rounded w-full mt-3"
-                                value={formData.entertainment?.emceeDetails || ""}
-                                onChange={(e) =>
-                                    handleCustomChange("entertainment", {
-                                        ...formData.entertainment,
-                                        emceeDetails: e.target.value,
-                                    })
-                                }
-                            />
-                        )}
-
-                        {/* Conditional Sections */}
-                        <div className="mt-6 space-y-6">
-
-                            {/* 🎯 Games / Activities */}
                             <div>
-                                <h4 className="font-semibold text-gray-800 mb-2">🎯 Games / Activities</h4>
-
-                                <div className="grid md:grid-cols-3 gap-2">
-                                    {["Kids", "Adults", "Both", "Other"].map((item) => (
-                                        <label key={item} className="flex items-center gap-2">
-                                            <input
-                                                type="checkbox"
-                                                checked={Array.isArray(formData.entertainment?.activities) &&
-                                                    formData.entertainment.activities.includes(item)}
-                                                onChange={() =>
-                                                    handleCheckboxChange("entertainment", "activities", item)
-                                                }
-                                            />
-                                            {item}
-                                        </label>
-                                    ))}
-                                </div>
-
-                                {/* Other Input */}
-                                {Array.isArray(formData.entertainment?.activities) &&
-                                    formData.entertainment.activities.includes("Other") && (
-                                        <input
-                                            type="text"
-                                            className="border p-2 rounded w-full mt-2"
-                                            placeholder="Other Activity"
-                                            value={formData.entertainment?.activitiesOther || ""}
-                                            onChange={(e) =>
-                                                handleCustomChange("entertainment", {
-                                                    ...formData.entertainment,
-                                                    activitiesOther: e.target.value,
-                                                })
-                                            }
-                                        />
-                                    )}
-                            </div>
-
-                            {/* 🎵 Music / DJ / Sound System */}
-                            <div>
-                                <h4 className="font-semibold text-gray-800 mb-2">🎵 Music / DJ / Sound</h4>
-
-                                <div className="grid md:grid-cols-3 gap-2">
-                                    {["DJ", "Live Music", "Playlist by Venue", "Other"].map((item) => (
-                                        <label key={item} className="flex items-center gap-2">
-                                            <input
-                                                type="checkbox"
-                                                checked={Array.isArray(formData.entertainment?.music) &&
-                                                    formData.entertainment.music.includes(item)}
-                                                onChange={() =>
-                                                    handleCheckboxChange("entertainment", "music", item)
-                                                }
-                                            />
-                                            {item}
-                                        </label>
-                                    ))}
-                                </div>
-
-                                {/* Other Input */}
-                                {Array.isArray(formData.entertainment?.music) &&
-                                    formData.entertainment.music.includes("Other") && (
-                                        <input
-                                            type="text"
-                                            className="border p-2 rounded w-full mt-2"
-                                            placeholder="Other Music Option"
-                                            value={formData.entertainment?.musicOther || ""}
-                                            onChange={(e) =>
-                                                handleCustomChange("entertainment", {
-                                                    ...formData.entertainment,
-                                                    musicOther: e.target.value,
-                                                })
-                                            }
-                                        />
-                                    )}
-                            </div>
-
-                            {/* 🎭 Shows / Performances */}
-                            <div>
-                                <h4 className="font-semibold text-gray-800 mb-2">🎭 Shows / Performances</h4>
-
-                                <div className="grid md:grid-cols-3 gap-2">
-                                    {[
-                                        "Dance Show",
-                                        "Magic Show",
-                                        "Puppet Show",
-                                        "Cartoon Character",
-                                        "Singers/Band",
-                                        "Other",
-                                    ].map((item) => (
-                                        <label key={item} className="flex items-center gap-2">
-                                            <input
-                                                type="checkbox"
-                                                checked={Array.isArray(formData.entertainment?.shows) &&
-                                                    formData.entertainment.shows.includes(item)}
-                                                onChange={() =>
-                                                    handleCheckboxChange("entertainment", "shows", item)
-                                                }
-                                            />
-                                            {item}
-                                        </label>
-                                    ))}
-                                </div>
-
-                                {/* Other Input */}
-                                {Array.isArray(formData.entertainment?.shows) &&
-                                    formData.entertainment.shows.includes("Other") && (
-                                        <input
-                                            type="text"
-                                            className="border p-2 rounded w-full mt-2"
-                                            placeholder="Other Performance"
-                                            value={formData.entertainment?.showsOther || ""}
-                                            onChange={(e) =>
-                                                handleCustomChange("entertainment", {
-                                                    ...formData.entertainment,
-                                                    showsOther: e.target.value,
-                                                })
-                                            }
-                                        />
-                                    )}
-                            </div>
-                        </div>
-
-                        {/* 📸 Photography & Videography */}
-                        <h2 className="text-xl font-semibold text-gray-700 mb-4">📸 Photography & Videography</h2>
-
-                        {/* Team Required */}
-                        <div className="grid grid-cols-2 gap-3">
-                            <select
-                                value={formData.photography?.photoTeam || ""}
-                                onChange={(e) =>
-                                    handleCustomChange("photography", {
-                                        ...formData.photography,
-                                        photoTeam: e.target.value,
-                                        photoTeamDetails: "",
-                                    })
-                                }
-                                className="p-3 border rounded-lg bg-white"
-                            >
-                                <option value="">Photography Team Required?</option>
-                                <option value="Required">Required</option>
-                                <option value="Client's Own Team">Client's Own Team</option>
-                            </select>
-                        </div>
-
-                        {/* If team required → details input */}
-                        {formData.photography?.photoTeam === "Required" && (
-                            <input
-                                type="text"
-                                placeholder="Specify any team preferences"
-                                className="border p-2 rounded w-full mt-3"
-                                value={formData.photography?.photoTeamDetails || ""}
-                                onChange={(e) =>
-                                    handleCustomChange("photography", {
-                                        ...formData.photography,
-                                        photoTeamDetails: e.target.value,
-                                    })
-                                }
-                            />
-                        )}
-
-                        {/* Conditional Sections */}
-                        <div className="mt-6 space-y-6">
-
-                            {/* 🎥 Package Types */}
-                            {formData.photography?.photoTeam === "Required" && (
-                                <div>
-                                    <h4 className="font-semibold text-gray-800 mb-2">🎥 Package Type</h4>
-
-                                    <div className="grid md:grid-cols-3 gap-2">
-                                        {["Basic", "Cinematic", "Drone", "Highlights", "Other"].map((item) => (
-                                            <label key={item} className="flex items-center gap-2">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={Array.isArray(formData.photography?.packageType) &&
-                                                        formData.photography.packageType.includes(item)}
-                                                    onChange={() =>
-                                                        handleCheckboxChange("photography", "packageType", item)
-                                                    }
-                                                />
-                                                {item}
-                                            </label>
-                                        ))}
-                                    </div>
-
-                                    {/* Other Input */}
-                                    {Array.isArray(formData.photography?.packageType) &&
-                                        formData.photography.packageType.includes("Other") && (
-                                            <input
-                                                type="text"
-                                                className="border p-2 rounded w-full mt-2"
-                                                placeholder="Other Package Type"
-                                                value={formData.photography?.packageTypeOther || ""}
-                                                onChange={(e) =>
-                                                    handleCustomChange("photography", {
-                                                        ...formData.photography,
-                                                        packageTypeOther: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        )}
-                                </div>
-                            )}
-
-                            {/* 📷 Instant Photo Options */}
-                            <div>
-                                <h4 className="font-semibold text-gray-800 mb-2">📷 Instant Photos</h4>
-
-                                <div className="grid md:grid-cols-3 gap-2">
-                                    {["Yes", "No", "Other"].map((option) => (
-                                        <label key={option} className="flex items-center gap-2">
-                                            <input
-                                                type="radio"
-                                                name="instantPhoto"
-                                                value={option}
-                                                checked={formData.photography?.instantPhoto === option}
-                                                onChange={(e) =>
-                                                    handleCustomChange("photography", {
-                                                        ...formData.photography,
-                                                        instantPhoto: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                            {option}
-                                        </label>
-                                    ))}
-                                </div>
-
-                                {/* Other input */}
-                                {formData.photography?.instantPhoto === "Other" && (
-                                    <input
-                                        type="text"
-                                        className="border p-2 rounded w-full mt-2"
-                                        placeholder="Other instant photo option"
-                                        value={formData.photography?.instantPhotoOther || ""}
-                                        onChange={(e) =>
-                                            handleCustomChange("photography", {
-                                                ...formData.photography,
-                                                instantPhotoOther: e.target.value,
-                                            })
-                                        }
-                                    />
-                                )}
-                            </div>
-
-                        </div>
-
-                        {/* Return Gifts */}
-                        {/* ---------------- Return Gifts Section ---------------- */}
-                        {/* ---------------- Return Gifts Section ---------------- */}
-                        <h2 className="text-xl font-semibold text-gray-700 mt-8 mb-4">
-                            🎁 Return Gifts
-                        </h2>
-
-                        <div className="space-y-6">
-
-                            {/* Gift Options */}
-                            <div>
-                                <h4 className="font-semibold text-gray-800 mb-2">
-                                    🎁 Gift Options
-                                </h4>
-
-                                <div className="grid md:grid-cols-3 gap-2">
-                                    {[
-                                        "Toys",
-                                        "Chocolate Box",
-                                        "Personalized Gifts",
-                                        "Stationery Set",
-                                        "Goodie Bag",
-                                        "Customized",
-                                        "Gift Hampers",
-                                        "Sweets",
-                                        "Other",
-                                    ].map((item) => (
-                                        <label key={item} className="flex items-center gap-2">
-                                            <input
-                                                type="radio"
-                                                name="returnGiftType"        // radio group name must be same
-                                                checked={formData.returnGifts?.giftType === item}
-                                                onChange={() =>
-                                                    setFormData((prev) => ({
-                                                        ...prev,
-                                                        returnGifts: {
-                                                            ...prev.returnGifts,
-                                                            giftType: item,       // store selected radio
-                                                        },
-                                                    }))
-                                                }
-                                                className="w-4 h-4"
-                                            />
-                                            {item}
-                                        </label>
-                                    ))}
-                                </div>
-
-                                {/* Show "Other" input */}
-                                {Array.isArray(formData.returnGifts?.options) &&
-                                    formData.returnGifts.options.includes("Other") && (
-                                        <input
-                                            type="text"
-                                            className="border p-2 rounded w-full mt-2"
-                                            placeholder="Specify Other Gift"
-                                            value={formData.returnGifts?.optionsOther || ""}
-                                            onChange={(e) =>
-                                                handleCustomChange("returnGifts", {
-                                                    ...formData.returnGifts,
-                                                    optionsOther: e.target.value,
-                                                })
-                                            }
-                                        />
-                                    )}
-                            </div>
-
-                            {/* Quantity */}
-                            <div>
-                                <h4 className="font-semibold text-gray-800 mb-2">
-                                    📦 Quantity
-                                </h4>
-                                <input
-                                    type="number"
-                                    className="border p-2 rounded w-full"
-                                    placeholder="Enter quantity required"
-                                    value={formData.returnGifts?.quantity || ""}
-                                    onChange={(e) =>
-                                        handleCustomChange("returnGifts", {
-                                            ...formData.returnGifts,
-                                            quantity: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
-
-                            {/* Budget */}
-                            
-                            <div>
-                                <h4 className="font-semibold text-gray-800 mb-2">
-                                    💰 Budget Per Gift
-                                </h4>
-                                <input
-                                    type="number"
-                                    className="border p-2 rounded w-full"
-                                    placeholder="₹ Budget per item"
-                                    value={formData.returnGifts?.budget || ""}
-                                    onChange={(e) =>
-                                        handleCustomChange("returnGifts", {
-                                            ...formData.returnGifts,
-                                            budget: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
-
-                            {/* Notes */}
-                            <div>
-                                <h4 className="font-semibold text-gray-800 mb-2">
-                                    📝 Special Notes
-                                </h4>
-                                <textarea
-                                    rows={3}
-                                    className="border p-2 rounded w-full"
-                                    placeholder="Any special notes or instructions"
-                                    value={formData.returnGifts?.notes || ""}
-                                    onChange={(e) =>
-                                        handleCustomChange("returnGifts", {
-                                            ...formData.returnGifts,
-                                            notes: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
-
-                        </div>
-
-
-                        {/* 👥 Event Staff / Management Team */}
-                        <h2 className="text-xl font-semibold text-gray-700 mb-4">👥 Event Staff / Management Team</h2>
-
-                        {/* 🍽 Food & Reception Team */}
-                        <div className="grid md:grid-cols-2 gap-4 mb-6">
-                            <div>
-                                <label className="block font-medium mb-1 text-gray-700">Number of Food Servers</label>
-                                <input
-                                    type="number"
-                                    value={formData.eventStaff?.foodServers || ""}
-                                    onChange={(e) =>
-                                        handleCustomChange("eventStaff", {
-                                            ...formData.eventStaff,
-                                            foodServers: e.target.value,
-                                        })
-                                    }
-                                    className="border p-2 rounded w-full"
-                                    placeholder="Enter number of servers"
-                                    min={0}
+                                <label>Phone</label>
+                                <Input
+                                    placeholder="Phone"
+                                    value={formData.phone}
+                                    onChange={e => updateField("phone", e.target.value)}
                                 />
                             </div>
 
                             <div>
-                                <label className="block font-medium mb-1 text-gray-700">Number of Welcome / Reception Staff</label>
-                                <input
-                                    type="number"
-                                    value={formData.eventStaff?.welcomeStaff || ""}
-                                    onChange={(e) =>
-                                        handleCustomChange("eventStaff", {
-                                            ...formData.eventStaff,
-                                            welcomeStaff: e.target.value,
-                                        })
-                                    }
-                                    className="border p-2 rounded w-full"
-                                    placeholder="Enter number of welcome staff"
-                                    min={0}
-                                />
-                            </div>
-                        </div>
-
-                        {/* 🛠 Maintenance & Handling Team */}
-                        <div className="grid md:grid-cols-2 gap-4 mb-6">
-                            <div>
-                                <label className="block font-medium mb-1 text-gray-700">Maintenance Team Members</label>
-                                <input
-                                    type="number"
-                                    value={formData.eventStaff?.maintenanceTeam || ""}
-                                    onChange={(e) =>
-                                        handleCustomChange("eventStaff", {
-                                            ...formData.eventStaff,
-                                            maintenanceTeam: e.target.value,
-                                        })
-                                    }
-                                    className="border p-2 rounded w-full"
-                                    placeholder="Enter number of maintenance staff"
-                                    min={0}
+                                <label>Email</label>
+                                <Input
+                                    placeholder="Email Id"
+                                    value={formData.email}
+                                    onChange={e => updateField("email", e.target.value)}
                                 />
                             </div>
 
                             <div>
-                                <label className="block font-medium mb-1 text-gray-700">Other Roles (if any)</label>
-                                <input
-                                    type="text"
-                                    value={formData.eventStaff?.otherRoles || ""}
-                                    onChange={(e) =>
-                                        handleCustomChange("eventStaff", {
-                                            ...formData.eventStaff,
-                                            otherRoles: e.target.value,
-                                        })
-                                    }
-                                    className="border p-2 rounded w-full"
-                                    placeholder="Specify other roles (e.g., cleaning, helpers)"
-                                />
-                            </div>
-                        </div>
-
-                        {/* 📝 Special Notes / Instructions */}
-                        <div>
-                            <label className="block font-semibold mb-2 text-gray-700">📝 Special Notes / Instructions</label>
-                            <textarea
-                                value={formData.eventStaff?.staffNotes || ""}
-                                onChange={(e) =>
-                                    handleCustomChange("eventStaff", {
-                                        ...formData.eventStaff,
-                                        staffNotes: e.target.value,
-                                    })
-                                }
-                                className="border p-2 rounded w-full"
-                                placeholder="Mention additional instructions or preferences"
-                                rows={3}
-                            />
-                        </div>
-
-                        {/* Payment & Booking */}
-                        {/* 💰 Budget & Payment Details */}
-                        <h2 className="text-xl font-semibold text-gray-700 mb-4">💰 Budget & Payment Details</h2>
-
-                        {/* Total Budget / Package Preference */}
-                        <div className="mb-4">
-                            <label className="block font-semibold mb-2 text-gray-700">Total Budget / Package Preference</label>
-                            <input
-                                type="number"
-                                value={formData.budget?.totalBudget || ""}
-                                readOnly
-                                className="border p-2 rounded w-full bg-gray-100 cursor-not-allowed"
-                            />
-                        </div>
-
-                        {/* Advance & Balance Payment */}
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label className="block font-semibold mb-2 text-gray-700">Advance Payment</label>
-                                <input
-                                    type="number"
-                                    value={formData.budget?.advancePayment || ""}
-                                    readOnly
-                                    className="border p-2 rounded w-full bg-gray-100 cursor-not-allowed"
+                                <label>Event Date</label>
+                                <Input
+                                    type="date"
+                                    value={formData.eventDate}
+                                    onChange={e => updateField("eventDate", e.target.value)}
                                 />
                             </div>
 
                             <div>
-                                <label className="block font-semibold mb-2 text-gray-700">Balance Payment</label>
-                                <input
-                                    type="number"
-                                    value={formData.budget?.balancePayment || ""}
-                                    readOnly
-                                    className="border p-2 rounded w-full bg-gray-100 cursor-not-allowed"
+                                <label>Event Time</label>
+                                <Input
+                                    type="time"
+                                    value={formData.timings?.time || ""}
+                                    onChange={e => updateField("timings.time", e.target.value)}
                                 />
                             </div>
-                        </div>
 
-                        {/* Booking & Payment Status */}
-                        <div className="grid md:grid-cols-3 gap-4 mb-4">
                             <div>
-                                <label className="block font-semibold mb-2 text-gray-700">Booking Status</label>
+                                <label>Guest Count</label>
+                                <Input
+                                    type="Capacity"
+                                    value={formData.timings?.capacity || ""}
+                                    onChange={e => updateField("timings.Capacity", e.target.value)}
+                                />
+                            </div>
+
+                            <div>
+                                <label>Booking Status</label>
                                 <select
-                                    value={formData?.bookingStatus || ""}
-                                    onChange={(e) =>
-                                        handleCustomChange("budget", {
-                                            ...formData,
-                                            bookingStatus: e.target.value,
-                                        })
-                                    }
-                                    className="p-3 border rounded w-full bg-white"
+                                    value={formData.bookingStatus}
+                                    onChange={e => updateField("bookingStatus", e.target.value)}
+                                    className="border rounded px-3 py-2"
                                 >
-                                    <option value="">Select Booking Status</option>
-                                    <option value="Booked">Booked</option>
                                     <option value="Pending">Pending</option>
-                                    <option value="Cancelled">Cancelled</option>
+                                    <option value="Booked">Booked</option>
                                 </select>
                             </div>
 
                             <div>
-                                <label className="block font-semibold mb-2 text-gray-700">Payment Status</label>
+                                <label>Payment Status</label>
                                 <select
-                                    value={formData?.paymentStatus || ""}
-                                    onChange={(e) =>
-                                        handleCustomChange("budget", {
-                                            ...formData,
-                                            paymentStatus: e.target.value,
-                                        })
-                                    }
-                                    className="p-3 border rounded w-full bg-white"
+                                    value={formData.paymentStatus}
+                                    onChange={e => updateField("paymentStatus", e.target.value)}
+                                    className="border rounded px-3 py-2"
                                 >
-                                    <option value="">Select Payment Status</option>
+                                    <option value="Pending">Pending</option>
                                     <option value="Advance Paid">Advance Paid</option>
                                     <option value="Full Paid">Full Paid</option>
-                                    <option value="Pending">Pending</option>
                                 </select>
                             </div>
+                        </div>
+                        {/* Venue Section */}
+                        <div className="mt-6">
+                            <h3 className="text-lg font-semibold mb-3">Venue Details</h3>
 
-                            <div>
-                                <label className="block font-semibold mb-2 text-gray-700">Aid / Advance Amount</label>
-                                <input
-                                    type="number"
-                                    value={formData.budget?.aidAmount || ""}
-                                    onChange={(e) =>
-                                        handleCustomChange("budget", {
-                                            ...formData.budget,
-                                            aidAmount: e.target.value,
-                                        })
-                                    }
-                                    className="border p-2 rounded w-full"
-                                    placeholder="Enter aid / advance amount"
-                                    min={0}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label>Venue Name</label>
+                                    <Input
+                                        placeholder="Venue Name"
+                                        value={formData.venue?.name || ""}
+                                        onChange={e => updateField("venue.name", e.target.value)}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>City</label>
+                                    <Input
+                                        placeholder="City"
+                                        value={formData.venue?.city || ""}
+                                        onChange={e => updateField("venue.city", e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="col-span-2">
+                                    <label>Address</label>
+                                    <Input
+                                        placeholder="Full Address"
+                                        value={formData.venue?.address || ""}
+                                        onChange={e => updateField("venue.address", e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Decoration Section */}
+
+                        <div className="mt-6">
+                            <h3 className="text-lg font-semibold mb-4">Decoration Details</h3>
+
+                            {/* Theme */}
+                            <div className="mb-6">
+                                <label className="font-medium">Theme Scheme</label>
+                                <Input
+                                    value={formData.decoration?.themeScheme || ""}
+                                    onChange={(e) => updateField("decoration.themeScheme", e.target.value)}
                                 />
                             </div>
-                        </div>
 
-                        {/* Balance Amount */}
-                        <div className="mb-4">
-                            <label className="block font-semibold mb-2 text-gray-700">Balance Amount</label>
-                            <input
-                                type="number"
-                                value={formData.budget?.balanceAmount || ""}
-                                onChange={(e) =>
-                                    handleCustomChange("budget", {
-                                        ...formData.budget,
-                                        balanceAmount: e.target.value,
-                                    })
+                            {/* All Decoration Sections as sliders */}
+                            <DecorationSection
+                                title="Stage Design"
+                                items={stageItems}
+                                selected={formData.decoration?.stageDesign}
+                                onSelect={(item) =>
+                                    handleCheckboxChange("decoration", "stageDesign", item, item.price, false)
                                 }
-                                className="border p-2 rounded w-full"
-                                placeholder="Enter balance amount"
-                                min={0}
+                            />
+
+                            <DecorationSection
+                                title="Entrance Decor"
+                                items={entranceItems}
+                                selected={formData.decoration?.entranceDecor}
+                                onSelect={(item) =>
+                                    handleCheckboxChange("decoration", "entranceDecor", item, item.price, false)
+                                }
+                            />
+
+                            <DecorationSection
+                                title="Photo Booth"
+                                items={photoBoothItems}
+                                selected={formData.decoration?.photoBoothDesign}
+                                onSelect={(item) =>
+                                    handleCheckboxChange("decoration", "photoBoothDesign", item, item.price, false)
+                                }
+                            />
+
+                            <DecorationSection
+                                title="Table Decor"
+                                items={tableDecorItems}
+                                selected={formData.decoration?.tableDecor}
+                                onSelect={(item) =>
+                                    handleCheckboxChange("decoration", "tableDecor", item, item.price, false)
+                                }
+                            />
+
+                            <DecorationSection
+                                title="Cake Setup"
+                                items={cakeTableItems}
+                                selected={formData.decoration?.cakeSetup}
+                                onSelect={(item) =>
+                                    handleCheckboxChange("decoration", "cakeSetup", item, item.price, false)
+                                }
+                            />
+
+                            <DecorationSection
+                                title="Lighting"
+                                items={lightingItems}
+                                selected={formData.decoration?.lighting}
+                                onSelect={(item) =>
+                                    handleCheckboxChange("decoration", "lighting", item, item.price, false)
+                                }
                             />
                         </div>
 
-                        {/* Optional Notes */}
-                        <div>
-                            <label className="block font-semibold mb-2 text-gray-700">📝 Notes / Instructions</label>
-                            <textarea
-                                value={formData.budget?.notes || ""}
-                                onChange={(e) =>
-                                    handleCustomChange("budget", {
-                                        ...formData.budget,
-                                        notes: e.target.value,
-                                    })
-                                }
-                                className="border p-2 rounded w-full"
-                                placeholder="Additional instructions or preferences"
-                                rows={3}
-                            />
+                        {/* Food Arrangements Section */}
+                        <div className="mt-6">
+                            <h3 className="text-lg font-semibold mb-3">Food Arrangements</h3>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label>Meal Type</label>
+                                    <Input
+                                        placeholder="Veg / Non-Veg / Both"
+                                        value={formData.foodArrangements?.mealType || ""}
+                                        onChange={e => updateField("foodArrangements.mealType", e.target.value)}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Meal Time</label>
+                                    <Input
+                                        placeholder="Breakfast / Lunch / Dinner"
+                                        value={formData.foodArrangements?.mealTime || ""}
+                                        onChange={e => updateField("foodArrangements.mealTime", e.target.value)}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Cuisine</label>
+                                    <Input
+                                        placeholder="North Indian, South Indian, Continental..."
+                                        value={formData.foodArrangements?.cuisine || ""}
+                                        onChange={e => updateField("foodArrangements.cuisine", e.target.value)}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Cutlery Team</label>
+                                    <Input
+                                        placeholder="In-house / External"
+                                        value={formData.foodArrangements?.cutleryTeam || ""}
+                                        onChange={e => updateField("foodArrangements.cutleryTeam", e.target.value)}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Cutlery Team (Other)</label>
+                                    <Input
+                                        placeholder="Specify if other"
+                                        value={formData.foodArrangements?.cutleryTeamOther || ""}
+                                        onChange={e =>
+                                            updateField("foodArrangements.cutleryTeamOther", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                {/* Arrays with comma separated input */}
+
+                                <div>
+                                    <label>Welcome Drinks</label>
+                                    <Input
+                                        placeholder="Comma separated"
+                                        value={formData.foodArrangements?.welcomeDrinks?.join(", ") || ""}
+                                        onChange={e =>
+                                            updateField(
+                                                "foodArrangements.welcomeDrinks",
+                                                e.target.value.split(",").map(v => v.trim())
+                                            )
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Welcome Drinks (Other)</label>
+                                    <Input
+                                        value={formData.foodArrangements?.welcomeDrinksOther || ""}
+                                        onChange={e =>
+                                            updateField("foodArrangements.welcomeDrinksOther", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Starters</label>
+                                    <Input
+                                        placeholder="Comma separated"
+                                        value={formData.foodArrangements?.starters?.join(", ") || ""}
+                                        onChange={e =>
+                                            updateField(
+                                                "foodArrangements.starters",
+                                                e.target.value.split(",").map(v => v.trim())
+                                            )
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Starters (Other)</label>
+                                    <Input
+                                        value={formData.foodArrangements?.startersOther || ""}
+                                        onChange={e =>
+                                            updateField("foodArrangements.startersOther", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Main Course</label>
+                                    <Input
+                                        placeholder="Comma separated"
+                                        value={formData.foodArrangements?.mainCourse?.join(", ") || ""}
+                                        onChange={e =>
+                                            updateField(
+                                                "foodArrangements.mainCourse",
+                                                e.target.value.split(",").map(v => v.trim())
+                                            )
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Main Course (Other)</label>
+                                    <Input
+                                        value={formData.foodArrangements?.mainCourseOther || ""}
+                                        onChange={e =>
+                                            updateField("foodArrangements.mainCourseOther", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Desserts</label>
+                                    <Input
+                                        placeholder="Comma separated"
+                                        value={formData.foodArrangements?.desserts?.join(", ") || ""}
+                                        onChange={e =>
+                                            updateField(
+                                                "foodArrangements.desserts",
+                                                e.target.value.split(",").map(v => v.trim())
+                                            )
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Desserts (Other)</label>
+                                    <Input
+                                        value={formData.foodArrangements?.dessertsOther || ""}
+                                        onChange={e =>
+                                            updateField("foodArrangements.dessertsOther", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Snacks</label>
+                                    <Input
+                                        placeholder="Comma separated"
+                                        value={formData.foodArrangements?.snacks?.join(", ") || ""}
+                                        onChange={e =>
+                                            updateField(
+                                                "foodArrangements.snacks",
+                                                e.target.value.split(",").map(v => v.trim())
+                                            )
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Snacks (Other)</label>
+                                    <Input
+                                        value={formData.foodArrangements?.snacksOther || ""}
+                                        onChange={e =>
+                                            updateField("foodArrangements.snacksOther", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Beverages</label>
+                                    <Input
+                                        placeholder="Comma separated"
+                                        value={formData.foodArrangements?.beverages?.join(", ") || ""}
+                                        onChange={e =>
+                                            updateField(
+                                                "foodArrangements.beverages",
+                                                e.target.value.split(",").map(v => v.trim())
+                                            )
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Beverages (Other)</label>
+                                    <Input
+                                        value={formData.foodArrangements?.beveragesOther || ""}
+                                        onChange={e =>
+                                            updateField("foodArrangements.beveragesOther", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Fruits</label>
+                                    <Input
+                                        placeholder="Comma separated"
+                                        value={formData.foodArrangements?.fruits?.join(", ") || ""}
+                                        onChange={e =>
+                                            updateField(
+                                                "foodArrangements.fruits",
+                                                e.target.value.split(",").map(v => v.trim())
+                                            )
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Fruits (Other)</label>
+                                    <Input
+                                        value={formData.foodArrangements?.fruitsOther || ""}
+                                        onChange={e =>
+                                            updateField("foodArrangements.fruitsOther", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Seating Arrangement</label>
+                                    <Input
+                                        placeholder="Comma separated"
+                                        value={formData.foodArrangements?.seating?.join(", ") || ""}
+                                        onChange={e =>
+                                            updateField(
+                                                "foodArrangements.seating",
+                                                e.target.value.split(",").map(v => v.trim())
+                                            )
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Seating (Other)</label>
+                                    <Input
+                                        value={formData.foodArrangements?.seatingOther || ""}
+                                        onChange={e =>
+                                            updateField("foodArrangements.seatingOther", e.target.value)
+                                        }
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Entertainment Section */}
+                        <div className="mt-6">
+                            <h3 className="text-lg font-semibold mb-3">Entertainment</h3>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                {/* Emcee */}
+                                <div>
+                                    <label>Emcee Required</label>
+                                    <select
+                                        value={formData.entertainment?.emceeRequired || "No"}
+                                        onChange={e => updateField("entertainment.emceeRequired", e.target.value)}
+                                        className="border rounded px-3 py-2"
+                                    >
+                                        <option value="No">No</option>
+                                        <option value="Yes">Yes</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label>Emcee Details</label>
+                                    <Input
+                                        placeholder="Emcee name / notes"
+                                        value={formData.entertainment?.emceeDetails || ""}
+                                        onChange={e => updateField("entertainment.emceeDetails", e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Activities */}
+                                <div>
+                                    <label>Activities</label>
+                                    <Input
+                                        placeholder="Comma separated"
+                                        value={formData.entertainment?.activities?.join(", ") || ""}
+                                        onChange={e =>
+                                            updateField(
+                                                "entertainment.activities",
+                                                e.target.value.split(",").map(v => v.trim())
+                                            )
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Activities (Other)</label>
+                                    <Input
+                                        value={formData.entertainment?.activitiesOther || ""}
+                                        onChange={e =>
+                                            updateField("entertainment.activitiesOther", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                {/* Cartoon Character */}
+                                <div>
+                                    <label>Cartoon Character</label>
+                                    <Input
+                                        placeholder="Comma separated"
+                                        value={formData.entertainment?.CartoonCharacter?.join(", ") || ""}
+                                        onChange={e =>
+                                            updateField(
+                                                "entertainment.CartoonCharacter",
+                                                e.target.value.split(",").map(v => v.trim())
+                                            )
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Cartoon Character (Other)</label>
+                                    <Input
+                                        value={formData.entertainment?.CartoonCharacterOther || ""}
+                                        onChange={e =>
+                                            updateField("entertainment.CartoonCharacterOther", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                {/* Dance */}
+                                <div>
+                                    <label>Dance</label>
+                                    <Input
+                                        placeholder="Comma separated"
+                                        value={formData.entertainment?.Dance?.join(", ") || ""}
+                                        onChange={e =>
+                                            updateField(
+                                                "entertainment.Dance",
+                                                e.target.value.split(",").map(v => v.trim())
+                                            )
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Dance (Other)</label>
+                                    <Input
+                                        value={formData.entertainment?.DanceOther || ""}
+                                        onChange={e =>
+                                            updateField("entertainment.DanceOther", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                {/* Live Performance */}
+                                <div>
+                                    <label>Live Performance</label>
+                                    <Input
+                                        placeholder="Comma separated"
+                                        value={formData.entertainment?.LivePerformance?.join(", ") || ""}
+                                        onChange={e =>
+                                            updateField(
+                                                "entertainment.LivePerformance",
+                                                e.target.value.split(",").map(v => v.trim())
+                                            )
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Live Performance (Other)</label>
+                                    <Input
+                                        value={formData.entertainment?.LivePerformanceOther || ""}
+                                        onChange={e =>
+                                            updateField("entertainment.LivePerformanceOther", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                {/* Magic Show */}
+                                <div>
+                                    <label>Magic Show</label>
+                                    <Input
+                                        placeholder="Comma separated"
+                                        value={formData.entertainment?.MagicShow?.join(", ") || ""}
+                                        onChange={e =>
+                                            updateField(
+                                                "entertainment.MagicShow",
+                                                e.target.value.split(",").map(v => v.trim())
+                                            )
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Magic Show (Other)</label>
+                                    <Input
+                                        value={formData.entertainment?.MagicShowOther || ""}
+                                        onChange={e =>
+                                            updateField("entertainment.MagicShowOther", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                {/* Music / DJ */}
+                                <div>
+                                    <label>Music / DJ / Sound System</label>
+                                    <Input
+                                        placeholder="Comma separated"
+                                        value={formData.entertainment?.Music_DJ_SoundSystem?.join(", ") || ""}
+                                        onChange={e =>
+                                            updateField(
+                                                "entertainment.Music_DJ_SoundSystem",
+                                                e.target.value.split(",").map(v => v.trim())
+                                            )
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Music / DJ (Other)</label>
+                                    <Input
+                                        value={formData.entertainment?.Music_DJ_SoundSystemOther || ""}
+                                        onChange={e =>
+                                            updateField(
+                                                "entertainment.Music_DJ_SoundSystemOther",
+                                                e.target.value
+                                            )
+                                        }
+                                    />
+                                </div>
+
+                                {/* Puppet Show */}
+                                <div>
+                                    <label>Puppet Show</label>
+                                    <Input
+                                        placeholder="Comma separated"
+                                        value={formData.entertainment?.PuppetShow?.join(", ") || ""}
+                                        onChange={e =>
+                                            updateField(
+                                                "entertainment.PuppetShow",
+                                                e.target.value.split(",").map(v => v.trim())
+                                            )
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Puppet Show (Other)</label>
+                                    <Input
+                                        value={formData.entertainment?.PuppetShowOther || ""}
+                                        onChange={e =>
+                                            updateField("entertainment.PuppetShowOther", e.target.value)
+                                        }
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Photography Section */}
+                        <div className="mt-6">
+                            <h3 className="text-lg font-semibold mb-3">Photography</h3>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label>Photo Team</label>
+                                    <Input
+                                        placeholder="In-house / External"
+                                        value={formData.photography?.photoTeam || ""}
+                                        onChange={e => updateField("photography.photoTeam", e.target.value)}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Photo Team Details</label>
+                                    <Input
+                                        placeholder="Team name / contact / notes"
+                                        value={formData.photography?.photoTeamDetails || ""}
+                                        onChange={e =>
+                                            updateField("photography.photoTeamDetails", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Package Type</label>
+                                    <Input
+                                        placeholder="Comma separated"
+                                        value={formData.photography?.packageType?.join(", ") || ""}
+                                        onChange={e =>
+                                            updateField(
+                                                "photography.packageType",
+                                                e.target.value.split(",").map(v => v.trim())
+                                            )
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Package Type (Other)</label>
+                                    <Input
+                                        value={formData.photography?.packageTypeOther || ""}
+                                        onChange={e =>
+                                            updateField("photography.packageTypeOther", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Instant Photo</label>
+                                    <Input
+                                        placeholder="Yes / No / Polaroid etc."
+                                        value={formData.photography?.instantPhoto || ""}
+                                        onChange={e =>
+                                            updateField("photography.instantPhoto", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Instant Photo (Other)</label>
+                                    <Input
+                                        value={formData.photography?.instantPhotoOther || ""}
+                                        onChange={e =>
+                                            updateField("photography.instantPhotoOther", e.target.value)
+                                        }
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Return Gifts Section */}
+                        <div className="mt-6">
+                            <h3 className="text-lg font-semibold mb-3">Return Gifts</h3>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label>Gift Type</label>
+                                    <Input
+                                        placeholder="Chocolate / Toys / Custom Gifts"
+                                        value={formData.returnGifts?.giftType || ""}
+                                        onChange={e =>
+                                            updateField("returnGifts.giftType", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Gift Type (Other)</label>
+                                    <Input
+                                        placeholder="Specify other gift"
+                                        value={formData.returnGifts?.giftTypeOther || ""}
+                                        onChange={e =>
+                                            updateField("returnGifts.giftTypeOther", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Quantity</label>
+                                    <Input
+                                        type="number"
+                                        placeholder="Number of gifts"
+                                        value={formData.returnGifts?.quantity || ""}
+                                        onChange={e =>
+                                            updateField("returnGifts.quantity", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Budget</label>
+                                    <Input
+                                        placeholder="Budget per gift / total budget"
+                                        value={formData.returnGifts?.budget || ""}
+                                        onChange={e =>
+                                            updateField("returnGifts.budget", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div className="col-span-2">
+                                    <label>Notes</label>
+                                    <Input
+                                        placeholder="Any additional notes"
+                                        value={formData.returnGifts?.notes || ""}
+                                        onChange={e =>
+                                            updateField("returnGifts.notes", e.target.value)
+                                        }
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Event Staff Section */}
+                        <div className="mt-6">
+                            <h3 className="text-lg font-semibold mb-3">Event Staff</h3>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label>Welcome Staff</label>
+                                    <Input
+                                        placeholder="Number / details"
+                                        value={formData.eventStaff?.welcomeStaff || ""}
+                                        onChange={e =>
+                                            updateField("eventStaff.welcomeStaff", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Food Servers</label>
+                                    <Input
+                                        placeholder="Number / details"
+                                        value={formData.eventStaff?.foodServers || ""}
+                                        onChange={e =>
+                                            updateField("eventStaff.foodServers", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Maintenance Team</label>
+                                    <Input
+                                        placeholder="Number / details"
+                                        value={formData.eventStaff?.maintenanceTeam || ""}
+                                        onChange={e =>
+                                            updateField("eventStaff.maintenanceTeam", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div>
+                                    <label>Other Roles</label>
+                                    <Input
+                                        placeholder="Security, Helpers, etc."
+                                        value={formData.eventStaff?.otherRoles || ""}
+                                        onChange={e =>
+                                            updateField("eventStaff.otherRoles", e.target.value)
+                                        }
+                                    />
+                                </div>
+
+                                <div className="col-span-2">
+                                    <label>Staff Notes</label>
+                                    <Input
+                                        placeholder="Any special instructions"
+                                        value={formData.eventStaff?.staffNotes || ""}
+                                        onChange={e =>
+                                            updateField("eventStaff.staffNotes", e.target.value)
+                                        }
+                                    />
+                                </div>
+                            </div>
                         </div>
 
 
-                        {/* Notes */}
-                        <h2 className="text-xl font-semibold text-gray-700 mt-4">📝 Notes</h2>
-                        <textarea
-                            value={formData.notes ?? ""}
-                            onChange={handleChange("notes")}
-                            rows="3"
-                            className="w-full border rounded-lg p-3"
-                        />
+                        {/* BUDGET SUMMARY */}
+                        <div className="mt-6">
+                            <h3 className="text-lg font-semibold mb-3">Budget (Auto Calculated)</h3>
 
-                        {/* 💵 Budget Summary Comparison */}
-                        <h2 className="text-xl font-semibold text-gray-700 mt-6">💵 Budget Summary</h2>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg border">
-
-                            <div>
-                                <label className="block text-sm text-gray-600">Old Total Budget</label>
-                                <p className="text-lg font-medium text-gray-800">
-                                    ₹{Number(originalTotal || 0).toLocaleString()}
-                                </p>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm text-gray-600">New Total Budget</label>
-                                <p className="text-lg font-medium text-blue-600">
-                                    ₹{Number(updatedTotal || calculateTotal(formData) || 0).toLocaleString()}
-                                </p>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm text-gray-600">Difference</label>
-                                <p
-                                    className={`text-lg font-medium ${updatedTotal - originalTotal >= 0 ? "text-green-600" : "text-red-600"
-                                        }`}
-                                >
-                                    ₹{(updatedTotal - originalTotal).toLocaleString()}
-                                </p>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm text-gray-600">Advance Paid</label>
-                                <p className="text-lg font-medium text-gray-800">
-                                    ₹{Number(formData.budget?.advancePayment || 0).toLocaleString()}
-                                </p>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm text-gray-600">Old Balance</label>
-                                <p className="text-lg font-medium text-gray-800">
-                                    ₹{Math.max(0, (originalTotal || 0) - (Number(formData.budget?.advancePayment) || 0)).toLocaleString()}
-                                </p>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm text-gray-600">New Balance</label>
-                                <p className="text-lg font-medium text-blue-600">
-                                    ₹{Math.max(0, (updatedTotal || calculateTotal(formData)) - (Number(formData.budget?.advancePayment) || 0)).toLocaleString()}
-                                </p>
+                            <div className="grid grid-cols-2 gap-4">
+                                {[
+                                    ["Original Cost", "originalCost"],
+                                    ["GST Amount", "gstAmount"],
+                                    ["CGST Amount", "cgstAmount"],
+                                    ["Total Budget", "totalBudget"],
+                                    ["Advance Payment", "advancePayment"],
+                                    ["Balance Payment", "balancePayment"],
+                                    ["Additional / Aid Amount", "aidAmount"],
+                                ].map(([label, key]) => (
+                                    <div key={key} className={key === "aidAmount" ? "col-span-2" : ""}>
+                                        <label>{label}</label>
+                                        <Input
+                                            type="number"
+                                            disabled
+                                            className="bg-gray-100 cursor-not-allowed"
+                                            value={formData.budget?.[key] || "0"}
+                                        />
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
 
-
-                        {/* Save / Cancel */}
-                        <div className="flex gap-3 mt-6">
-                            <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 text-white">Save</Button>
-                            <Button onClick={() => navigate("/events")} variant="outline">Cancel</Button>
-                        </div>
                     </div>
                 </main>
-
             </div>
         </div>
     );
-}
+};
+
+export default EventEdits;

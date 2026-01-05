@@ -1,4 +1,4 @@
-import VendorUser from "../../models/vendor/vendor-userModel.js";
+import vendorUsers from "../../models/vendor/vendor-userModel.js";
 
 // ✅ Get vendor by mobile, create if not exists
 export const getVendorByMobile = async (req, res) => {
@@ -21,7 +21,7 @@ export const getVendorByMobile = async (req, res) => {
 // ✅ Add new vendor
 export const addVendor = async (req, res) => {
     try {
-        const { name, mobile,mail, shopName, vendorType, } = req.body;
+        const { name, mobile, mail, shopName, vendorType, } = req.body;
         console.log("📩 Incoming data:", mobile);
 
         if (!mobile) return res.status(400).json({ message: "Mobile is required" });
@@ -29,7 +29,7 @@ export const addVendor = async (req, res) => {
         let vendor = await vendorUsers.findOne({ mobile });
         if (vendor) return res.status(200).json({ vendor, message: "Vendor already exists" });
 
-        vendor = new VendorUser({
+        vendor = new vendorUsers({
             name: name || "Vendor",
             mobile,
             mail: mail || "geethasree1919@gmail.com",

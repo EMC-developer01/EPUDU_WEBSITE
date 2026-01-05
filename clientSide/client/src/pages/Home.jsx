@@ -81,101 +81,84 @@ export default function Home() {
       <section
         id="events"
         className="relative w-screen py-28 px-8 text-center overflow-hidden
-  bg-white"
+  bg-white-500"
       >
-        {/* LEFT LIGHT RAY – ROYAL BLUE */}
-        <div className="absolute top-0 left-0 w-[40vw] h-[60vh] ray-blue"></div>
+        <h2 className="text-6xl font-semibold text-pink-500 mb-12 tracking-wide">Our Events</h2>
 
-        {/* RIGHT LIGHT RAY – PURPLE */}
-        <div className="absolute top-0 right-0 w-[40vw] h-[60vh] ray-purple"></div>
-
-        {/* DISCO LIGHTS */}
-        <div className="disco-light disco-blue"></div>
-        <div className="disco-light disco-pink"></div>
-        <div className="disco-flash"></div>
-
-
-        {/* CONTENT */}
-        <div className="relative z-10 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
+          {/* Birthday Events */}
+          <div className="bg-pink-200 backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
+            <img
+              key={bIndex}
+              src={`${IMAGE_BASE}/${birthdayImg[bIndex]?.image}`}
+              className={`${imgClass} animate-slideFade`}
+              alt="Birthday"
+            />
 
 
-          <h2 className="text-5xl font-semibold text-yellow-300 mb-12 tracking-wide">Our Events</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
-            {/* Birthday Events */}
-            <div className="bg-white backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
-              <img
-                key={bIndex}
-                src={`${IMAGE_BASE}/${birthdayImg[bIndex]?.image}`}
-                className={`${imgClass} animate-slideFade`}
-                alt="Birthday"
-              />
-
-
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Birthday Events</h3>
-                <p className="text-gray-600 text-sm mb-6">
-                  Celebrate your special day with unforgettable decorations and vibrant moments.
-                </p>
-                <Link
-                  to="/birthday"
-                  onClick={() => {
-                    localStorage.removeItem("birthdayId"); // optional: also clear old event if needed
-                  }}
-                  className="inline-block bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
-                >
-                  Book Your Event
-                </Link>
-              </div>
+            <div className="p-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Birthday Events</h3>
+              <p className="text-gray-600 text-sm mb-6">
+                Celebrate your special day with unforgettable decorations and vibrant moments.
+              </p>
+              <Link
+                to="/birthday"
+                onClick={() => {
+                  localStorage.removeItem("birthdayId"); // optional: also clear old event if needed
+                }}
+                className="inline-block bg-indigo-900 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
+              >
+                Book Your Event
+              </Link>
             </div>
+          </div>
 
-            {/* Wedding Events */}
-            <div className="bg-white backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
-              <img
-                key={wIndex}
-                src={`${IMAGE_BASE}/${weddingImg[wIndex]?.image}`}
-                className={`${imgClass} animate-slideFade`}
-                alt="Wedding"
-              />
+          {/* Wedding Events */}
+          <div className="bg-pink-200 backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
+            <img
+              key={wIndex}
+              src={`${IMAGE_BASE}/${weddingImg[wIndex]?.image}`}
+              className={`${imgClass} animate-slideFade`}
+              alt="Wedding"
+            />
 
 
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Wedding Events</h3>
-                <p className="text-gray-600 text-sm mb-6">
-                  Make your big day magical with elegant setups and creative planning.
-                </p>
-                <Link
-                  to="/wedding"
-                  className="inline-block bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
-                >
-                  Book Your Event
-                </Link>
-              </div>
+            <div className="p-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Wedding Events</h3>
+              <p className="text-gray-600 text-sm mb-6">
+                Make your big day magical with elegant setups and creative planning.
+              </p>
+              <Link
+                to="/wedding"
+                className="inline-block bg-indigo-900 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
+              >
+                Book Your Event
+              </Link>
             </div>
+          </div>
 
-            {/* Other Functions */}
-            <div className="bg-white backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
-              <img
-                key={fIndex}
-                src={`${IMAGE_BASE}/${functionsImg[fIndex]?.image}`}
-                className={`${imgClass} animate-slideFade`}
-                alt="Functions"
-              />
+          {/* Other Functions */}
+          <div className="bg-pink-200 backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
+            <img
+              key={fIndex}
+              src={`${IMAGE_BASE}/${functionsImg[fIndex]?.image}`}
+              className={`${imgClass} animate-slideFade`}
+              alt="Functions"
+            />
 
 
 
-              <div className="p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">Other Functions</h3>
-                <p className="text-gray-600 text-sm mb-6">
-                  From corporate parties to cultural gatherings — we bring creativity to every event.
-                </p>
-                <Link
-                  to="/functions"
-                  className="inline-block bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
-                >
-                  Book Your Event
-                </Link>
-              </div>
+            <div className="p-6">
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Other Functions</h3>
+              <p className="text-gray-600 text-sm mb-6">
+                From corporate parties to cultural gatherings — we bring creativity to every event.
+              </p>
+              <Link
+                to="/functions"
+                className="inline-block bg-indigo-900 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
+              >
+                Book Your Event
+              </Link>
             </div>
           </div>
         </div>

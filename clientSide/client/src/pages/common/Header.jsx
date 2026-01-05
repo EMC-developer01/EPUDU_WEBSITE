@@ -8,12 +8,15 @@ import {
   XMarkIcon, // Added for mobile menu close
 } from "@heroicons/react/24/solid";
 import EventGalaxyPanel from "./EventPlayGround"; // Assuming you import the panel
+import axios from "axios";
 
 export default function Header() {
   const { pathname } = useLocation();
   // Check if the current path is exactly the root path
   const isHome = pathname === "/";
   const navigate = useNavigate();
+
+  const [userPhoto, setUserPhoto] = useState("");
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -64,11 +67,20 @@ export default function Header() {
     setIsMobileDropdownOpen(false);
   };
 
-  // --- Conditional Styling ---
-  // The main header bar height is 75px on all pages.
-  // The total component height is h-screen on the home page and h-[75px] elsewhere.
-  const headerHeightClass = isHome ? "min-h-screen" : "h-[75px]";
-  const headerBarHeight = "h-[75px]"; // Fixed height for the navigation bar itself
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) return;
+
+    const { mobile } = JSON.parse(storedUser);
+
+    axios
+      .get(`http://localhost:4000/api/client/users/${mobile}`)
+      .then((res) => {
+        setUserName(res.data.name);
+        setUserPhoto(res.data.photo); // ✅ base64
+      })
+      .catch(console.error);
+  }, []);
 
   return (
     // The outer container dictates the full height and content
@@ -76,7 +88,7 @@ export default function Header() {
       className={`w-full galaxy-bg text-white z-50  ${isHome ? 'relative min-h-screen' : 'fixed top-0 left-0 shadow-md h-[75px]'}`}
     >
       {/* 1. Navigation Bar (Fixed 75px height) */}
-      <header className={`h-[75px] w-full  ${isHome ? 'absolute top-0 left-0' : 'relative shadow-md'} `}>
+      <header className={`h-[75px] w-full overflow-visible !important z-[9999]  ${isHome ? 'absolute top-0 left-0' : 'relative shadow-md'} `}>
         <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-4">
           {/* Logo */}
           <div
@@ -100,17 +112,19 @@ export default function Header() {
               </Link>
 
               {isDropdownOpen && (
-                <div className="absolute top-full mt-2 left-0 w-40 bg-white text-black rounded-lg shadow-xl z-50">
-                  {["birthday", "wedding", "functions"].map((e) => (
-                    <Link
-                      key={e}
-                      to={`/${e}`}
-                      className="block px-4 py-2 hover:bg-blue-100 capitalize"
-                      onClick={() => setIsDropdownOpen(false)}
-                    >
-                      {e}
-                    </Link>
-                  ))}
+                <div className="absolute left-0  top-full mt-2 w-40 bg-white text-black rounded-lg shadow-xl z-[10000] ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  <div className="py-1">
+                    {["birthday", "wedding", "functions"].map((e) => (
+                      <Link
+                        key={e}
+                        to={`/${e}`}
+                        className="block px-4 py-2 hover:bg-blue-100 capitalize"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        {e}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -126,20 +140,42 @@ export default function Header() {
                 className="flex items-center gap-2"
               >
                 <span>{userName}</span>
-                <UserCircleIcon className="h-8 w-8 text-blue-500" />
+
+                {userPhoto ? (
+                  <img
+                    src={userPhoto}
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full object-cover border border-blue-500"
+                  />
+                ) : (
+                  <UserCircleIcon className="h-8 w-8 text-blue-500" />
+                )}
               </Link>
 
               {isProfileMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-xl z-50">
-                  <Link className="block px-4 py-2 hover:bg-blue-100" to="/profile" onClick={() => setIsProfileMenuOpen(false)}>
+                  <Link
+                    to="/profile"
+                    className="block px-4 py-2 hover:bg-blue-100"
+                    onClick={() => setIsProfileMenuOpen(false)}
+                  >
                     Profile
                   </Link>
-                  <button
+
+                  <Link
+                    to="/eventHistory"
+                    className="block px-4 py-2 hover:bg-blue-100"
+                    onClick={() => setIsProfileMenuOpen(false)}
+                  >
+                    Event History
+                  </Link>
+
+                  <Link
                     className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
                     onClick={handleLogout}
                   >
                     Logout
-                  </button>
+                  </Link>
                 </div>
               )}
             </div>
@@ -151,6 +187,7 @@ export default function Header() {
               Login
             </Link>
           )}
+
 
           {/* Mobile Menu Button */}
           <button
@@ -168,57 +205,47 @@ export default function Header() {
 
       {/* 2. Mobile Menu Content (Appears only on mobile/small screens) */}
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-[75px] left-0 w-full bg-gray-800/95 backdrop-blur-sm shadow-lg z-40 pb-4">
-          <Link
-            to="/"
-            className="block px-4 py-3 hover:bg-blue-600 transition"
-            onClick={closeMobileMenus}
-          >
+        <div className="md:hidden fixed top-[75px] left-0 w-full bg-gray-900/95 backdrop-blur-md z-[9998] pb-4">
+          <Link to="/" className="block px-4 py-3 hover:bg-blue-600" onClick={closeMobileMenus}>
             Home
           </Link>
 
-          <div className="relative">
-            <Link
-              onClick={() => setIsMobileDropdownOpen(!isMobileDropdownOpen)}
-              className="w-full text-left flex justify-between items-center px-4 py-3 hover:bg-blue-600 transition"
-            >
-              Events <ChevronDownIcon className={`h-4 w-4 transform transition-transform duration-200 ${isMobileDropdownOpen ? 'rotate-180' : 'rotate-0'}`} />
-            </Link>
-
-            {isMobileDropdownOpen && (
-              <div className="bg-gray-700/80">
-                {["birthday", "wedding", "functions"].map((e) => (
-                  <Link
-                    key={e}
-                    to={`/${e}`}
-                    className="block pl-8 pr-4 py-2 hover:bg-blue-500 capitalize"
-                    onClick={closeMobileMenus}
-                  >
-                    {e}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <Link
-            to="/contact"
-            className="block px-4 py-3 hover:bg-blue-600 transition"
-            onClick={closeMobileMenus}
+          <button
+            onClick={() => setIsMobileDropdownOpen(!isMobileDropdownOpen)}
+            className="w-full flex justify-between items-center px-4 py-3 hover:bg-blue-600"
           >
+            Events
+            <ChevronDownIcon className={`h-4 w-4 ${isMobileDropdownOpen ? "rotate-180" : ""}`} />
+          </button>
+
+          {isMobileDropdownOpen && (
+            <div className="bg-gray-700">
+              {["birthday", "wedding", "functions"].map((e) => (
+                <Link
+                  key={e}
+                  to={`/${e}`}
+                  className="block pl-8 py-2 hover:bg-blue-500 capitalize"
+                  onClick={closeMobileMenus}
+                >
+                  {e}
+                </Link>
+              ))}
+            </div>
+          )}
+
+          <Link to="/contact" className="block px-4 py-3 hover:bg-blue-600" onClick={closeMobileMenus}>
             Contact
           </Link>
 
-          {/* Mobile Login/Profile */}
           <div className="border-t border-white/20 mt-2 pt-2">
             {isLoggedIn ? (
               <>
-                <Link className="block px-4 py-3 hover:bg-blue-600" to="/profile" onClick={closeMobileMenus}>
+                <Link to="/profile" className="block px-4 py-3 hover:bg-blue-600" onClick={closeMobileMenus}>
                   Profile ({userName})
                 </Link>
                 <button
-                  className="w-full text-left px-4 py-3 text-red-400 hover:bg-red-800/50"
                   onClick={() => { handleLogout(); closeMobileMenus(); }}
+                  className="w-full text-left px-4 py-3 text-red-400 hover:bg-red-800/50"
                 >
                   Logout
                 </button>
@@ -226,7 +253,7 @@ export default function Header() {
             ) : (
               <Link
                 to="/login"
-                className="block mx-4 text-center bg-blue-600 px-4 py-2 rounded-lg mt-2 hover:bg-blue-700 transition"
+                className="block mx-4 text-center bg-blue-600 px-4 py-2 rounded-lg mt-2"
                 onClick={closeMobileMenus}
               >
                 Login

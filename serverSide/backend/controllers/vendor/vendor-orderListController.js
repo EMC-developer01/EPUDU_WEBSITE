@@ -292,30 +292,63 @@ export const startAutoSync = (intervalMs = 30000) => {
 
 export const getVendorOrders = async (req, res) => {
   try {
-    const { clientId, category, subcategory, itemName, itemId, vendorId, status, paymentStatus, birthdayId, search = "" } = req.query;
+    const { clientId, category, subcategory, itemName, eventDate, eventTime, itemId, vendorId, status, paymentStatus, birthdayId, search = "" } = req.query;
     const filter = {};
 
-    if (vendorId) filter.vendorId = vendorId;
-    if (clientId && mongoose.Types.ObjectId.isValid(clientId)) filter.clientId = clientId;
+    if (vendorId && mongoose.Types.ObjectId.isValid(vendorId)) {
+      filter.vendorId = vendorId;
+    }
+    if (clientId) filter.clientId = clientId;
     if (itemId && mongoose.Types.ObjectId.isValid(itemId)) filter.itemId = itemId;
     if (status) filter.status = status;
+    if (eventDate) filter.eventDate = eventDate;
+    // if (eventDate) {
+    //   const start = new Date(eventDate);
+    //   const end = new Date(eventDate);
+    //   end.setHours(23, 59, 59, 999);
+    //   filter.eventDate = { $gte: start, $lte: end };
+    // }
+
+    if (eventTime) filter.eventTime = eventTime;
     if (category) filter.category = category;
     if (subcategory) filter.subcategory = subcategory;
-    if (itemName) filter.itemName = itemName;
-    if (paymentStatus) filter.paymentStatus = paymentStatus;
+    if (itemName ) filter.itemName = itemName;
+    if (paymentStatus ) filter.paymentStatus = paymentStatus;
     if (birthdayId && mongoose.Types.ObjectId.isValid(birthdayId)) filter.birthdayId = birthdayId;
 
     if (search.trim()) {
-      filter.$or = [
-        { itemName: { $regex: search, $options: "i" } },
-        { celebrantName: { $regex: search, $options: "i" } },
-        { phone: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
+      filter.$and = [
+        ...(filter.$and || []),
+        {
+          $or: [
+            { itemName: { $regex: search, $options: "i" } },
+            { celebrantName: { $regex: search, $options: "i" } },
+            { phone: { $regex: search, $options: "i" } },
+            { email: { $regex: search, $options: "i" } },
+            { eventDate: { $regex: search, $options: "i" } },
+            { eventTime: { $regex: search, $options: "i" } },
+          ],
+        },
       ];
     }
 
-    const orders = await VendorOrderList.find(filter).sort({ createdAt: -1 });
-    res.json({ total: orders.length, data: orders });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+
+    const [orders, total] = await Promise.all([
+      VendorOrderList.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      VendorOrderList.countDocuments(filter),
+    ]);
+
+    res.json({ total, data: orders });
+
+
+    // const orders = await VendorOrderList.find(filter).sort({ createdAt: -1 });
+    // res.json({ total: orders.length, data: orders });
   } catch (err) {
     console.error("getVendorOrders err:", err);
     res.status(500).json({ message: "Failed to get vendor orders", error: err.message });

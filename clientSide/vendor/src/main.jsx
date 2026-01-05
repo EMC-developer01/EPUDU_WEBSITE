@@ -9,6 +9,7 @@ import ProtectedRoute from "./ProtectedRoute.jsx"
 import VendorRegistration from './pages/VendorRegistration.jsx';
 import VendorAddItem from './pages/VendoeAddItem.jsx';
 import OrderList from './pages/OrderList.jsx';
+import VendorProfile from './pages/profile.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -41,7 +42,16 @@ createRoot(document.getElementById('root')).render(
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <VendorProfile />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
+
     </BrowserRouter>
   </StrictMode>
 )

@@ -5,8 +5,13 @@ const paymentSchema = new mongoose.Schema({
     paymentId: String,
     signature: String,
     amount: Number, // Store in INR (not paise)
-    status: { type: String, default: "success" },
-    date: { type: Date, default: Date.now }
+    clientName: String,
+    eventId: mongoose.Schema.Types.ObjectId,
+    eventType: String,
+    paymentStatus: String,
+    bookingStatus: String,
+    status: { type: String, },
+    date: { type: Date, default: Date.now },
 });
 
 export default mongoose.model("Payment", paymentSchema);

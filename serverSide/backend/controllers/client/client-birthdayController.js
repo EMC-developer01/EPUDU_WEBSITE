@@ -211,8 +211,8 @@ export const updateSteps = async (req, res) => {
         cleanData.paymentStatus === "Full Paid"
       ) {
         existing.paymentStatus = cleanData.paymentStatus;
-        existing.bookingStatus = cleanData.bookingStatus || "Booked";
-        existing.balanceAmount = cleanData.balanceAmount || 0;
+        existing.bookingStatus = cleanData.bookingStatus;
+        existing.balanceAmount = cleanData.balanceAmount;
 
         existing.budget = {
           ...existing.budget,
@@ -220,17 +220,24 @@ export const updateSteps = async (req, res) => {
           advancePayment: advance,
           balancePayment: balance > 0 ? balance : 0,
         };
-      } else {
-        // Default when no payment done yet
-        existing.paymentStatus =
-          advance === 0
-            ? "Pending"
-            : advance < total
-              ? "Advance Paid"
-              : "Full Paid";
+      }
+      // else {
+      //   // Default when no payment done yet
+      //   existing.paymentStatus =
+      //     advance === 0
+      //       ? "Pending"
+      //       : advance < total
+      //         ? "Advance Paid"
+      //         : "Full Paid";
 
-        existing.bookingStatus = advance > 0 ? "Booked" : "Not Booked";
-        existing.balanceAmount = balance > 0 ? balance : 0;
+      //   existing.bookingStatus = advance > 0 ? "Booked" : "Not Booked";
+      //   existing.balanceAmount = balance > 0 ? balance : 0;
+      // }
+      else if (cleanData.paymentStatus === "Pending") {
+        // 🔒 Explicit revert from frontend (payment failed / cancelled)
+        existing.paymentStatus = "Pending";
+        existing.bookingStatus = "Pending";
+        existing.balanceAmount = existing.budget?.totalBudget || 0;
       }
     }
 

@@ -6,6 +6,7 @@ const Login = ({ onClose }) => {
   let [mobile, setMobile] = useState("");
   let [otp, setOtp] = useState("");
   let [generatedOtp, setGeneratedOtp] = useState("");
+  const [sessionId, setSessionId] = useState("");
   let [name, setName] = useState("");
   let navigate = useNavigate();
 
@@ -20,24 +21,27 @@ const Login = ({ onClose }) => {
       return;
     }
 
-    const fullMobile = `+91${mobile}`;
-    const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
-    setGeneratedOtp(otpCode);
-    setStep("otp");
+    // const fullMobile = `+91${mobile}`;
+    // const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
+    // setGeneratedOtp(otpCode);
+    // setStep("otp");
 
     try {
       const res = await fetch("http://localhost:4000/api/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobile: fullMobile, otp: otpCode }),
+        body: JSON.stringify({ mobile }),
       });
+      const data = await res.json();
 
-      if (res.ok) {
-        alert("OTP sent to your mobile number");
+      if (data.success) {
+        setSessionId(data.sessionId);
+        setStep("otp");
+        alert("OTP sent successfully");
       } else {
-        const data = await res.json();
-        alert("Failed to send OTP: " + (data.details || data.message));
+        alert("Failed to send OTP");
       }
+
     } catch (err) {
       console.error(err);
       alert("Error sending OTP");
@@ -45,35 +49,74 @@ const Login = ({ onClose }) => {
   };
 
   // Step 2️⃣ — Verify OTP
+  // const handleVerifyOtp = async (e) => {
+  //   e.preventDefault();
+
+  //   if (otp !== generatedOtp) {
+  //     alert("Invalid OTP! Please try again.");
+  //     return;
+  //   }
+
+  //   const fullMobile = `+91${mobile}`;
+
+  //   try {
+  //     const res = await fetch(`${API_URL}/client/users/${encodeURIComponent(fullMobile)}`);
+  //     const data = await res.json();
+
+  //     if (res.ok && data.user) {
+  //       // ✅ User exists — login directly
+  //       localStorage.setItem("user", JSON.stringify(data.user));
+  //       localStorage.setItem("userId", JSON.stringify(data.user._id));
+  //       localStorage.setItem("isLoggedIn", true);
+  //       alert(`Welcome back, ${data.user.name}!`);
+  //       onClose();
+  //       navigate("/");
+  //     } else {
+  //       // ❌ User not found — ask name first instead of creating Guest
+  //       setStep("name");
+  //     }
+  //   } catch (err) {
+  //     console.error("❌ Error verifying user:", err);
+  //     alert("Server error while verifying user.");
+  //   }
+  // };
+
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
 
-    if (otp !== generatedOtp) {
-      alert("Invalid OTP! Please try again.");
-      return;
-    }
-
-    const fullMobile = `+91${mobile}`;
-
     try {
-      const res = await fetch(`${API_URL}/client/users/${encodeURIComponent(fullMobile)}`);
+      const res = await fetch("http://localhost:4000/api/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ otp, sessionId }),
+      });
+
       const data = await res.json();
 
-      if (res.ok && data.user) {
-        // ✅ User exists — login directly
-        localStorage.setItem("user", JSON.stringify(data.user));
-        localStorage.setItem("userId", JSON.stringify(data.user._id));
+      if (!data.verified) {
+        alert("Invalid OTP");
+        return;
+      }
+
+      // OTP verified → now check user
+      const fullMobile = `+91${mobile}`;
+      const userRes = await fetch(
+        `${API_URL}/client/users/${encodeURIComponent(fullMobile)}`
+      );
+      const userData = await userRes.json();
+
+      if (userRes.ok && userData.user) {
+        localStorage.setItem("user", JSON.stringify(userData.user));
+        localStorage.setItem("userId", userData.user._id);
         localStorage.setItem("isLoggedIn", true);
-        alert(`Welcome back, ${data.user.name}!`);
+        alert(`Welcome back, ${userData.user.name}`);
         onClose();
         navigate("/");
       } else {
-        // ❌ User not found — ask name first instead of creating Guest
         setStep("name");
       }
     } catch (err) {
-      console.error("❌ Error verifying user:", err);
-      alert("Server error while verifying user.");
+      alert("OTP verification failed");
     }
   };
 
@@ -125,7 +168,7 @@ const Login = ({ onClose }) => {
     }
   }, []);
 
-  
+
 
 
 

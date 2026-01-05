@@ -19,7 +19,7 @@ export const createOrder = async (req, res) => {
         console.log(amount)
         const options = {
             amount: amount * 100,
-            currency: "INR",
+            currency,
             receipt: receipt || `receipt_${Date.now()}`,
         };
 
@@ -31,7 +31,8 @@ export const createOrder = async (req, res) => {
             order,
             key: process.env.RAZORPAY_KEY_ID,
         });
-    } catch (err) {
+    }
+    catch (err) {
         console.error("❌ Order creation failed:");
         console.error("Error message:", err.message);
         if (err.response) {
@@ -40,7 +41,6 @@ export const createOrder = async (req, res) => {
         }
         res.status(500).json({ message: err.message || "Server error" });
     }
-
 };
 
 // export const verifyPayment = async (req, res) => {
@@ -88,6 +88,9 @@ export const verifyPayment = async (req, res) => {
             razorpay_order_id,
             razorpay_payment_id,
             razorpay_signature,
+            eventId,
+            eventType,
+            clientName,
             amount,
         } = req.body;
 
@@ -109,9 +112,12 @@ export const verifyPayment = async (req, res) => {
                 success: false,
                 message: "Invalid signature",
             });
-        } 
+        }
 
         console.log("✅ Signature verified successfully!");
+
+        let paymentStatus = "success";
+        let bookingStatus = "Booked";
 
         // Save payment to DB
         await Payment.create({
@@ -119,6 +125,13 @@ export const verifyPayment = async (req, res) => {
             paymentId: razorpay_payment_id,
             signature: razorpay_signature,
             amount: amount ? Number(amount) : 0, // INR value
+            eventId,   // 🔥 ADD THIS
+            eventType,
+            clientName,         // 🔥 or dynamic
+            paymentStatus,     // 👈 ADD THIS
+            bookingStatus,      // 👈 ADD THIS
+            status: "success",            // optional
+            date: new Date(),
         });
 
         return res.status(200).json({

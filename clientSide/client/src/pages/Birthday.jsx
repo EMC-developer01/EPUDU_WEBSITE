@@ -57,6 +57,49 @@ export default function Birthday() {
 
   const API_URL = "http://localhost:4000/api/client";
 
+  const [cards, setCards] = useState([]);
+  const [selectedCard, setSelectedCard] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchCards = async () => {
+      try {
+        const res = await axios.get("http://localhost:4000/api/admin/client-invitation/all");
+        const activeCards = res.data.filter(c => c.isActive);
+
+        if (isMounted) {
+          setCards(activeCards);
+          // If no card is selected or selected card was removed, select first
+          if (!selectedCard || !activeCards.find(c => c._id === selectedCard._id)) {
+            setSelectedCard(activeCards[0] || null);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch invitation cards:", err);
+      }
+    };
+
+    // Fetch initially
+    fetchCards();
+
+    // Poll every 5 seconds
+    const interval = setInterval(fetchCards, 5000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [selectedCard]);
+
+  const [currentBg, setCurrentBg] = useState(0);
+
+  useEffect(() => {
+    if (!cards.length) return;
+    setCurrentBg(0);
+  }, [cards]);
+
+
   let [step, setStep] = useState(1);
   let [birthdayId, setBirthdayId] = useState(null);
   let [userId, setUserId] = useState(null);
@@ -1090,6 +1133,13 @@ export default function Birthday() {
   // }, [costs, formData.returnGifts, formData.timings.capacity]);
 
 
+  const birthdayQuotes = [
+    "A day filled with laughter, love, and sweet memories awaits you.",
+    "Come celebrate a special day with joy, cake, and cheerful moments.",
+    "Another year older, another reason to celebrate together.",
+    "Let’s make beautiful memories and celebrate a wonderful birthday.",
+    "Your presence will make this birthday celebration truly special."
+  ];
 
 
 
@@ -1100,7 +1150,7 @@ export default function Birthday() {
     <>
       <Header />
       <Banner />
-      <section className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-r from-pink-100 to-blue-100 py-12 px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-32">
+      <section id='birthdaybooking' className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-r from-pink-100 to-blue-100 py-12 px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-32">
         <div className="w-full max-w-[2560px] mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8 lg:p-10 xl:p-12 2xl:p-16">
 
           <h2 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-pink- mb-8 text-center">
@@ -1211,6 +1261,7 @@ export default function Birthday() {
                       })
                     }
                     className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                    minDate={new Date()}
                     placeholderText="Select Date"
                     required
                   />
@@ -1348,29 +1399,103 @@ export default function Birthday() {
               </div>
 
               {/* Invitation Card Preview & Download */}
-              <div className="lg:w-1/2 flex flex-col items-center">
+              <div className="lg:w-1/2 flex flex-col items-center space-y-4">
+
+                {/* Background Selection */}
+                <div className="flex gap-3 flex-wrap justify-center">
+                  {cards.map(card => (
+                    <img
+                      key={card._id}
+                      src={`http://localhost:4000/${card.image}`}
+                      alt={card.cardName}
+                      className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-4 ${selectedCard?._id === card._id ? "border-blue-500" : "border-transparent"}`}
+                      onClick={() => setSelectedCard(card)}
+                    />
+                  ))}
+                </div>
+
+                {/* Invitation Card Preview */}
                 {selectedVenue && (
                   <div
                     id="invitation-card"
-                    className="p-6 border-2 border-pink-300 rounded-2xl bg-gradient-to-r from-pink-50 to-yellow-50 shadow-lg w-full"
+                    className="p-6 border-2 border-pink-300 rounded-2xl shadow-lg w-full max-w-md relative text-gray-800"
+                    style={{
+                      backgroundImage: selectedCard
+                        ? `url("http://localhost:4000/${selectedCard.image}")`
+                        : "linear-gradient(to bottom right, #fff, #fff9c4)",
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                    }}
                   >
-                    <h3 className="text-2xl font-bold text-pink-600 text-center mb-4">🎉 You're Invited! 🎉</h3>
-                    <p className="text-center">
-                      To celebrate <span className="font-semibold">{formData.celebrantName || "_____"}</span>'s Birthday
+                    {/* Company Logo */}
+                    <img
+                      src="/logo/epudu-logo.png"
+                      alt="Epudu Logo"
+                      className="absolute top-4 left-4 w-14 h-14 object-contain"
+                    />
+
+                    {/* Invitation Content */}
+                    <div className="mt-12 text-center p-4 rounded-xl">
+                      <h3 className="text-3xl font-bold text-pink-600 mb-2">
+                        You’re Invited!
+                      </h3>
+
+                      <p className="italic text-gray-700 mb-3">
+                        {
+                          birthdayQuotes[
+                          Math.floor(Math.random() * birthdayQuotes.length)
+                          ]
+                        }
+                      </p>
+
+                      <p className="text-xl font-semibold mb-2">
+                        🎂 {formData.celebrantName || "________"}’s Birthday 🎂
+                      </p>
+
+                      <p className="mb-1">
+                        <span className="font-semibold">Theme:</span>{" "}
+                        {formData.themePreference || "________"}
+                      </p>
+
+                      <p className="mb-1">
+                        <span className="font-semibold">Date:</span>{" "}
+                        {formData.eventDate || "________"}
+                      </p>
+
+                      <p className="mb-1">
+                        <span className="font-semibold">Time:</span>{" "}
+                        {formData.timings?.time || "________"}
+                      </p>
+
+                      <p className="mb-4">
+                        <span className="font-semibold">Venue:</span>{" "}
+                        {selectedVenue.name}, {selectedVenue.location}
+                      </p>
+
+                      <p className="text-sm italic text-gray-600">
+                        We look forward to celebrating with you!
+                      </p>
+                    </div>
+
+                    {/* Contact Info */}
+                    <p className="absolute bottom-3 right-4 text-xs text-gray-700">
+                      Contact: <span className="font-semibold">info@epudu.com</span>
                     </p>
-                    <p className="text-center">Theme: {formData.themePreference || "_____"}</p>
-                    <p className="text-center">Venue: {selectedVenue.name}, {selectedVenue.location}</p>
-                    <p className="text-center">Date: {formData.eventDate || "_____"}</p>
-                    <p className="text-center">Time: {formData.timings?.time || "_____"}</p>
                   </div>
                 )}
 
+                {/* Download Button */}
                 <button
                   className="mt-4 bg-blue-500 text-white px-6 py-2 rounded-lg"
                   onClick={() => {
                     const card = document.getElementById("invitation-card");
                     if (!card) return;
-                    htmlToImage.toPng(card)
+
+                    htmlToImage.toPng(card, {
+                      cacheBust: true,
+                      backgroundColor: null, // ensure transparency handled
+                    })
                       .then((dataUrl) => {
                         const link = document.createElement("a");
                         link.download = `${formData.celebrantName || "invitation"}.png`;
@@ -1383,6 +1508,7 @@ export default function Birthday() {
                   Download Invitation
                 </button>
               </div>
+
             </div>
           )}
 
@@ -2768,7 +2894,7 @@ export default function Birthday() {
                   prevStep();
                   // handleNext();
                 }}
-                className="bg-gray-300 px-4 py-2 rounded-lg"
+                className="bg-indigo-900 px-4 py-2 rounded-lg"
               >
                 Back
               </button>
@@ -2782,7 +2908,7 @@ export default function Birthday() {
                   handleNext();
                   // nextStep();
                 }}
-                className="bg-pink-600 text-white px-4 py-2 rounded-lg"
+                className="bg-indigo-900 text-white px-4 py-2 rounded-lg"
               >
                 Next
               </button>
@@ -2813,7 +2939,7 @@ export default function Birthday() {
                       method: "PUT",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
-                        birthdayId: formData._id,
+                        birthdayId,
                         step: 10,
                         formData: pendingData,
                       }),
@@ -2831,6 +2957,7 @@ export default function Birthday() {
 
                     // Helper to safely revert to Pending
                     const updatePending = async (msg) => {
+                      if (paymentCompleted) return;
                       console.warn(msg);
                       alert(msg);
                       const reverted = {
@@ -2839,12 +2966,13 @@ export default function Birthday() {
                         bookingStatus: "Pending",
                       };
                       setFormData(reverted);
+                      console.log(reverted);
 
                       await fetch("http://localhost:4000/api/client/birthday/update-step", {
                         method: "PUT",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                          birthdayId: formData._id,
+                          birthdayId,
                           step: 10,
                           formData: reverted,
                         }),
@@ -2852,6 +2980,7 @@ export default function Birthday() {
                     };
 
                     // ✅ STEP 3: Razorpay options
+                    let paymentCompleted = false;
                     const options = {
                       key: orderData.key,
                       amount: orderData.order.amount,
@@ -2869,13 +2998,23 @@ export default function Birthday() {
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
                               ...response,
-                              birthdayId: formData._id,
+                              // birthdayId: formData._id,
+                              eventId: birthdayId,
+                              eventType: formData.eventType,
+                              clientName: formData.celebrantName,
+                              amount: advance,
                             }),
                           });
 
                           const verifyData = await verifyRes.json();
 
+                          if (!verifyData.success) {
+                            toast.error("Payment failed");
+                            return;
+                          }
+
                           if (verifyData.success) {
+                            paymentCompleted = true;
                             const paymentStatus = advance >= total ? "Full Paid" : "Advance Paid";
                             const bookingStatus = "Booked";
                             const balanceAmount = advance >= total ? 0 : balance;
@@ -2902,7 +3041,7 @@ export default function Birthday() {
                               method: "PUT",
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({
-                                birthdayId: formData._id,
+                                birthdayId,
                                 step: 10,
                                 formData: updatedFormData,
                               }),
@@ -2944,9 +3083,6 @@ export default function Birthday() {
                               }),
                             });
 
-                           
-
-                              
                             // ********************************************
                             // 🔔 FRONTEND NOTIFICATIONS
                             // ********************************************
@@ -2988,7 +3124,9 @@ export default function Birthday() {
 
                       modal: {
                         ondismiss: async () => {
-                          await updatePending("⚠️ Payment popup closed without completing payment. Status reverted to Pending.");
+                          if (!paymentCompleted) {
+                            await updatePending("⚠️ Payment popup closed without completing payment. Status reverted to Pending.");
+                          }
                         },
                       },
                     };
@@ -2997,7 +3135,9 @@ export default function Birthday() {
 
                     rzp.on("payment.failed", async (response) => {
                       console.error("Payment failed:", response.error);
-                      await updatePending("❌ Payment failed or cancelled. Status reverted to Pending.");
+                      if (!paymentCompleted) {
+                        await updatePending("❌ Payment failed or cancelled. Status reverted to Pending.");
+                      }
                     });
 
                     rzp.open();
@@ -3007,7 +3147,7 @@ export default function Birthday() {
                     alert("❌ Error starting payment");
                   }
                 }}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg"
+                className="bg-indigo-900 text-white px-4 py-2 rounded-lg"
               >
                 💳 Pay Advance via Razorpay
               </button>

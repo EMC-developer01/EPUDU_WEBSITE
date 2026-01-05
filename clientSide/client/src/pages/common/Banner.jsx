@@ -2,11 +2,8 @@
 import { useState, useEffect } from 'react';
 
 export default function Banner() {
-  const images = [
-    "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
-    "https://images.unsplash.com/photo-1492684223066-81342ee5ff30",
-    "https://images.unsplash.com/photo-1511988617509-a57c8a288659",
-  ];
+  const [banners, setBanners] = useState([]);
+  const [current, setCurrent] = useState(0);
 
   const quotes = [
     "Every Moment Matters. We Make Moments Memorable.",
@@ -14,34 +11,62 @@ export default function Banner() {
     "Crafting Emotions, Not Just Events.",
   ];
 
-  const [current, setCurrent] = useState(0);
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const res = await fetch(
+          "http://localhost:4000/api/admin/client-banner/all",
+          { cache: "no-store" } // 🔥 important in Next.js
+        );
+        const data = await res.json();
+
+        const activeBanners = data.filter(
+          b => b.isActive === true || b.isActive === "active" || b.isActive === 1
+        );
+
+        setBanners(activeBanners);
+      } catch (err) {
+        console.error("Banner fetch failed", err);
+      }
+    };
+
+    fetchBanners(); // initial load
+
+    const interval = setInterval(fetchBanners, 5000); // 🔁 every 5 sec
+
+    return () => clearInterval(interval);
+  }, []);
+
 
   useEffect(() => {
+    if (!banners.length) return;
+
     const timer = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % images.length);
+      setCurrent(prev => (prev + 1) % banners.length);
     }, 3000);
+
     return () => clearInterval(timer);
-  }, []);
+  }, [banners]);
+
+  if (!banners.length) return null;
 
   return (
     <section className="relative w-full h-[350px] overflow-hidden">
-      {images.map((img, index) => (
+      {banners.map((banner, index) => (
         <div
-          key={index}
+          key={banner._id}
           className={`absolute inset-0 transition-opacity duration-1000 ${index === current ? "opacity-100" : "opacity-0"
             }`}
         >
-          {/* Background Image */}
           <img
-            src={img}
-            alt={`Slide ${index + 1}`}
+            src={`http://localhost:4000/uploads/banners/${banner.image}`}
+            alt="Banner"
             className="w-full h-full object-cover"
           />
 
-          {/* Dark Overlay + Quote */}
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-            <h2 className="text-white text-xl md:text-3xl lg:text-5xl font-bold drop-shadow-lg text-center px-6">
-              {quotes[current]}
+            <h2 className="text-white text-xl md:text-3xl lg:text-5xl font-bold text-center px-6">
+              {quotes[current % quotes.length]}
             </h2>
           </div>
         </div>

@@ -25,6 +25,8 @@ export default function VendorOrderList() {
         itemName: "",
         vendorId: "",
         clientId: "",
+        eventDate: "",
+        eventTime: "",
         status: "",
         itemId: "",
         paymentStatus: "",
@@ -48,6 +50,8 @@ export default function VendorOrderList() {
             const res = await axios.get(BASE_URL, {
                 params: {
                     ...filters,
+                    page,
+                    limit,
                     search: filters.search || undefined,
                     // if your backend supports page & limit, you can pass them here:
                     // page, limit
@@ -77,6 +81,8 @@ export default function VendorOrderList() {
         filters.subcategory,
         filters.itemName,
         filters.itemId,
+        filters.eventDate,
+        filters.eventTime,
         filters.vendorId,
         filters.clientId,
         filters.birthdayId,
@@ -122,7 +128,7 @@ export default function VendorOrderList() {
     const indexOfFirstItem = (page - 1) * limit;
     const indexOfLastItem = indexOfFirstItem + limit;
     const currentItems = orders.slice(indexOfFirstItem, indexOfLastItem);
-
+    // console.log(currentItems);
     const totalPages = Math.max(1, Math.ceil((total || orders.length) / limit));
 
     return (
@@ -186,6 +192,22 @@ export default function VendorOrderList() {
                             onChange={(e) => setFilters({ ...filters, itemName: e.target.value })}
                         />
 
+                        <input
+                            type="text"
+                            placeholder="Event Date"
+                            className="px-3 py-2 border rounded"
+                            value={filters.eventDate}
+                            onChange={(e) => setFilters({ ...filters, eventDate: e.target.value })}
+                        />
+
+                        <input
+                            type="text"
+                            placeholder="Event Time"
+                            className="px-3 py-2 border rounded"
+                            value={filters.eventTime}
+                            onChange={(e) => setFilters({ ...filters, eventTime: e.target.value })}
+                        />
+
                         <select
                             className="px-3 py-2 border rounded"
                             value={filters.category}
@@ -244,6 +266,8 @@ export default function VendorOrderList() {
                                     category: "",
                                     subcategory: "",
                                     itemName: "",
+                                    eventDate: "",
+                                    eventTime: "",
                                     status: "",
                                     paymentStatus: "",
                                     price: "",
@@ -274,6 +298,8 @@ export default function VendorOrderList() {
                                     <TableHead>Client ID</TableHead>
                                     <TableHead>Vendor ID</TableHead>
                                     <TableHead>Birthday ID</TableHead>
+                                    <TableHead>eventDate</TableHead>
+                                    <TableHead>eventTime</TableHead>
                                     <TableHead>Category</TableHead>
                                     <TableHead>Subcategory</TableHead>
                                     <TableHead>Item ID</TableHead>
@@ -294,7 +320,8 @@ export default function VendorOrderList() {
                                         <TableCell>{o.clientId || "-"}</TableCell>
                                         <TableCell>{o.vendorId || "-"}</TableCell>
                                         <TableCell>{o.birthdayId || "-"}</TableCell>
-
+                                        <TableCell>{o.eventDate || "-"}</TableCell>
+                                        <TableCell>{o.eventTime || "-"}</TableCell>
                                         <TableCell>{o.category || "-"}</TableCell>
                                         <TableCell>{o.subcategory || "-"}</TableCell>
 
