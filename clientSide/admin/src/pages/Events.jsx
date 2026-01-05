@@ -25,6 +25,8 @@ export default function Events() {
         eventType: "",
         bookingStatus: "",
         eventStatus: "",
+        eventDate: "",
+        eventTime: "",
     });
 
     const [editingEvent, setEditingEvent] = useState(null);
@@ -79,6 +81,19 @@ export default function Events() {
                 e.eventStatus
                     ?.toLowerCase()
                     .includes(filters.eventStatus.toLowerCase())
+            );
+
+        if (filters.eventDate) {
+            data = data.filter((e) =>
+                String(e.eventDate).startsWith(filters.eventDate)
+            );
+        }
+
+        if (filters.eventTime)
+            data = data.filter((e) =>
+                e.eventTime
+                    ?.toLowerCase()
+                    .includes(filters.eventTime.toLowerCase())
             );
 
         setFiltered(data);
@@ -155,6 +170,25 @@ export default function Events() {
                             }
                             className="border rounded-lg px-3 py-2 w-full sm:w-auto min-w-[200px] outline-none focus:ring-2 focus:ring-blue-400"
                         />
+                        {/* Event Date */}
+                        <input
+                            type="text"
+                            value={filters.eventDate}
+                            onChange={(e) =>
+                                setFilters({ ...filters, eventDate: e.target.value })
+                            }
+                            className="border rounded-lg px-3 py-2 w-full sm:w-auto min-w-[200px] outline-none focus:ring-2 focus:ring-blue-400"
+                        />
+
+                        {/* EventTime */}
+                        <input
+                            type="text"
+                            value={filters.eventTime}
+                            onChange={(e) =>
+                                setFilters({ ...filters, eventTime: e.target.value })
+                            }
+                            className="border rounded-lg px-3 py-2 w-full sm:w-auto min-w-[200px] outline-none focus:ring-2 focus:ring-blue-400"
+                        />
 
                         {/* Event Type */}
                         <select
@@ -179,9 +213,9 @@ export default function Events() {
                             className="border rounded-lg px-3 py-2 w-full sm:w-auto min-w-[200px] outline-none focus:ring-2 focus:ring-blue-400"
                         >
                             <option value="">All Booking Status</option>
-                            <option value="Confirmed">Confirmed</option>
+                            <option value="Booked">Booked</option>
                             <option value="Pending">Pending</option>
-                            <option value="Cancelled">Cancelled</option>
+                            <option value="Cancel">Cancelled</option>
                         </select>
 
                         {/* Event Status - NEW */}
@@ -212,7 +246,8 @@ export default function Events() {
                                     <TableHead>Name</TableHead>
                                     <TableHead>Phone</TableHead>
                                     <TableHead>Event Type</TableHead>
-                                    <TableHead>Date</TableHead>
+                                    <TableHead>Event Date</TableHead>
+                                    <TableHead>Event Time</TableHead>
                                     <TableHead>Venue</TableHead>
                                     <TableHead>Payment</TableHead>
                                     <TableHead>Booking Status</TableHead>
@@ -235,14 +270,15 @@ export default function Events() {
                                             <TableCell>{ev.phone || "-"}</TableCell>
                                             <TableCell>{ev.eventType || "-"}</TableCell>
                                             <TableCell>{ev.eventDate || "-"}</TableCell>
+                                            <TableCell>{ev.eventTime || "-"}</TableCell>
                                             <TableCell>{ev.venue?.name || "-"}</TableCell>
 
                                             <TableCell
                                                 className={`font-medium ${ev.paymentStatus === "Full Paid"
-                                                        ? "text-green-600"
-                                                        : ev.paymentStatus === "Advance Paid"
-                                                            ? "text-orange-500"
-                                                            : "text-red-500"
+                                                    ? "text-green-600"
+                                                    : ev.paymentStatus === "Advance Paid"
+                                                        ? "text-orange-500"
+                                                        : "text-red-500"
                                                     }`}
                                             >
                                                 {ev.paymentStatus || "-"}
@@ -250,10 +286,10 @@ export default function Events() {
 
                                             <TableCell
                                                 className={`font-medium ${ev.bookingStatus === "Confirmed"
-                                                        ? "text-green-600"
-                                                        : ev.bookingStatus === "Pending"
-                                                            ? "text-orange-500"
-                                                            : "text-red-500"
+                                                    ? "text-green-600"
+                                                    : ev.bookingStatus === "Pending"
+                                                        ? "text-orange-500"
+                                                        : "text-red-500"
                                                     }`}
                                             >
                                                 {ev.bookingStatus || "-"}
@@ -262,10 +298,10 @@ export default function Events() {
                                             {/* ⭐ NEW EVENT STATUS COLUMN */}
                                             <TableCell
                                                 className={`font-medium ${ev.eventStatus === "Completed"
-                                                        ? "text-green-600"
-                                                        : ev.eventStatus === "Ongoing"
-                                                            ? "text-blue-600"
-                                                            : "text-orange-500"
+                                                    ? "text-green-600"
+                                                    : ev.eventStatus === "Ongoing"
+                                                        ? "text-blue-600"
+                                                        : "text-orange-500"
                                                     }`}
                                             >
                                                 {ev.eventStatus || "Pending"}

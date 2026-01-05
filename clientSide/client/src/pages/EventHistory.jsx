@@ -131,23 +131,23 @@ export default function EventHistory() {
   return (
     <>
       <Header />
-      <div className="max-w-6xl mx-auto mt-10 p-6">
+      <div className="w-screen max-w-6xl mx-auto mt-10 p-6">
         <h1 className="text-3xl font-semibold text-center mb-6">
           🎉 Your Event History
         </h1>
 
         {status === "paid" && (
-          <div className="bg-green-100 text-green-700 p-3 mb-6 text-center rounded-lg">
+          <div className="w-full bg-green-100 text-green-700 p-3 mb-6 text-center rounded-lg">
             ✅ Payment Successful — Your event is booked!
           </div>
         )}
 
         {events.length === 0 ? (
-          <p className="text-center text-gray-600">
+          <p className="w-full text-center text-gray-600">
             No events found. Start planning your first event!
           </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {events.map((event) => (
               <div
                 key={event._id}

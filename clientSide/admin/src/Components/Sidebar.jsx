@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Home, Users, Calendar, Settings, LogOut, Menu, List, ListCheck, BookUpIcon, BookUp2Icon, Image } from "lucide-react";
+import { Home, Users, Calendar, Settings, LogOut, Menu, List, ListCheck, BookUpIcon, BookUp2Icon, Image, Coins } from "lucide-react";
 
 export default function Sidebar() {
     const [isOpen, setIsOpen] = useState(true);
@@ -9,12 +9,16 @@ export default function Sidebar() {
     const menuItems = [
         { name: "Dashboard", icon: <Home size={20} />, path: "/dashboard" },
         { name: "Client Users", icon: <Users size={20} />, path: "/client-users" },
+        { name: "Client Payments", icon: <Coins size={20} />, path: "/client-payments" },
         { name: "Client Homepage-Img's", icon: <Image size={20} />, path: "/Client-homepage-Img" },
+        { name: "Client Banner-Img's", icon: <Image size={20} />, path: "/Client-banner-Img" },
+        { name: "Client invitation-Img's", icon: <Image size={20} />, path: "/Client-invitation-Img" },
         { name: "Vendor Users", icon: <Users size={20} />, path: "/vendor-users" },
+        { name: "Vendor Payments", icon: <Coins size={20} />, path: "/vendor-payments" },
         { name: "Events", icon: <Calendar size={20} />, path: "/events" },
         { name: "Vendor Orders", icon: <ListCheck size={20} />, path: "/vendor-Orders" },
-        { name: "Payment Status", icon: <BookUp2Icon size={20} />, path: "/Payment-Status" },
-        { name: "Settings", icon: <Settings size={20} />, path: "/settings" },
+        // { name: "Payment Status", icon: <BookUp2Icon size={20} />, path: "/Payment-Status" },
+        // { name: "Settings", icon: <Settings size={20} />, path: "/settings" },
     ];
 
     const handleLogout = () => {

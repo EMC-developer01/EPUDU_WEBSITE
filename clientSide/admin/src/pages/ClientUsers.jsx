@@ -17,7 +17,7 @@ import { UserPlus, Edit, Trash2, Save, X } from "lucide-react";
 export default function ClientUsers() {
     const [users, setUsers] = useState([]);
     const [editingUser, setEditingUser] = useState(null);
-    const [formData, setFormData] = useState({ name: "", mobile: "" });
+    const [formData, setFormData] = useState({ name: "", mobile: "", mail: "" });
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
     const BASE_URL = "http://localhost:4000/api/client/users";
@@ -57,7 +57,7 @@ export default function ClientUsers() {
 
     const handleEdit = (user) => {
         setEditingUser(user);
-        setFormData({ name: user.name, mobile: user.mobile });
+        setFormData({ name: user.name, mobile: user.mobile, mail: user.mail });
     };
 
     const handleDelete = async (id) => {
@@ -122,6 +122,15 @@ export default function ClientUsers() {
                                 className="border border-gray-300 rounded-lg px-3 py-2 w-full outline-none focus:ring-2 focus:ring-blue-400"
                             />
 
+                            <input
+                                type="text"
+                                name="mail"
+                                placeholder="Enter email Id"
+                                value={formData.mail}
+                                onChange={handleChange}
+                                className="border border-gray-300 rounded-lg px-3 py-2 w-full outline-none focus:ring-2 focus:ring-blue-400"
+                            />
+
                             <div className="flex items-center justify-start gap-2">
                                 <Button
                                     onClick={handleSave}
@@ -151,8 +160,10 @@ export default function ClientUsers() {
                             <TableHeader className="bg-gray-100">
                                 <TableRow>
                                     <TableHead className="w-12 text-center">#</TableHead>
+                                    <TableHead className="w-12 text-center">Id</TableHead>
                                     <TableHead className="min-w-[150px]">Name</TableHead>
                                     <TableHead className="min-w-[150px]">Mobile</TableHead>
+                                    <TableHead className="min-w-[150px]">Mail</TableHead>
                                     <TableHead className="text-center w-48">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -162,8 +173,10 @@ export default function ClientUsers() {
                                     users.map((user, index) => (
                                         <TableRow key={user._id} className="hover:bg-gray-50">
                                             <TableCell className="text-center">{index + 1}</TableCell>
+                                            <TableCell className="text-center">{user._id}</TableCell>
                                             <TableCell>{user.name}</TableCell>
                                             <TableCell>{user.mobile}</TableCell>
+                                            <TableCell>{user.mail}</TableCell>
                                             <TableCell>
                                                 <div className="flex justify-center gap-2 flex-wrap">
                                                     <Button

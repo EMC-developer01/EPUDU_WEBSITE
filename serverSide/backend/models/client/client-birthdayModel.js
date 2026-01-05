@@ -144,16 +144,14 @@ const birthdaySchema = new mongoose.Schema(
 
 
     budget: {
-      originalCost: String,
-      gstAmount: String,
-      cgstAmount: String,
-      totalBudget: String,
-      advancePayment: String,
-      balancePayment: String,
-      aidAmount: String,
+      originalCost: { type: Number, default: 0 },
+      gstAmount: { type: Number, default: 0 },
+      cgstAmount: { type: Number, default: 0 },
+      totalBudget: { type: Number, default: 0 },
+      advancePayment: { type: Number, default: 0 },
+      balancePayment: { type: Number, default: 0 },
+      aidAmount: { type: Number, default: 0 },
     },
-
-
 
     paymentStatus: { type: String, enum: ["Pending", "Advance Paid", "Full Paid"], default: "Pending" },
     bookingStatus: { type: String, enum: ["Pending", "Booked"], default: "Pending" },

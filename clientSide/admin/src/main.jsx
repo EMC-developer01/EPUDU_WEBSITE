@@ -11,6 +11,10 @@ import ClientUsers from "./pages/ClientUsers";
 import VendorUsers from "./pages/VendorUsers";
 import VendorOrdersList from "./pages/vendorOrderList";
 import ClientHomepageImages from "./pages/ClientHomepage-Images";
+import ClientBanner from "./pages/ClientBanner";
+import ClientInvitationCards from "./pages/ClientInvitationCards";
+import ClientPaymentStatus from "./pages/Client-PaymentStatus";
+import VendorPaymentStatus from "./pages/Vendor-PaymentStatus";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -33,6 +37,22 @@ createRoot(document.getElementById("root")).render(
           element={
             <ProtectedRoute>
               <ClientUsers />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/client-payments"
+          element={
+            <ProtectedRoute>
+              <ClientPaymentStatus />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vendor-payments"
+          element={
+            <ProtectedRoute>
+              <VendorPaymentStatus />
             </ProtectedRoute>
           }
         />
@@ -65,6 +85,22 @@ createRoot(document.getElementById("root")).render(
           element={
             <ProtectedRoute>
               <ClientHomepageImages />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/Client-banner-Img"
+          element={
+            <ProtectedRoute>
+              <ClientBanner />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/Client-invitation-Img"
+          element={
+            <ProtectedRoute>
+              <ClientInvitationCards />
             </ProtectedRoute>
           }
         />

@@ -17,7 +17,7 @@ import { UserPlus, Edit, Trash2, Save, X } from "lucide-react";
 export default function VendorUsers() {
     const [vendors, setVendors] = useState([]);
     const [editingVendor, setEditingVendor] = useState(null);
-    const [formData, setFormData] = useState({ name: "", mobile: "" });
+    const [formData, setFormData] = useState({ name: "", mobile: "", mail: "", });
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
     const BASE_URL = "http://localhost:4000/api/vendor/users";
@@ -47,7 +47,7 @@ export default function VendorUsers() {
             } else {
                 await axios.post(BASE_URL, formData);
             }
-            setFormData({ name: "", mobile: "" });
+            setFormData({ name: "", mobile: "", mail: "" });
             setEditingVendor(null);
             fetchVendors();
         } catch (err) {
@@ -57,7 +57,7 @@ export default function VendorUsers() {
 
     const handleEdit = (vendor) => {
         setEditingVendor(vendor);
-        setFormData({ name: vendor.name, mobile: vendor.mobile });
+        setFormData({ name: vendor.name, mobile: vendor.mobile, mail: vendor.mail });
     };
 
     const handleDelete = async (id) => {
@@ -71,7 +71,7 @@ export default function VendorUsers() {
 
     const handleCancel = () => {
         setEditingVendor(null);
-        setFormData({ name: "", mobile: "" });
+        setFormData({ name: "", mobile: "", mail: "" });
     };
 
     return (
@@ -86,7 +86,7 @@ export default function VendorUsers() {
                         <Button
                             onClick={() => {
                                 setEditingVendor(null);
-                                setFormData({ name: "", mobile: "" });
+                                setFormData({ name: "", mobile: "", mail:"" });
                             }}
                             className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
                         >
@@ -118,6 +118,14 @@ export default function VendorUsers() {
                                 name="mobile"
                                 placeholder="Enter Vendor Mobile Number"
                                 value={formData.mobile}
+                                onChange={handleChange}
+                                className="border border-gray-300 rounded-lg px-3 py-2 w-full outline-none focus:ring-2 focus:ring-blue-400"
+                            />
+                            <input
+                                type="text"
+                                name="mail"
+                                placeholder="Enter Vendor mail Id"
+                                value={formData.mail}
                                 onChange={handleChange}
                                 className="border border-gray-300 rounded-lg px-3 py-2 w-full outline-none focus:ring-2 focus:ring-blue-400"
                             />
@@ -153,8 +161,10 @@ export default function VendorUsers() {
                             <TableHeader className="bg-gray-100">
                                 <TableRow>
                                     <TableHead className="w-12 text-center">#</TableHead>
+                                    <TableHead className="w-12 text-center">Id</TableHead>
                                     <TableHead className="min-w-[150px]">Name</TableHead>
                                     <TableHead className="min-w-[150px]">Mobile</TableHead>
+                                    <TableHead className="min-w-[150px]">Mail</TableHead>
                                     <TableHead className="text-center w-48">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -164,8 +174,10 @@ export default function VendorUsers() {
                                     vendors.map((vendor, index) => (
                                         <TableRow key={vendor._id} className="hover:bg-gray-50">
                                             <TableCell className="text-center">{index + 1}</TableCell>
+                                            <TableCell className="text-center">{vendor._id}</TableCell>
                                             <TableCell>{vendor.name}</TableCell>
                                             <TableCell>{vendor.mobile}</TableCell>
+                                            <TableCell>{vendor.mail}</TableCell>
                                             <TableCell>
                                                 <div className="flex justify-center gap-2 flex-wrap">
                                                     <Button

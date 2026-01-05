@@ -70,117 +70,6 @@
 }
 
 
-/* WHITE FOAM */
-.ocean-foam {
-  background:
-    radial-gradient(circle at 30% 90%, rgba(255, 255, 255, 0.6) 0%, transparent 40%),
-    radial-gradient(circle at 70% 85%, rgba(255, 255, 255, 0.4) 0%, transparent 45%),
-    repeating-linear-gradient(-15deg,
-      rgba(255, 255, 255, 0.2) 0px,
-      rgba(255, 255, 255, 0.05) 6px,
-      transparent 14px);
-  animation: foam-move 6s ease-in-out infinite;
-}
-
-.disco-light {
-  position: absolute;
-  top: -20%;
-  width: 45vw;
-  height: 120vh;
-  filter: blur(60px);
-  opacity: 0.75;
-  mix-blend-mode: screen;
-  pointer-events: none;
-}
-
-/* LEFT BLUE DISCO */
-.disco-blue {
-  left: -10%;
-  background: linear-gradient(140deg,
-      rgba(59, 130, 246, 0.55),
-      rgba(59, 130, 246, 0.15),
-      transparent);
-  animation: discoMoveBlue 10s ease-in-out infinite alternate;
-}
-
-/* RIGHT PINK / PURPLE DISCO */
-.disco-pink {
-  right: -10%;
-  background: linear-gradient(220deg,
-      rgba(236, 72, 153, 0.55),
-      rgba(168, 85, 247, 0.25),
-      transparent);
-  animation: discoMovePink 12s ease-in-out infinite alternate;
-}
-
-@keyframes discoMoveBlue {
-  0% {
-    transform: rotate(0deg) translateY(0);
-  }
-
-  50% {
-    transform: rotate(8deg) translateY(60px);
-  }
-
-  100% {
-    transform: rotate(-8deg) translateY(-40px);
-  }
-}
-
-@keyframes discoMovePink {
-  0% {
-    transform: rotate(0deg) translateY(0);
-  }
-
-  50% {
-    transform: rotate(-10deg) translateY(70px);
-  }
-
-  100% {
-    transform: rotate(10deg) translateY(-50px);
-  }
-}
-
-.disco-light::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: inherit;
-  filter: blur(120px);
-  opacity: 0.6;
-  animation: fogPulse 6s ease-in-out infinite alternate;
-}
-
-@keyframes fogPulse {
-  from {
-    opacity: 0.4;
-  }
-
-  to {
-    opacity: 0.75;
-  }
-}
-
-@keyframes flash {
-
-  0%,
-  100% {
-    opacity: 0;
-  }
-
-  50% {
-    opacity: 0.12;
-  }
-}
-
-.disco-flash {
-  position: absolute;
-  inset: 0;
-  background: white;
-  animation: flash 7s ease-in-out infinite;
-  pointer-events: none;
-}
-
 /* ANIMATIONS */
 @keyframes ocean-rise {
 
@@ -204,22 +93,10 @@
   }
 }
 
-@keyframes foam-move {
-
-  0%,
-  100% {
-    opacity: 0.55;
-  }
-
-  50% {
-    opacity: 0.85;
-  }
-}
 
 
 /* Full height galaxy section */
 .galaxy-bg {
-  height: 100vh;
   background: radial-gradient(circle at 30% 30%, #ffc0cb, #ff69b4 30%);
   position: relative;
   overflow: hidden;
@@ -396,12 +273,12 @@ h1 {
 
 button {
   border-radius: 8px;
-  border: 1px solid transparent;
+  border: 2px solid black;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #6703ff;
+  background-color: indigo;
   color: #ffffff;
   cursor: pointer;
   transition: border-color 0.25s;
@@ -424,7 +301,7 @@ button:focus-visible {
   }
 
   a:hover {
-    color: #100ea6;
+    color: #04026d;
   }
 
   button {
