@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Search } from "lucide-react";
-import Sidebar from "@/Components/Sidebar";
-import Header from "@/Components/Header";
+import Sidebar from "@/components/Sidebar";
+import Header from "@/components/Header";
 
 const VendorPaymentStatus = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);

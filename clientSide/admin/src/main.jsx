@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
-import ProtectedRoute from "./Components/ProtectedRoute";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Events from "./pages/Events";
 import EventEdit from "./pages/EventEdit";
 import ClientUsers from "./pages/ClientUsers";
@@ -18,7 +18,7 @@ import VendorPaymentStatus from "./pages/Vendor-PaymentStatus";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/admin">
       <Routes>
         {/* Public Route */}
         <Route path="/" element={<Login />} />

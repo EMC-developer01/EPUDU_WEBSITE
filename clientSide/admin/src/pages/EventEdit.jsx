@@ -5,10 +5,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
-import Sidebar from "../Components/Sidebar";
-import Header from "../Components/Header";
-import { Button } from "../Components/ui/button";
-import { Input } from "../Components/ui/input";
+import Sidebar from "../components/Sidebar";
+import Header from "../components/Header";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
 import { ArrowLeft, Save } from "lucide-react";
 
 const BASE_URL = "http://localhost:4000/api/client";
