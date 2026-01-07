@@ -109,7 +109,7 @@ Please login to your Vendor Dashboard for full details.
 
 export const syncBirthdaysHelper = async () => {
   try {
-    const response = await axios.get("http://localhost:4000/api/client/birthday/all");
+    const response = await axios.get("http://lapi.epudu.com/api/client/birthday/all");
     const birthdays = response.data;
     if (!birthdays || birthdays.length === 0) return;
 
@@ -312,8 +312,8 @@ export const getVendorOrders = async (req, res) => {
     if (eventTime) filter.eventTime = eventTime;
     if (category) filter.category = category;
     if (subcategory) filter.subcategory = subcategory;
-    if (itemName ) filter.itemName = itemName;
-    if (paymentStatus ) filter.paymentStatus = paymentStatus;
+    if (itemName) filter.itemName = itemName;
+    if (paymentStatus) filter.paymentStatus = paymentStatus;
     if (birthdayId && mongoose.Types.ObjectId.isValid(birthdayId)) filter.birthdayId = birthdayId;
 
     if (search.trim()) {

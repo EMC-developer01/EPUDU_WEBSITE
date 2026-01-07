@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
-import Sidebar from "@/Components/Sidebar";
-import Header from "@/Components/Header";
+import Sidebar from "@/components/Sidebar";
+import Header from "@/components/Header";
 
 const ClientPaymentStatus = () => {
     const [events, setEvents] = useState([]);
@@ -122,6 +122,6 @@ const ClientPaymentStatus = () => {
             </div>
         </div>
     );
-}; 
+};
 
 export default ClientPaymentStatus;
