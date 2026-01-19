@@ -17,9 +17,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import toast from 'react-hot-toast';
-
-
-
+import { H3Icon } from '@heroicons/react/24/solid';
 
 
 // --- Helpers ---
@@ -98,7 +96,6 @@ export default function Birthday() {
     if (!cards.length) return;
     setCurrentBg(0);
   }, [cards]);
-
 
   let [step, setStep] = useState(1);
   let [birthdayId, setBirthdayId] = useState(null);
@@ -296,7 +293,6 @@ export default function Birthday() {
     step: 1,
   });
 
-
   const updateCost = (category, subCategory, price, isAdding, multiplyByGuests = false) => {
     const guestCount = Number(formData.timings.capacity) || 0;
 
@@ -351,8 +347,6 @@ export default function Birthday() {
     }));
   }, [costs.total]);
 
-
-
   // const calculateEntertainmentCost = () => {
   //   let total = 0;
 
@@ -400,7 +394,6 @@ export default function Birthday() {
   // useEffect(() => {
   //   calculateEntertainmentCost();
   // }, [formData.entertainment]);
-
 
   // const calculatePhotographyCost = () => {
   //   let total = 0;
@@ -468,11 +461,9 @@ export default function Birthday() {
   //   calculateEventStaffCost();
   // }, [formData.eventStaff]);
 
-
   useEffect(() => {
     console.log("📌 Total Event Cost:", costs.total);
   }, [costs.total]);
-
 
   const filterItems = (items) => {
     return items.filter(item => {
@@ -491,9 +482,6 @@ export default function Birthday() {
       return matchSearch && matchMealType && matchFoodTime && matchCuisine;
     });
   };
-
-
-
 
   useEffect(() => {
     fetchItems();
@@ -590,8 +578,6 @@ export default function Birthday() {
     if (savedBirthdayId) setBirthdayId(savedBirthdayId);
   }, []);
 
-
-
   const createEvent = async () => {
     console.log("👤 UserId from localStorage:", userId);
 
@@ -626,7 +612,6 @@ export default function Birthday() {
       return null;
     }
   };
-
 
   const handleNext = async () => {
     console.log(birthdayId)
@@ -741,7 +726,7 @@ export default function Birthday() {
   const [venues, setVenues] = useState(initialVenues);
 
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ""
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
     // libraries: ["places"],
   });
 
@@ -755,14 +740,6 @@ export default function Birthday() {
     const n = Number(num);
     return isNaN(n) ? "0.00" : n.toFixed(2);
   };
-
-
-
-
-
-
-
-
 
   // const getMainCourseItems = (mealType, mealTime, cuisine) => {
   //   if (!mealType || !mealTime || !cuisine) return {};
@@ -900,11 +877,6 @@ export default function Birthday() {
   //   { title: "🍎 Fruits", field: "fruits", category: "Fruits" },
   // ];
 
-
-
-
-
-
   useEffect(() => {
     const filterVenues = async () => {
       let center = { lat: 17.3850, lng: 78.4867 };
@@ -928,8 +900,6 @@ export default function Birthday() {
   }, [searchQuery, filterType, radius, filterStars]);
 
   if (loadError) return <div className="text-center text-red-500 mt-10">❌ Failed to load Google Maps</div>;
-
-
 
   useEffect(() => {
     const UserId = localStorage.getItem("userId");
@@ -1032,8 +1002,6 @@ export default function Birthday() {
     // UPDATE PRICE FUNCTION
     updateCost(parent, field, price, !formData[parent]?.[field]?.some(i => i._id === item._id), multiplyByGuests);
   };
-
-
 
   const handleCustomChange = (key, value) => {
     setFormData((prev) => ({
@@ -1141,9 +1109,6 @@ export default function Birthday() {
     "Your presence will make this birthday celebration truly special."
   ];
 
-
-
-
   // <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
   return (
@@ -1157,366 +1122,363 @@ export default function Birthday() {
             🎂 Birthday Event Booking
           </h2>
 
-          {step === 1 && (
-            <div className="w-full space-y-6 px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-24 mx-auto">
+          {step === 1 && isLoaded && (
+            <div className=' py-4 px-4 border-2 border-gray-400'>
+              <div className="w-full space-y-6 px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-24 mx-auto py-8 mb-4 ">
+                <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-pink- mb-8 text-center">
+                  📝 Person Details
+                </h5>
+                {/* Responsive Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
 
-              {/* Responsive Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
-
-                {/* Name */}
-                <div className="flex flex-col gap-2">
-                  <label className="font-medium">Name</label>
-                  <input
-                    type="text"
-                    name="celebrantName"
-                    value={formData.celebrantName ?? ""}
-                    onChange={handleChange}
-                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-                    placeholder="Enter Name"
-                    required
-                  />
-                </div>
-
-                {/* Theme */}
-                <div className="flex flex-col gap-2">
-                  <label className="font-medium">Theme</label>
-                  <input
-                    type="text"
-                    name="themePreference"
-                    value={formData.themePreference ?? ""}
-                    onChange={handleChange}
-                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-                    placeholder="Theme Preference"
-                  />
-                </div>
-
-                {/* Phone */}
-                <div className="flex flex-col gap-2">
-                  <label className="font-medium">Phone</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone ?? ""}
-                    onChange={handleChange}
-                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-                    placeholder="Enter Phone"
-                    required
-                  />
-                </div>
-
-                {/* Email */}
-                <div className="flex flex-col gap-2">
-                  <label className="font-medium">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email ?? ""}
-                    onChange={handleChange}
-                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-                    placeholder="Enter Email"
-                    required
-                  />
-                </div>
-
-                {/* Age */}
-                <div className="flex flex-col gap-2">
-                  <label className="font-medium">Age</label>
-                  <input
-                    type="number"
-                    name="age"
-                    value={formData.age ?? ""}
-                    onChange={handleChange}
-                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-                    placeholder="Enter Age"
-                  />
-                </div>
-
-                {/* Gender */}
-                <div className="flex flex-col gap-2">
-                  <label className="font-medium">Gender</label>
-                  <select
-                    name="gender"
-                    value={formData.gender ?? ""}
-                    onChange={handleChange}
-                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-                  >
-                    <option value="">Select</option>
-                    <option value="Girl">Girl</option>
-                    <option value="Boy">Boy</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-
-                {/* Event Date */}
-                <div className="flex flex-col gap-2">
-                  <label className="font-medium">Date</label>
-                  <DatePicker
-                    selected={formData.eventDate ? new Date(formData.eventDate) : null}
-                    onChange={(date) =>
-                      handleChange({
-                        target: {
-                          name: "eventDate",
-                          value: date ? date.toISOString().split("T")[0] : "",
-                        },
-                      })
-                    }
-                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-                    minDate={new Date()}
-                    placeholderText="Select Date"
-                    required
-                  />
-                </div>
-
-              </div>
-            </div>
-          )}
-
-
-
-          {/* === Step 2: Venue Selection === */}
-          {step === 2 && isLoaded && (
-            <div className=" w-full flex flex-col lg:flex-row gap-6 2xl:flex-row gap-8">
-
-              {/* Venue List */}
-              <div className="lg:w-1/2 space-y-4 overflow-y-auto max-h-[500px] border-r pr-4">
-                {venues.map((v) => (
-                  <div
-                    key={v.id}
-                    onClick={() => {
-                      setSelectedVenue(v);
-                      handleCustomChange("venue", {
-                        name: v.name,
-                        address: v.address || "",
-                        city: v.location || "",
-                        cost: v.cost || 0, // <-- Add cost here
-                      });
-                    }
-                    }
-                    className={`flex gap-4 p-4 border rounded-lg cursor-pointer transition-colors ${selectedVenue?.id === v.id ? "bg-pink-50 border-pink-400" : "hover:bg-gray-50"
-                      }`}
-                  >
-                    <img src={v.image} alt={v.name} className="w-24 h-24 object-cover rounded-lg" />
-                    <div className="flex flex-col justify-between">
-                      <h4 className="font-semibold">{v.name}</h4>
-                      <p className="text-sm text-gray-600">{v.type} | {v.location}</p>
-                      <p className="text-yellow-500 text-sm">{'★'.repeat(v.stars)}{'☆'.repeat(5 - v.stars)}</p>
-                      <p className="font-bold mt-1">₹ {v.cost}</p> {/* Display cost */}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Map & Confirmation */}
-              <div className="lg:w-1/2 flex flex-col">
-                <GoogleMap
-                  zoom={13}
-                  center={
-                    selectedVenue
-                      ? { lat: selectedVenue.lat, lng: selectedVenue.lng }
-                      : { lat: 17.3850, lng: 78.4867 }
-                  }
-                  mapContainerStyle={{ width: "100%", height: "400px", borderRadius: "12px" }}
-                >
-                  {venues.map((v) => (
-                    <Marker
-                      key={v.id}
-                      position={{ lat: v.lat, lng: v.lng }}
-                      onClick={() => setSelectedVenue(v)}
-                    />
-                  ))}
-                  {selectedVenue && (
-                    <InfoWindow
-                      position={{ lat: selectedVenue.lat, lng: selectedVenue.lng }}
-                      onCloseClick={() => setSelectedVenue(null)}
-                    >
-                      <div>{selectedVenue.name}</div>
-                    </InfoWindow>
-                  )}
-                </GoogleMap>
-
-                {selectedVenue && (
-                  <button
-                    onClick={nextStep}
-                    className="bg-pink-600 text-white px-6 py-2 rounded-lg mt-4 self-start"
-                  >
-                    Confirm Venue & Continue
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* === Step 3: Timing & Guests === */}
-          {step === 3 && (
-            <div className="flex flex-col lg:flex-row gap-6">
-
-              {/* Event Timings & Guest Details */}
-              <div className="lg:w-1/2 space-y-6">
-
-                {/* Date & Time */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Name */}
                   <div className="flex flex-col gap-2">
-                    <label className="font-medium">Event Date</label>
+                    <label className="font-medium">Name</label>
+                    <input
+                      type="text"
+                      name="celebrantName"
+                      value={formData.celebrantName ?? ""}
+                      onChange={handleChange}
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                      placeholder="Enter Name"
+                      required
+                    />
+                  </div>
+
+                  {/* Theme */}
+                  <div className="flex flex-col gap-2">
+                    <label className="font-medium">Theme</label>
+                    <input
+                      type="text"
+                      name="themePreference"
+                      value={formData.themePreference ?? ""}
+                      onChange={handleChange}
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                      placeholder="Theme Preference"
+                    />
+                  </div>
+
+                  {/* Phone */}
+                  <div className="flex flex-col gap-2">
+                    <label className="font-medium">Phone</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone ?? ""}
+                      onChange={handleChange}
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                      placeholder="Enter Phone"
+                      required
+                    />
+                  </div>
+
+                  {/* Email */}
+                  <div className="flex flex-col gap-2">
+                    <label className="font-medium">Email</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email ?? ""}
+                      onChange={handleChange}
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                      placeholder="Enter Email"
+                      required
+                    />
+                  </div>
+
+                  {/* Age */}
+                  <div className="flex flex-col gap-2">
+                    <label className="font-medium">Age</label>
+                    <input
+                      type="number"
+                      name="age"
+                      value={formData.age ?? ""}
+                      onChange={handleChange}
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                      placeholder="Enter Age"
+                    />
+                  </div>
+
+                  {/* Gender */}
+                  <div className="flex flex-col gap-2">
+                    <label className="font-medium">Gender</label>
+                    <select
+                      name="gender"
+                      value={formData.gender ?? ""}
+                      onChange={handleChange}
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                    >
+                      <option value="">Select</option>
+                      <option value="Girl">Girl</option>
+                      <option value="Boy">Boy</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  {/* Event Date */}
+                  <div className="flex flex-col gap-2">
+                    <label className="font-medium">Date</label>
                     <DatePicker
                       selected={formData.eventDate ? new Date(formData.eventDate) : null}
                       onChange={(date) =>
                         handleChange({
-                          target: { name: "timings.date", value: date.toISOString().split("T")[0] },
+                          target: {
+                            name: "eventDate",
+                            value: date ? date.toISOString().split("T")[0] : "",
+                          },
                         })
                       }
                       className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
                       minDate={new Date()}
                       placeholderText="Select Date"
+                      required
                     />
                   </div>
 
-                  <div className="flex flex-col gap-2">
-                    <label className="font-medium">Event Time</label>
-                    <input
-                      type="time"
-                      name="timings.time"
-                      value={formData.timings?.time || ""}
-                      onChange={handleChange}
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-                    />
-                  </div>
                 </div>
-
-                {/* Number of Guests */}
-                <div className="flex flex-col gap-2">
-                  <label className="font-medium">Number of Guests</label>
-                  <input
-                    type="number"
-                    name="timings.capacity"
-                    value={formData.timings?.capacity || ""}
-                    onChange={handleChange}
-                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-                    placeholder="Enter Number of Guests"
-                    min={1}
-                  />
-                </div>
-
               </div>
-
-              {/* Invitation Card Preview & Download */}
-              <div className="lg:w-1/2 flex flex-col items-center space-y-4">
-
-                {/* Background Selection */}
-                <div className="flex gap-3 flex-wrap justify-center">
-                  {cards.map(card => (
-                    <img
-                      key={card._id}
-                      src={`http://localhost:4000/${card.image}`}
-                      alt={card.cardName}
-                      className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-4 ${selectedCard?._id === card._id ? "border-blue-500" : "border-transparent"}`}
-                      onClick={() => setSelectedCard(card)}
-                    />
+              <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-pink- mb-8 text-center">
+                📝 venu Details
+              </h5>
+              <div className=" w-full flex flex-col lg:flex-row gap-6 2xl:flex-row gap-8 py-8 mb-4 ">
+                {/* Venue List */}
+                <div className="lg:w-1/2 space-y-4 overflow-y-auto max-h-[500px] border-r pr-4">
+                  {venues.map((v) => (
+                    <div
+                      key={v.id}
+                      onClick={() => {
+                        setSelectedVenue(v);
+                        handleCustomChange("venue", {
+                          name: v.name,
+                          address: v.address || "",
+                          city: v.location || "",
+                          cost: v.cost || 0, // <-- Add cost here
+                        });
+                      }
+                      }
+                      className={`flex gap-4 p-4 border rounded-lg cursor-pointer transition-colors ${selectedVenue?.id === v.id ? "bg-pink-50 border-pink-400" : "hover:bg-gray-50"
+                        }`}
+                    >
+                      <img src={v.image} alt={v.name} className="w-24 h-24 object-cover rounded-lg" />
+                      <div className="flex flex-col justify-between">
+                        <h4 className="font-semibold">{v.name}</h4>
+                        <p className="text-sm text-gray-600">{v.type} | {v.location}</p>
+                        <p className="text-yellow-500 text-sm">{'★'.repeat(v.stars)}{'☆'.repeat(5 - v.stars)}</p>
+                        <p className="font-bold mt-1">₹ {v.cost}</p> {/* Display cost */}
+                      </div>
+                    </div>
                   ))}
                 </div>
 
-                {/* Invitation Card Preview */}
-                {selectedVenue && (
-                  <div
-                    id="invitation-card"
-                    className="p-6 border-2 border-pink-300 rounded-2xl shadow-lg w-full max-w-md relative text-gray-800"
-                    style={{
-                      backgroundImage: selectedCard
-                        ? `url("http://localhost:4000/${selectedCard.image}")`
-                        : "linear-gradient(to bottom right, #fff, #fff9c4)",
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                      backgroundRepeat: "no-repeat",
-                    }}
+                {/* Map & Confirmation */}
+                <div className="lg:w-1/2 flex flex-col">
+                  <GoogleMap
+                    zoom={13}
+                    center={
+                      selectedVenue
+                        ? { lat: selectedVenue.lat, lng: selectedVenue.lng }
+                        : { lat: 17.3850, lng: 78.4867 }
+                    }
+                    mapContainerStyle={{ width: "100%", height: "400px", borderRadius: "12px" }}
                   >
-                    {/* Company Logo */}
-                    <img
-                      src="/logo/epudu-logo.png"
-                      alt="Epudu Logo"
-                      className="absolute top-4 left-4 w-14 h-14 object-contain"
-                    />
+                    {venues.map((v) => (
+                      <Marker
+                        key={v.id}
+                        position={{ lat: v.lat, lng: v.lng }}
+                        onClick={() => setSelectedVenue(v)}
+                      />
+                    ))}
+                    {selectedVenue && (
+                      <InfoWindow
+                        position={{ lat: selectedVenue.lat, lng: selectedVenue.lng }}
+                        onCloseClick={() => setSelectedVenue(null)}
+                      >
+                        <div>{selectedVenue.name}</div>
+                      </InfoWindow>
+                    )}
+                  </GoogleMap>
 
-                    {/* Invitation Content */}
-                    <div className="mt-12 text-center p-4 rounded-xl">
-                      <h3 className="text-3xl font-bold text-pink-600 mb-2">
-                        You’re Invited!
-                      </h3>
+                  {/* {selectedVenue && (
+                    <button
+                      onClick={nextStep}
+                      className="bg-pink-600 text-white px-6 py-2 rounded-lg mt-4 self-start"
+                    >
+                      Confirm Venue & Continue
+                    </button>
+                  )} */}
+                </div>
+              </div>
+              <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-pink- mb-8 text-center">
+                📝 Invitation Card
+              </h5>
+              <div className="flex flex-col lg:flex-row gap-6  py-8 mb-4">
+                {/* Event Timings & Guest Details */}
+                <div className="lg:w-1/2 space-y-6">
 
-                      <p className="italic text-gray-700 mb-3">
-                        {
-                          birthdayQuotes[
-                          Math.floor(Math.random() * birthdayQuotes.length)
-                          ]
+                  {/* Date & Time */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
+                      <label className="font-medium">Event Date</label>
+                      <DatePicker
+                        selected={formData.eventDate ? new Date(formData.eventDate) : null}
+                        onChange={(date) =>
+                          handleChange({
+                            target: { name: "timings.date", value: date.toISOString().split("T")[0] },
+                          })
                         }
-                      </p>
-
-                      <p className="text-xl font-semibold mb-2">
-                        🎂 {formData.celebrantName || "________"}’s Birthday 🎂
-                      </p>
-
-                      <p className="mb-1">
-                        <span className="font-semibold">Theme:</span>{" "}
-                        {formData.themePreference || "________"}
-                      </p>
-
-                      <p className="mb-1">
-                        <span className="font-semibold">Date:</span>{" "}
-                        {formData.eventDate || "________"}
-                      </p>
-
-                      <p className="mb-1">
-                        <span className="font-semibold">Time:</span>{" "}
-                        {formData.timings?.time || "________"}
-                      </p>
-
-                      <p className="mb-4">
-                        <span className="font-semibold">Venue:</span>{" "}
-                        {selectedVenue.name}, {selectedVenue.location}
-                      </p>
-
-                      <p className="text-sm italic text-gray-600">
-                        We look forward to celebrating with you!
-                      </p>
+                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                        minDate={new Date()}
+                        placeholderText="Select Date"
+                      />
                     </div>
 
-                    {/* Contact Info */}
-                    <p className="absolute bottom-3 right-4 text-xs text-gray-700">
-                      Contact: <span className="font-semibold">info@epudu.com</span>
-                    </p>
+                    <div className="flex flex-col gap-2">
+                      <label className="font-medium">Event Time</label>
+                      <input
+                        type="time"
+                        name="timings.time"
+                        value={formData.timings?.time || ""}
+                        onChange={handleChange}
+                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                      />
+                    </div>
                   </div>
-                )}
 
-                {/* Download Button */}
-                <button
-                  className="mt-4 bg-blue-500 text-white px-6 py-2 rounded-lg"
-                  onClick={() => {
-                    const card = document.getElementById("invitation-card");
-                    if (!card) return;
+                  {/* Number of Guests */}
+                  <div className="flex flex-col gap-2">
+                    <label className="font-medium">Number of Guests</label>
+                    <input
+                      type="number"
+                      name="timings.capacity"
+                      value={formData.timings?.capacity || ""}
+                      onChange={handleChange}
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                      placeholder="Enter Number of Guests"
+                      min={1}
+                    />
+                  </div>
 
-                    htmlToImage.toPng(card, {
-                      cacheBust: true,
-                      backgroundColor: null, // ensure transparency handled
-                    })
-                      .then((dataUrl) => {
-                        const link = document.createElement("a");
-                        link.download = `${formData.celebrantName || "invitation"}.png`;
-                        link.href = dataUrl;
-                        link.click();
+                </div>
+
+                {/* Invitation Card Preview & Download */}
+                <div className="lg:w-1/2 flex flex-col items-center space-y-4">
+
+                  {/* Background Selection */}
+                  <div className="flex gap-3 flex-wrap justify-center">
+                    {cards.map(card => (
+                      <img
+                        key={card._id}
+                        src={`http://localhost:4000/${card.image}`}
+                        alt={card.cardName}
+                        className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-4 ${selectedCard?._id === card._id ? "border-blue-500" : "border-transparent"}`}
+                        onClick={() => setSelectedCard(card)}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Invitation Card Preview */}
+                  {selectedVenue && (
+                    <div
+                      id="invitation-card"
+                      className="p-6 border-2 border-pink-300 rounded-2xl shadow-lg w-full max-w-md relative text-gray-800"
+                      style={{
+                        backgroundImage: selectedCard
+                          ? `url("http://localhost:4000/${selectedCard.image}")`
+                          : "linear-gradient(to bottom right, #fff, #fff9c4)",
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                      }}
+                    >
+                      {/* Company Logo */}
+                      <img
+                        src="/logo/epudu-logo.png"
+                        alt="Epudu Logo"
+                        className="absolute top-4 left-4 w-14 h-14 object-contain"
+                      />
+
+                      {/* Invitation Content */}
+                      <div className="mt-12 text-center p-4 rounded-xl">
+                        <h3 className="text-3xl font-bold text-pink-600 mb-2">
+                          You’re Invited!
+                        </h3>
+
+                        <p className="italic text-gray-700 mb-3">
+                          {
+                            birthdayQuotes[
+                            Math.floor(Math.random() * birthdayQuotes.length)
+                            ]
+                          }
+                        </p>
+
+                        <p className="text-xl font-semibold mb-2">
+                          🎂 {formData.celebrantName || "________"}’s Birthday 🎂
+                        </p>
+
+                        <p className="mb-1">
+                          <span className="font-semibold">Theme:</span>{" "}
+                          {formData.themePreference || "________"}
+                        </p>
+
+                        <p className="mb-1">
+                          <span className="font-semibold">Date:</span>{" "}
+                          {formData.eventDate || "________"}
+                        </p>
+
+                        <p className="mb-1">
+                          <span className="font-semibold">Time:</span>{" "}
+                          {formData.timings?.time || "________"}
+                        </p>
+
+                        <p className="mb-4">
+                          <span className="font-semibold">Venue:</span>{" "}
+                          {selectedVenue.name}, {selectedVenue.location}
+                        </p>
+
+                        <p className="text-sm italic text-gray-600">
+                          We look forward to celebrating with you!
+                        </p>
+                      </div>
+
+                      {/* Contact Info */}
+                      <p className="absolute bottom-3 right-4 text-xs text-gray-700">
+                        Contact: <span className="font-semibold">info@epudu.com</span>
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Download Button */}
+                  <button
+                    className="mt-4 bg-blue-500 text-white px-6 py-2 rounded-lg"
+                    onClick={() => {
+                      const card = document.getElementById("invitation-card");
+                      if (!card) return;
+
+                      htmlToImage.toPng(card, {
+                        cacheBust: true,
+                        backgroundColor: null, // ensure transparency handled
                       })
-                      .catch((err) => console.error("Invitation image error:", err));
-                  }}
-                >
-                  Download Invitation
-                </button>
+                        .then((dataUrl) => {
+                          const link = document.createElement("a");
+                          link.download = `${formData.celebrantName || "invitation"}.png`;
+                          link.href = dataUrl;
+                          link.click();
+                        })
+                        .catch((err) => console.error("Invitation image error:", err));
+                    }}
+                  >
+                    Download Invitation
+                  </button>
+                </div>
               </div>
-
             </div>
           )}
 
           {/* === Step 4: Decoration & Theme Setup === */}
-          {step === 4 && (
+          {step === 2 && (
             <div className="p-6 border-2 border-pink-300 rounded-2xl bg-gradient-to-r from-pink-50 to-yellow-50 shadow-lg">
               <h3 className="text-2xl font-bold text-pink-600 text-center mb-6">
-                🎀 Step 4: Decoration & Theme Preferences 🎀
+                🎀  Decoration & Theme Preferences 🎀
               </h3>
 
               {/* Theme */}
@@ -1830,7 +1792,7 @@ export default function Birthday() {
             </div>
           )}
 
-          {step === 5 && (
+          {step === 3 && (
             <div className="w-full space-y-10 pb-20 px-2 md:px-4">
               {/* Step Title */}
               <h3 className="text-2xl font-bold text-pink-600 text-center mb-6">
@@ -2081,10 +2043,10 @@ export default function Birthday() {
           )}
 
           {/* === Step 6: Entertainment & Activities === */}
-          {step === 6 && (
+          {step === 4 && (
             <div className="p-6 border-2 border-purple-300 rounded-2xl bg-gradient-to-r from-purple-50 to-blue-50 shadow-lg w-full">
               <h3 className="text-2xl font-bold text-purple-600 text-center mb-6">
-                🎉 Step 6: Entertainment & Activities
+                🎉 Entertainment & Activities
               </h3>
 
               {/* Emcee / Anchor */}
@@ -2223,332 +2185,325 @@ export default function Birthday() {
           )}
 
           {/* === Step 7: Photography & Videography === */}
-          {step === 7 && (
-            <div className="p-6 border-2 border-green-300 rounded-2xl bg-gradient-to-r from-green-50 to-yellow-50 shadow-lg w-full">
-              <h3 className="text-2xl font-bold text-green-600 text-center mb-6">
-                📸 Step 7: Photography & Videography
-              </h3>
+          {step === 5 && (
+            <div>
+              <div className="my-2 p-6 border-2 border-green-300 rounded-2xl bg-gradient-to-r from-green-50 to-yellow-50 shadow-lg w-full">
+                <h3 className="text-2xl font-bold text-green-600 text-center mb-6">
+                  📸 Photography & Videography
+                </h3>
 
-              {/* Team Requirement */}
-              <div className="mb-6">
-                <h4 className="text-lg font-semibold mb-2 text-gray-700">👥 Team Requirement</h4>
-
-                <div className="flex flex-wrap gap-6">
-                  {["Required", "Client's Own Team"].map((option) => (
-                    <label key={option} className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        name="photoTeam"
-                        value={option}
-                        checked={formData.photography.photoTeam === option}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            photography: {
-                              ...prev.photography,
-                              photoTeam: e.target.value,
-                            },
-                          }))
-                        }
-                      />
-                      {option}
-                    </label>
-                  ))}
-                </div>
-
-                {formData.photography.photoTeam === "Required" && (
-                  <input
-                    type="text"
-                    placeholder="Specify any preferences for photography/videography team"
-                    value={formData.photography.photoTeamDetails || ""}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        photography: {
-                          ...prev.photography,
-                          photoTeamDetails: e.target.value,
-                        },
-                      }))
-                    }
-                    className="border p-2 rounded w-full mt-3"
-                  />
-                )}
-              </div>
-
-              {/* Photography Team Items (Swiper) */}
-              {formData.photography.photoTeam === "Required" && photographyItems?.length > 0 && (
+                {/* Team Requirement */}
                 <div className="mb-6">
-                  <h4 className="text-lg font-semibold mb-3 text-green-700">
-                    🎥 Photography/Videography Packages
-                  </h4>
+                  <h4 className="text-lg font-semibold mb-2 text-gray-700">👥 Team Requirement</h4>
 
-                  <Swiper
-                    modules={[A11y]}
-                    loop={false}
-                    spaceBetween={8}
-                    slidesPerView={2}
-                    breakpoints={{
-                      640: { slidesPerView: 3 },
-                      768: { slidesPerView: 3 },
-                      1024: { slidesPerView: 4 },
-                      1280: { slidesPerView: 5 },
-                    }}
-                    className="w-full"
-                    grabCursor={true}
-                  >
-                    {photographyItems.map((item) => {
-                      const selectedArray = formData.photography.packageType || [];
-                      const isSelected = selectedArray?.some(i => i._id === item._id);
-
-                      let Price = item.price * 1.5;
-
-                      return (
-                        <SwiperSlide key={item._id} className="flex justify-center">
-                          <div
-                            onClick={() =>
-                              handleCheckboxChange(
-                                "photography",
-                                "packageType",
-                                item,
-                                Price,
-                                false
-                              )
-                            }
-                            className={`relative cursor-pointer transition-all duration-300 ${isSelected ? "scale-105 ring-4 ring-green-500 rounded-2xl" : ""
-                              }`}
-                          >
-                            <div className="w-full max-w-[160px] h-40">
-                              <ItemCard image={item.image} name={item.name} price={item.price} />
-                            </div>
-
-                            {isSelected && (
-                              <div className="absolute top-2 right-2 bg-green-600 text-white rounded-full p-1 text-xs">
-                                ✔
-                              </div>
-                            )}
-                          </div>
-                        </SwiperSlide>
-                      );
-                    })}
-                  </Swiper>
-
-                  {/* Other option */}
-                  <div className="mt-3 flex items-center gap-3">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={formData.photography.packageType?.includes("Other")}
-                        onChange={() =>
-                          handleCheckboxChange("photography", "packageType", "Other", "Other", 0, true)
-                        }
-                      />
-                      Other
-                    </label>
-
-                    {formData.photography.packageType?.includes("Other") && (
-                      <input
-                        type="text"
-                        placeholder="Specify other photography package"
-                        value={formData.photography.packageTypeOther || ""}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            photography: {
-                              ...prev.photography,
-                              packageTypeOther: e.target.value,
-                            },
-                          }))
-                        }
-                        className="border p-2 rounded w-full max-w-xl"
-                      />
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Instant Photo Options */}
-              <div>
-                <h4 className="text-lg font-semibold mb-2 text-gray-700">📷 Instant Photo Options</h4>
-
-                <div className="flex flex-col md:flex-row md:items-center md:gap-6 gap-3">
-                  {["Yes", "No", "Other"].map((option) => (
-                    <div key={option}>
-                      <label className="flex items-center gap-2">
+                  <div className="flex flex-wrap gap-6">
+                    {["Required", "Client's Own Team"].map((option) => (
+                      <label key={option} className="flex items-center gap-2">
                         <input
                           type="radio"
-                          name="photography.instantPhoto"
+                          name="photoTeam"
                           value={option}
-                          checked={formData.photography.instantPhoto === option}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            handleChange(e);
-
-                            updateCost(
-                              "photography",
-                              "instantPhoto",
-                              200,
-                              value === "Yes",
-                              true
-                            );
-                          }}
+                          checked={formData.photography.photoTeam === option}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              photography: {
+                                ...prev.photography,
+                                photoTeam: e.target.value,
+                              },
+                            }))
+                          }
                         />
                         {option}
                       </label>
+                    ))}
+                  </div>
 
-                      {option === "Other" && formData.photography.instantPhoto === "Other" && (
+                  {formData.photography.photoTeam === "Required" && (
+                    <input
+                      type="text"
+                      placeholder="Specify any preferences for photography/videography team"
+                      value={formData.photography.photoTeamDetails || ""}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          photography: {
+                            ...prev.photography,
+                            photoTeamDetails: e.target.value,
+                          },
+                        }))
+                      }
+                      className="border p-2 rounded w-full mt-3"
+                    />
+                  )}
+                </div>
+
+                {/* Photography Team Items (Swiper) */}
+                {formData.photography.photoTeam === "Required" && photographyItems?.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-lg font-semibold mb-3 text-green-700">
+                      🎥 Photography/Videography Packages
+                    </h4>
+
+                    <Swiper
+                      modules={[A11y]}
+                      loop={false}
+                      spaceBetween={8}
+                      slidesPerView={2}
+                      breakpoints={{
+                        640: { slidesPerView: 3 },
+                        768: { slidesPerView: 3 },
+                        1024: { slidesPerView: 4 },
+                        1280: { slidesPerView: 5 },
+                      }}
+                      className="w-full"
+                      grabCursor={true}
+                    >
+                      {photographyItems.map((item) => {
+                        const selectedArray = formData.photography.packageType || [];
+                        const isSelected = selectedArray?.some(i => i._id === item._id);
+
+                        let Price = item.price * 1.5;
+
+                        return (
+                          <SwiperSlide key={item._id} className="flex justify-center">
+                            <div
+                              onClick={() =>
+                                handleCheckboxChange(
+                                  "photography",
+                                  "packageType",
+                                  item,
+                                  Price,
+                                  false
+                                )
+                              }
+                              className={`relative cursor-pointer transition-all duration-300 ${isSelected ? "scale-105 ring-4 ring-green-500 rounded-2xl" : ""
+                                }`}
+                            >
+                              <div className="w-full max-w-[160px] h-40">
+                                <ItemCard image={item.image} name={item.name} price={item.price} />
+                              </div>
+
+                              {isSelected && (
+                                <div className="absolute top-2 right-2 bg-green-600 text-white rounded-full p-1 text-xs">
+                                  ✔
+                                </div>
+                              )}
+                            </div>
+                          </SwiperSlide>
+                        );
+                      })}
+                    </Swiper>
+
+                    {/* Other option */}
+                    <div className="mt-3 flex items-center gap-3">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={formData.photography.packageType?.includes("Other")}
+                          onChange={() =>
+                            handleCheckboxChange("photography", "packageType", "Other", "Other", 0, true)
+                          }
+                        />
+                        Other
+                      </label>
+
+                      {formData.photography.packageType?.includes("Other") && (
                         <input
                           type="text"
-                          placeholder="Specify other instant photo option"
-                          value={formData.photography.instantPhotoOther || ""}
+                          placeholder="Specify other photography package"
+                          value={formData.photography.packageTypeOther || ""}
                           onChange={(e) =>
-                            handleChange({
-                              target: {
-                                name: "photography.instantPhotoOther",
-                                value: e.target.value,
+                            setFormData((prev) => ({
+                              ...prev,
+                              photography: {
+                                ...prev.photography,
+                                packageTypeOther: e.target.value,
                               },
-                            })
+                            }))
                           }
-                          className="border p-2 rounded w-full mt-2"
+                          className="border p-2 rounded w-full max-w-xl"
                         />
                       )}
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* === Step 8: Return Gifts === */}
-          {step === 8 && (
-            <div className="p-6 border-2 border-purple-300 rounded-2xl bg-gradient-to-r from-purple-50 to-yellow-50 shadow-lg">
-              <h3 className="text-2xl font-bold text-purple-700 text-center mb-6">
-                🎁 Step 8: Return Gifts
-              </h3>
-
-              {/* Quantity */}
-              <div className="mb-6">
-                <label className="block font-semibold mb-2 text-gray-700">📦 Number of Gifts</label>
-                <input
-                  type="number"
-                  name="returnGifts.quantity"
-                  value={formData.returnGifts.quantity}
-                  min="0"
-                  onChange={(e) => {
-                    const oldQty = Number(formData.returnGifts.quantity) || 0;
-                    const newQty = Number(e.target.value) || 0;
-                    const price = Number(formData.returnGifts.budget) || 0;
-
-                    // REMOVE OLD COST
-                    if (oldQty > 0 && price > 0) {
-                      updateCost("returnGifts", "total", oldQty * price, false);
-                    }
-
-                    // ADD NEW COST
-                    if (newQty > 0 && price > 0) {
-                      updateCost("returnGifts", "total", newQty * price, true);
-                    }
-
-                    handleChange(e);
-                  }}
-                  className="w-full p-3 border rounded-lg"
-                  placeholder="Enter number of gifts"
-                />
-              </div>
-
-              {/* Cost per Gift */}
-              <div className="mb-6">
-                <label className="block font-semibold mb-2 text-gray-700">💰 Cost Per Gift</label>
-                <input
-                  type="number"
-                  name="returnGifts.budget"
-                  value={formData.returnGifts.budget}
-                  min="0"
-                  onChange={(e) => {
-                    const oldPrice = Number(formData.returnGifts.budget) || 0;
-                    const newPrice = Number(e.target.value) || 0;
-                    const qty = Number(formData.returnGifts.quantity) || 0;
-
-                    if (qty > 0) {
-                      // Remove old total
-                      if (oldPrice > 0) updateCost("returnGifts", "total", qty * oldPrice, false);
-
-                      // Add new total
-                      if (newPrice > 0) updateCost("returnGifts", "total", qty * newPrice, true);
-                    }
-
-                    handleChange(e);
-                  }}
-                  className="w-full p-3 border rounded-lg"
-                  placeholder="Enter cost per gift"
-                />
-              </div>
-
-              {/* Gift Type Selection */}
-              <div className="mb-6">
-                <label className="block font-semibold mb-2 text-gray-700">🎁 Gift Type</label>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                  {["Toys", "Sweets", "Customized Gift Hampers", "Other"].map((type) => (
-                    <label key={type} className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="returnGifts.giftType"
-                        value={type}
-                        checked={formData.returnGifts.giftType === type}
-                        onChange={(e) => {
-                          handleChange(e);
-                          if (type !== "Other") {
-                            setFormData(prev => ({
-                              ...prev,
-                              returnGifts: { ...prev.returnGifts, giftTypeOther: "" }
-                            }));
-                          }
-                        }}
-                      />
-                      {type}
-                    </label>
-                  ))}
-                </div>
-
-                {/* Custom gift type */}
-                {formData.returnGifts.giftType === "Other" && (
-                  <input
-                    type="text"
-                    name="returnGifts.giftTypeOther"
-                    value={formData.returnGifts.giftTypeOther}
-                    onChange={handleChange}
-                    className="w-full p-3 border rounded-lg mt-3"
-                    placeholder="Specify other gift type"
-                  />
+                  </div>
                 )}
+
+                {/* Instant Photo Options */}
+                <div>
+                  <h4 className="text-lg font-semibold mb-2 text-gray-700">📷 Instant Photo Options</h4>
+
+                  <div className="flex flex-col md:flex-row md:items-center md:gap-6 gap-3">
+                    {["Yes", "No", "Other"].map((option) => (
+                      <div key={option}>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="photography.instantPhoto"
+                            value={option}
+                            checked={formData.photography.instantPhoto === option}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              handleChange(e);
+
+                              updateCost(
+                                "photography",
+                                "instantPhoto",
+                                200,
+                                value === "Yes",
+                                true
+                              );
+                            }}
+                          />
+                          {option}
+                        </label>
+
+                        {option === "Other" && formData.photography.instantPhoto === "Other" && (
+                          <input
+                            type="text"
+                            placeholder="Specify other instant photo option"
+                            value={formData.photography.instantPhotoOther || ""}
+                            onChange={(e) =>
+                              handleChange({
+                                target: {
+                                  name: "photography.instantPhotoOther",
+                                  value: e.target.value,
+                                },
+                              })
+                            }
+                            className="border p-2 rounded w-full mt-2"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
+              <div className="my-2 p-6 border-2 border-purple-300 rounded-2xl bg-gradient-to-r from-purple-50 to-yellow-50 shadow-lg">
+                <h3 className="text-2xl font-bold text-purple-700 text-center mb-6">
+                  Return Gifts
+                </h3>
 
-              {/* Notes */}
-              <div className="mb-6">
-                <label className="block font-semibold mb-2 text-gray-700">📝 Notes / Instructions</label>
-                <textarea
-                  name="returnGifts.notes"
-                  value={formData.returnGifts.notes}
-                  onChange={handleChange}
-                  className="w-full p-3 border rounded-lg"
-                  rows="3"
-                  placeholder="Any special gift instructions..."
-                ></textarea>
+                {/* Quantity */}
+                <div className="mb-6">
+                  <label className="block font-semibold mb-2 text-gray-700">📦 Number of Gifts</label>
+                  <input
+                    type="number"
+                    name="returnGifts.quantity"
+                    value={formData.returnGifts.quantity}
+                    min="0"
+                    onChange={(e) => {
+                      const oldQty = Number(formData.returnGifts.quantity) || 0;
+                      const newQty = Number(e.target.value) || 0;
+                      const price = Number(formData.returnGifts.budget) || 0;
+
+                      // REMOVE OLD COST
+                      if (oldQty > 0 && price > 0) {
+                        updateCost("returnGifts", "total", oldQty * price, false);
+                      }
+
+                      // ADD NEW COST
+                      if (newQty > 0 && price > 0) {
+                        updateCost("returnGifts", "total", newQty * price, true);
+                      }
+
+                      handleChange(e);
+                    }}
+                    className="w-full p-3 border rounded-lg"
+                    placeholder="Enter number of gifts"
+                  />
+                </div>
+
+                {/* Cost per Gift */}
+                <div className="mb-6">
+                  <label className="block font-semibold mb-2 text-gray-700">💰 Cost Per Gift</label>
+                  <input
+                    type="number"
+                    name="returnGifts.budget"
+                    value={formData.returnGifts.budget}
+                    min="0"
+                    onChange={(e) => {
+                      const oldPrice = Number(formData.returnGifts.budget) || 0;
+                      const newPrice = Number(e.target.value) || 0;
+                      const qty = Number(formData.returnGifts.quantity) || 0;
+
+                      if (qty > 0) {
+                        // Remove old total
+                        if (oldPrice > 0) updateCost("returnGifts", "total", qty * oldPrice, false);
+
+                        // Add new total
+                        if (newPrice > 0) updateCost("returnGifts", "total", qty * newPrice, true);
+                      }
+
+                      handleChange(e);
+                    }}
+                    className="w-full p-3 border rounded-lg"
+                    placeholder="Enter cost per gift"
+                  />
+                </div>
+
+                {/* Gift Type Selection */}
+                <div className="mb-6">
+                  <label className="block font-semibold mb-2 text-gray-700">🎁 Gift Type</label>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {["Toys", "Sweets", "Customized Gift Hampers", "Other"].map((type) => (
+                      <label key={type} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="returnGifts.giftType"
+                          value={type}
+                          checked={formData.returnGifts.giftType === type}
+                          onChange={(e) => {
+                            handleChange(e);
+                            if (type !== "Other") {
+                              setFormData(prev => ({
+                                ...prev,
+                                returnGifts: { ...prev.returnGifts, giftTypeOther: "" }
+                              }));
+                            }
+                          }}
+                        />
+                        {type}
+                      </label>
+                    ))}
+                  </div>
+
+                  {/* Custom gift type */}
+                  {formData.returnGifts.giftType === "Other" && (
+                    <input
+                      type="text"
+                      name="returnGifts.giftTypeOther"
+                      value={formData.returnGifts.giftTypeOther}
+                      onChange={handleChange}
+                      className="w-full p-3 border rounded-lg mt-3"
+                      placeholder="Specify other gift type"
+                    />
+                  )}
+                </div>
+
+                {/* Notes */}
+                <div className="mb-6">
+                  <label className="block font-semibold mb-2 text-gray-700">📝 Notes / Instructions</label>
+                  <textarea
+                    name="returnGifts.notes"
+                    value={formData.returnGifts.notes}
+                    onChange={handleChange}
+                    className="w-full p-3 border rounded-lg"
+                    rows="3"
+                    placeholder="Any special gift instructions..."
+                  ></textarea>
+                </div>
               </div>
-            </div>
-          )}
+              <div className="my-2 p-6 border-2 border-green-300 rounded-2xl bg-gradient-to-r from-green-50 to-yellow-50 shadow-lg">
+                <h3 className="text-2xl font-bold text-green-700 text-center mb-6">
+                  👥 Event Staff / Management Team
+                </h3>
 
-          {/* === Step 9: Event Staff / Management Team === */}
-          {step === 9 && (
-            <div className="p-6 border-2 border-green-300 rounded-2xl bg-gradient-to-r from-green-50 to-yellow-50 shadow-lg">
-              <h3 className="text-2xl font-bold text-green-700 text-center mb-6">
-                👥 Step 9: Event Staff / Management Team
-              </h3>
-
-              {/* Food & Reception Team */}
-              <div className="mb-6">
-                <h4 className="text-lg font-semibold mb-3 text-gray-800">🍽 Food & Reception Team</h4>
-                {/* {["foodServers", "welcomeStaff"].map((role) => (
+                {/* Food & Reception Team */}
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold mb-3 text-gray-800">🍽 Food & Reception Team</h4>
+                  {/* {["foodServers", "welcomeStaff"].map((role) => (
                   <div className="mb-4" key={role}>
                     <label className="block font-medium mb-1 text-gray-700">
                       {role === "foodServers" ? "Number of Food Servers" : "Number of Welcome / Reception Staff"}
@@ -2577,113 +2532,113 @@ export default function Birthday() {
                     />
                   </div>
                 ))} */}
-                <div className="mb-6">
-                  <label className="block font-semibold mb-2 text-gray-700">Number of Food Servers</label>
-                  <input
-                    type="number"
-                    name="eventStaff.foodServers"
-                    value={formData.eventStaff.foodServers}
-                    min="0"
-                    onChange={(e) => {
-                      const oldCount = Number(formData.eventStaff.foodServers) || 0;
-                      const newCount = Number(e.target.value) || 0;
+                  <div className="mb-6">
+                    <label className="block font-semibold mb-2 text-gray-700">Number of Food Servers</label>
+                    <input
+                      type="number"
+                      name="eventStaff.foodServers"
+                      value={formData.eventStaff.foodServers}
+                      min="0"
+                      onChange={(e) => {
+                        const oldCount = Number(formData.eventStaff.foodServers) || 0;
+                        const newCount = Number(e.target.value) || 0;
 
-                      // REMOVE old cost
-                      if (oldCount > 0) {
-                        updateCost("eventStaff", "foodServers", oldCount * 1500, false);
-                      }
+                        // REMOVE old cost
+                        if (oldCount > 0) {
+                          updateCost("eventStaff", "foodServers", oldCount * 1500, false);
+                        }
 
-                      // ADD new cost
-                      if (newCount > 0) {
-                        updateCost("eventStaff", "foodServers", newCount * 1500, true);
-                      }
+                        // ADD new cost
+                        if (newCount > 0) {
+                          updateCost("eventStaff", "foodServers", newCount * 1500, true);
+                        }
 
-                      handleChange(e);
-                    }}
-                    className="w-full p-3 border rounded-lg"
-                    placeholder="Enter count"
-                  />
+                        handleChange(e);
+                      }}
+                      className="w-full p-3 border rounded-lg"
+                      placeholder="Enter count"
+                    />
+                  </div>
+
+                  <div className="mb-6">
+                    <label className="block font-semibold mb-2 text-gray-700">Welcome / Reception Staff</label>
+                    <input
+                      type="number"
+                      name="eventStaff.welcomeStaff"
+                      value={formData.eventStaff.welcomeStaff}
+                      min="0"
+                      onChange={(e) => {
+                        const oldCount = Number(formData.eventStaff.welcomeStaff) || 0;
+                        const newCount = Number(e.target.value) || 0;
+
+                        if (oldCount > 0) {
+                          updateCost("eventStaff", "welcomeStaff", oldCount * 1500, false);
+                        }
+                        if (newCount > 0) {
+                          updateCost("eventStaff", "welcomeStaff", newCount * 1500, true);
+                        }
+
+                        handleChange(e);
+                      }}
+                      className="w-full p-3 border rounded-lg"
+                      placeholder="Enter count"
+                    />
+                  </div>
+                  <div className="mb-6">
+                    <label className="block font-semibold mb-2 text-gray-700">Maintenance Team Members</label>
+                    <input
+                      type="number"
+                      name="eventStaff.maintenanceTeam"
+                      value={formData.eventStaff.maintenanceTeam}
+                      min="0"
+                      onChange={(e) => {
+                        const oldCount = Number(formData.eventStaff.maintenanceTeam) || 0;
+                        const newCount = Number(e.target.value) || 0;
+
+                        if (oldCount > 0) {
+                          updateCost("eventStaff", "maintenanceTeam", oldCount * 1500, false);
+                        }
+                        if (newCount > 0) {
+                          updateCost("eventStaff", "maintenanceTeam", newCount * 1500, true);
+                        }
+
+                        handleChange(e);
+                      }}
+                      className="w-full p-3 border rounded-lg"
+                      placeholder="Enter count"
+                    />
+                  </div>
+
+                  {/* Other Roles */}
+                  <div className="mb-6">
+                    <label className="block font-semibold mb-2 text-gray-700">Other Roles (If any)</label>
+                    <input
+                      type="text"
+                      name="eventStaff.otherRoles"
+                      value={formData.eventStaff.otherRoles}
+                      onChange={handleChange}
+                      className="w-full p-3 border rounded-lg"
+                      placeholder="E.g., Supervisors, Helpers, etc."
+                    />
+                  </div>
+
+                  {/* Notes */}
+                  <div>
+                    <label className="block font-semibold mb-2 text-gray-700">Special Notes / Instructions</label>
+                    <textarea
+                      name="eventStaff.staffNotes"
+                      value={formData.eventStaff.staffNotes}
+                      onChange={handleChange}
+                      className="w-full p-3 border rounded-lg"
+                      rows="3"
+                      placeholder="Add any extra instructions..."
+                    ></textarea>
+                  </div>
+
                 </div>
 
-                <div className="mb-6">
-                  <label className="block font-semibold mb-2 text-gray-700">Welcome / Reception Staff</label>
-                  <input
-                    type="number"
-                    name="eventStaff.welcomeStaff"
-                    value={formData.eventStaff.welcomeStaff}
-                    min="0"
-                    onChange={(e) => {
-                      const oldCount = Number(formData.eventStaff.welcomeStaff) || 0;
-                      const newCount = Number(e.target.value) || 0;
-
-                      if (oldCount > 0) {
-                        updateCost("eventStaff", "welcomeStaff", oldCount * 1500, false);
-                      }
-                      if (newCount > 0) {
-                        updateCost("eventStaff", "welcomeStaff", newCount * 1500, true);
-                      }
-
-                      handleChange(e);
-                    }}
-                    className="w-full p-3 border rounded-lg"
-                    placeholder="Enter count"
-                  />
-                </div>
-                <div className="mb-6">
-                  <label className="block font-semibold mb-2 text-gray-700">Maintenance Team Members</label>
-                  <input
-                    type="number"
-                    name="eventStaff.maintenanceTeam"
-                    value={formData.eventStaff.maintenanceTeam}
-                    min="0"
-                    onChange={(e) => {
-                      const oldCount = Number(formData.eventStaff.maintenanceTeam) || 0;
-                      const newCount = Number(e.target.value) || 0;
-
-                      if (oldCount > 0) {
-                        updateCost("eventStaff", "maintenanceTeam", oldCount * 1500, false);
-                      }
-                      if (newCount > 0) {
-                        updateCost("eventStaff", "maintenanceTeam", newCount * 1500, true);
-                      }
-
-                      handleChange(e);
-                    }}
-                    className="w-full p-3 border rounded-lg"
-                    placeholder="Enter count"
-                  />
-                </div>
-
-                {/* Other Roles */}
-                <div className="mb-6">
-                  <label className="block font-semibold mb-2 text-gray-700">Other Roles (If any)</label>
-                  <input
-                    type="text"
-                    name="eventStaff.otherRoles"
-                    value={formData.eventStaff.otherRoles}
-                    onChange={handleChange}
-                    className="w-full p-3 border rounded-lg"
-                    placeholder="E.g., Supervisors, Helpers, etc."
-                  />
-                </div>
-
-                {/* Notes */}
-                <div>
-                  <label className="block font-semibold mb-2 text-gray-700">Special Notes / Instructions</label>
-                  <textarea
-                    name="eventStaff.staffNotes"
-                    value={formData.eventStaff.staffNotes}
-                    onChange={handleChange}
-                    className="w-full p-3 border rounded-lg"
-                    rows="3"
-                    placeholder="Add any extra instructions..."
-                  ></textarea>
-                </div>
-
-              </div>
-
-              {/* Maintenance & Handling Team */}
-              {/* <div className="mb-6">
+                {/* Maintenance & Handling Team */}
+                {/* <div className="mb-6">
                 <h4 className="text-lg font-semibold mb-3 text-gray-800">🛠 Maintenance & Handling Team</h4>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
@@ -2730,8 +2685,8 @@ export default function Birthday() {
                 </div>
               </div> */}
 
-              {/* Notes */}
-              {/* <div className="mb-6">
+                {/* Notes */}
+                {/* <div className="mb-6">
                 <label className="block font-semibold mb-2 text-gray-700">📝 Special Notes / Instructions</label>
                 <textarea
                   value={formData.eventStaff.staffNotes || ""}
@@ -2747,18 +2702,19 @@ export default function Birthday() {
                 />
               </div> */}
 
-              {/* Total Staff Cost */}
-              {/* <div className="mt-6 p-4 bg-white rounded-xl shadow text-center font-semibold text-green-700 border border-green-200">
+                {/* Total Staff Cost */}
+                {/* <div className="mt-6 p-4 bg-white rounded-xl shadow text-center font-semibold text-green-700 border border-green-200">
                 Total Staff Cost: ₹{formData.costs?.eventStaffCost || 0}
               </div> */}
+              </div>
             </div>
           )}
 
-          {step === 10 && (
+          {step === 6 && (
             <div className="p-6 border-2 border-pink-300 rounded-2xl bg-gradient-to-r from-pink-50 to-yellow-50 shadow-lg">
 
               <h3 className="text-2xl font-bold text-pink-600 text-center mb-6">
-                💰 Step 10: Budget & Payment Details
+                💰 Budget & Payment Details
               </h3>
 
               <div className="space-y-4">
@@ -2884,7 +2840,6 @@ export default function Birthday() {
             </div>
           )}
 
-
           {/* Navigation */}
           <div className="flex justify-between mt-6">
             {step > 1 && (
@@ -2900,7 +2855,7 @@ export default function Birthday() {
               </button>
             )}
 
-            {step < 10 && (
+            {step < 6 && (
               <button
                 onClick={() => {
                   // createEvent();
@@ -2914,7 +2869,7 @@ export default function Birthday() {
               </button>
             )}
 
-            {step === 10 && (
+            {step === 6 && (
               <button
                 onClick={async () => {
                   try {
@@ -3154,6 +3109,7 @@ export default function Birthday() {
             )}
 
           </div>
+
         </div>
       </section >
       <Footer />

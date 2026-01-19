@@ -99,7 +99,7 @@ export default function Events() {
         setFiltered(data);
     }, [filters, events]);
 
-    const handleEdit = (event) => navigate(`/events/eventedits/${event._id}`);
+    const handleEdit = (event) => navigate(`/events/eventedit/${event._id}`);
 
     const handleChange = (e) =>
         setFormData({ ...formData, [e.target.name]: e.target.value });
