@@ -36,6 +36,7 @@ const Login = ({ onClose }) => {
 
       if (data.success) {
         setSessionId(data.sessionId);
+        alert(`Your OTP is: ${data.otp}`);
         setStep("otp");
         alert("OTP sent successfully");
       } else {
@@ -88,7 +89,7 @@ const Login = ({ onClose }) => {
       const res = await fetch("http://localhost:4000/api/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ otp, sessionId }),
+        body: JSON.stringify({ otp, mobile }),
       });
 
       const data = await res.json();
@@ -168,10 +169,6 @@ const Login = ({ onClose }) => {
     }
   }, []);
 
-
-
-
-
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
       <div className="relative bg-white/90 rounded-xl shadow-2xl p-8 w-[90%] max-w-sm mx-auto">
@@ -248,6 +245,7 @@ const Login = ({ onClose }) => {
             </button>
           </form>
         )}
+        
       </div>
     </div>
   );

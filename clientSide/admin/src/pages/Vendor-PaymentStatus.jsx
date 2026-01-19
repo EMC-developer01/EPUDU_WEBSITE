@@ -5,25 +5,27 @@ import Header from "@/components/Header";
 
 const VendorPaymentStatus = () => {
     const [sidebarOpen, setSidebarOpen] = useState(true);
-    const [payments, setPayments] = useState([]);
+    const [orders, setOrders] = useState([]);
     const [search, setSearch] = useState("");
 
     useEffect(() => {
-        fetch("http://localhost:4000/api/payment/all")
-            .then((res) => res.json())
-            .then(setPayments)
+        fetch("http://localhost:4000/api/vendor/orders/")
+            .then(res => res.json())
+            .then(res => setOrders(res.data || []))
             .catch(console.error);
     }, []);
 
-    const filteredPayments = payments.filter((p) => {
+    const filteredOrders = orders.filter(o => {
         const q = search.toLowerCase();
+
         return (
-            (p.vendorName || "").toLowerCase().includes(q) ||
-            (p.serviceType || "").toLowerCase().includes(q) ||
-            (p.vendorId || "").toLowerCase().includes(q) ||
-            (p.paymentId || "").toLowerCase().includes(q) ||
-            String(p.amount || "").includes(q) ||
-            (p.status || "").toLowerCase().includes(q)
+            (o.itemName || "").toLowerCase().includes(q) ||
+            (o.vendorId || "").toLowerCase().includes(q) ||
+            (o.celebrantName || "").toLowerCase().includes(q) ||
+            (o.category || "").toLowerCase().includes(q) ||
+            (o.subcategory || "").toLowerCase().includes(q) ||
+            (o.paymentStatus || "").toLowerCase().includes(q) ||
+            (o.status || "").toLowerCase().includes(q)
         );
     });
 
@@ -36,68 +38,90 @@ const VendorPaymentStatus = () => {
 
                 <main className="flex-1 w-full overflow-y-auto px-4 sm:px-6 py-6">
                     <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-x-auto">
+
+                        {/* 🔍 Search */}
                         <div className="flex items-center gap-2 p-4">
                             <Search className="w-4 h-4 text-gray-500" />
                             <input
                                 type="text"
-                                placeholder="Search vendor, service, payment, amount, status..."
+                                placeholder="Search vendor, item, category, status..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="w-full sm:w-96 px-3 py-2 border rounded-md focus:outline-none focus:ring"
                             />
                         </div>
 
-                        <table className="w-full min-w-[900px] border border-gray-200 border-collapse">
+                        {/* 📊 Table */}
+                        <table className="w-full min-w-[1100px] border border-gray-200 border-collapse">
                             <thead className="bg-gray-100 text-gray-700 text-sm">
                                 <tr>
-                                    <th className="px-4 py-3 text-left border">#</th>
-                                    <th className="px-4 py-3 text-left border">Vendor Name</th>
-                                    <th className="px-4 py-3 text-left border">Service Type</th>
-                                    <th className="px-4 py-3 text-left border">Date</th>
-                                    <th className="px-4 py-3 text-left border">Vendor ID</th>
-                                    <th className="px-4 py-3 text-left border">Payment ID</th>
-                                    <th className="px-4 py-3 text-left border">Amount Paid (₹)</th>
-                                    <th className="px-4 py-3 text-left border">Payment Status</th>
+                                    <th className="px-4 py-3 border">#</th>
+                                    <th className="px-4 py-3 border">Vendor ID</th>
+                                    <th className="px-4 py-3 border">Item</th>
+                                    <th className="px-4 py-3 border">Category</th>
+                                    <th className="px-4 py-3 border">Celebrant</th>
+                                    <th className="px-4 py-3 border">Event Date</th>
+                                    <th className="px-4 py-3 border">Price (₹)</th>
+                                    <th className="px-4 py-3 border">Order Status</th>
+                                    <th className="px-4 py-3 border">Payment Status</th>
                                 </tr>
                             </thead>
 
                             <tbody className="text-sm">
-                                {filteredPayments.map((row, i) => (
-                                    <tr
-                                        key={row._id || i}
-                                        className="hover:bg-gray-50 transition"
-                                    >
+                                {filteredOrders.map((row, i) => (
+                                    <tr key={row._id} className="hover:bg-gray-50">
                                         <td className="px-4 py-2 border">{i + 1}</td>
-                                        <td className="px-4 py-2 border">{row.vendorName || "-"}</td>
-                                        <td className="px-4 py-2 border">{row.serviceType || "-"}</td>
-                                        <td className="px-4 py-2 border">{row.date || "-"}</td>
-                                        <td className="px-4 py-2 border truncate max-w-[160px]">
+
+                                        <td className="px-4 py-2 border">
                                             {row.vendorId || "-"}
                                         </td>
-                                        <td className="px-4 py-2 border truncate max-w-[160px]">
-                                            {row.paymentId || "-"}
+
+                                        <td className="px-4 py-2 border">
+                                            {row.itemName || "-"}
                                         </td>
+
+                                        <td className="px-4 py-2 border">
+                                            {row.category} / {row.subcategory}
+                                        </td>
+
+                                        <td className="px-4 py-2 border">
+                                            {row.celebrantName || "-"}
+                                        </td>
+
+                                        <td className="px-4 py-2 border">
+                                            {row.eventDate || "-"}
+                                        </td>
+
                                         <td className="px-4 py-2 border font-medium">
-                                            ₹{Number(row.amount || 0).toFixed(2)}
+                                            ₹{Number(row.price || 0).toFixed(2)}
                                         </td>
+
+                                        <td className="px-4 py-2 border">
+                                            {row.status}
+                                        </td>
+
                                         <td className="px-4 py-2 border">
                                             <span
                                                 className={
-                                                    row.status === "success"
+                                                    row.paymentStatus === "Completed" || row.paymentStatus === "Full Paid"
                                                         ? "text-green-600 font-semibold"
-                                                        : "text-yellow-600 font-semibold"
+                                                        : row.paymentStatus === "Advance Paid"
+                                                            ? "text-blue-600 font-semibold"
+                                                            : row.paymentStatus === "Cancelled"
+                                                                ? "text-red-600 font-semibold"
+                                                                : "text-yellow-600 font-semibold"
                                                 }
                                             >
-                                                {row.status === "success" ? "Paid" : "Pending"}
+                                                {row.paymentStatus}
                                             </span>
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
+
                     </div>
                 </main>
-
             </div>
         </div>
     );

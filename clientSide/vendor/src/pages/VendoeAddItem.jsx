@@ -22,7 +22,7 @@ export default function VendorAddItem() {
 
     const [preview, setPreview] = useState(null);
     const [items, setItems] = useState([]);
-    const [vendorId, setVendorId] = useState([]);
+    const [vendorId, setVendorId] = useState('');
     const [editingId, setEditingId] = useState(null);
     const [selectedItems, setSelectedItems] = useState([]);
     const [filters, setFilters] = useState({
@@ -90,8 +90,8 @@ export default function VendorAddItem() {
 
     const resetForm = () => {
         setEditingId(null);
-        setFormData({
-            vendorId: "",
+        setFormData((prev) => ({
+            ...prev,
             name: "",
             price: "",
             discount: "",
@@ -105,12 +105,13 @@ export default function VendorAddItem() {
             gamesAges: "",
             PhotographyPackage: "",
             image: null,
-        });
+        }));
         setPreview(null);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         const fd = new FormData();
         Object.keys(formData).forEach((key) => fd.append(key, formData[key]));
         try {
@@ -119,9 +120,14 @@ export default function VendorAddItem() {
             });
             alert("Item Added Successfully!");
             resetForm();
-            fetchItems();
+            // fetchItems();
         } catch (err) {
             alert("Failed to add item");
+        }
+        try {
+            fetchItems();
+        } catch (err) {
+            console.log("Fetch failed after add", err);
         }
     };
 

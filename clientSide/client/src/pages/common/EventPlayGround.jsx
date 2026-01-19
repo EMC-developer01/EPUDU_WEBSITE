@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 const logoLetters = ["E", "P", "U", "D", "U"];
+const fallback = "/default.jpg";
 
 const API = "http://localhost:4000/api/admin/Client-homepages-images/all";
 const IMAGE_BASE = "http://localhost:4000/uploads/homepageImages";
@@ -20,15 +21,13 @@ export default function EventGalaxyPanel() {
                 const res = await axios.get(API);
 
                 const activeEvents = res.data.filter(item => item.isActive);
+                console.log(activeEvents),
 
-                setEvents(activeEvents);
+
+                    setEvents(activeEvents);
 
                 // Pick 5 images for EPUDU letters
-                const selectedImages = [
-                    ...activeEvents.filter(e => e.eventName === "Wedding").slice(0, 2),
-                    ...activeEvents.filter(e => e.eventName === "Birthday").slice(0, 2),
-                    ...activeEvents.filter(e => e.eventName === "Functions").slice(0, 1),
-                ];
+                const selectedImages = activeEvents.slice(0, 5);
                 console.log(selectedImages);
 
                 const imagesForLetters = selectedImages.map(i => `${IMAGE_BASE}/${i.image}`);

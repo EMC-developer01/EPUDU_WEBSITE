@@ -32,12 +32,14 @@ const Login = ({ onClose }) => {
             const res = await fetch(`${API_URL}/send-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ mobile: fullMobile, otp: otpCode }),
+                body: JSON.stringify({ mobile }),
             });
-
-            if (res.ok) alert("OTP sent to your mobile number");
+            const data = await res.json();
+            if (data.success) {
+                alert(`Vendor OTP: ${data.otp}`);
+                setStep("otp");
+            }
             else {
-                const data = await res.json();
                 alert("Failed to send OTP: " + (data.details || data.message));
             }
         } catch (err) {
@@ -50,16 +52,23 @@ const Login = ({ onClose }) => {
     const handleVerifyOtp = async (e) => {
         e.preventDefault();
 
-        if (otp !== generatedOtp) {
-            alert("Invalid OTP! Please try again.");
+        const res = await fetch(`${API_URL}/verify-otp`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mobile, otp }),
+        });
+        const data = await res.json();
+
+        if (!data.verified) {
+            alert("Invalid OTP");
             return;
         }
 
         const fullMobile = `+91${mobile}`;
 
         try {
-            const res = await fetch(`${API_URL}/vendor/users/${encodeURIComponent(fullMobile)}`);
-            const data = await res.json();
+            const vendorres = await fetch(`${API_URL}/vendor/users/${encodeURIComponent(fullMobile)}`);
+            const data = await vendorres.json();
 
             if (res.ok && data.vendor) {
                 // ✅ Vendor exists — login directly

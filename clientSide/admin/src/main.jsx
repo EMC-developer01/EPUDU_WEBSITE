@@ -15,6 +15,7 @@ import ClientBanner from "./pages/ClientBanner";
 import ClientInvitationCards from "./pages/ClientInvitationCards";
 import ClientPaymentStatus from "./pages/Client-PaymentStatus";
 import VendorPaymentStatus from "./pages/Vendor-PaymentStatus";
+import EventEdits from "./pages/EventEdits";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -105,10 +106,10 @@ createRoot(document.getElementById("root")).render(
           }
         />
         <Route
-          path="/events/eventedits/:id"
+          path="/events/eventedit/:id"
           element={
             <ProtectedRoute>
-              <EventEdit />
+              <EventEdits />
             </ProtectedRoute>
           }
         />
