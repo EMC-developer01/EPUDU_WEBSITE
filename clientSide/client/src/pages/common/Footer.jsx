@@ -102,8 +102,8 @@ export default function Footer() {
               </a>
             </p>
             <p>
-              ✉️ <a href="mailto:info@emircorp.com" className="hover:text-blue-400">
-                info@emircorp.com
+              ✉️ <a href="mailto:hr@epudu.com" className="hover:text-blue-400">
+                hr@epudu.com
               </a>
             </p>
           </div>
