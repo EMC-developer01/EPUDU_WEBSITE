@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import logo from "../assets/logo.jpeg";
 
 export default function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -22,7 +23,7 @@ export default function Header() {
 
                 {/* Logo */}
                 <Link to="/" className="text-xl font-bold tracking-wide">
-                    EPUDU Vendor
+                    <img src={logo} alt="EPUDU" className="h-10 w-auto" />
                 </Link>
 
                 {/* Mobile Toggle */}
