@@ -9,6 +9,7 @@ import {
 } from "@heroicons/react/24/solid";
 import EventGalaxyPanel from "./EventPlayGround"; // Assuming you import the panel
 import axios from "axios";
+import logo from "../../assets/logo.jpeg"
 
 export default function Header() {
   const { pathname } = useLocation();
@@ -95,8 +96,8 @@ export default function Header() {
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => navigate("/")}
           >
-            <HomeIcon className="h-6 w-6 text-blue-500" />
-            <span className="font-bold text-lg">MyWebsite</span>
+            <img src={logo} alt="sample" className="h-10 w-auto" />
+            {/* <span className="font-bold text-lg">MyWebsite</span> */}
           </div>
 
           {/* Desktop Nav */}
