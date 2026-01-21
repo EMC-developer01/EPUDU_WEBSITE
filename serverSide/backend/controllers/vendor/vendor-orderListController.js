@@ -10,21 +10,37 @@ import dotenv from "dotenv";
 
 // EMAIL TRANSPORTER
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // TLS
   auth: {
     user: process.env.EMAIL,
-    pass: process.env.EMAIL_APP_PASS,
+    pass: process.env.EMAIL_PASS,
   }
 });
+// const sendTestMail = async () => {
+//   try {
+//     const info = await transporter.sendMail({
+//       from: process.env.EMAIL,
+//       to: "geethasree1919@gmail.com",
+//       subject: "Test Mail",
+//       text: "Mailer is working",
+//     });
+//     console.log("✅ Mail sent:", info.messageId);
+//   } catch (err) {
+//     console.error("❌ Mail failed:", err.message);
+//   }
+// };
+// sendTestMail();
 
-transporter.verify((err, success) => {
-  if (err) {
-    console.log(process.env.EMAIL, process.env.EMAIL_APP_PASS)
-    console.error("❌ Email transporter verification failed:", err.message);
-  } else {
-    console.log("✅ Email transporter verified successfully!");
-  }
-});
+// transporter.verify((err, success) => {
+//   if (err) {
+//     console.log(process.env.EMAIL, process.env.EMAIL_PASS)
+//     console.error("❌ Email transporter verification failed:", err.message);
+//   } else {
+//     console.log("✅ Email transporter verified successfully!");
+//   }
+// });
 
 // SEND EMAIL
 // async function sendVendorOrderEmails(to, subject, text) {
@@ -312,8 +328,8 @@ export const getVendorOrders = async (req, res) => {
     if (eventTime) filter.eventTime = eventTime;
     if (category) filter.category = category;
     if (subcategory) filter.subcategory = subcategory;
-    if (itemName ) filter.itemName = itemName;
-    if (paymentStatus ) filter.paymentStatus = paymentStatus;
+    if (itemName) filter.itemName = itemName;
+    if (paymentStatus) filter.paymentStatus = paymentStatus;
     if (birthdayId && mongoose.Types.ObjectId.isValid(birthdayId)) filter.birthdayId = birthdayId;
 
     if (search.trim()) {
