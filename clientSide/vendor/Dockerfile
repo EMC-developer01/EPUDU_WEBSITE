@@ -12,9 +12,9 @@ COPY . .
 RUN npm run build
 
 # production stage
-FROM node:18
+FROM node:18-alpine
 
-WORKDIR /app
+WORKDIR /vendor
 
 RUN npm install -g serve
 
