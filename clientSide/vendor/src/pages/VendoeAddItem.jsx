@@ -503,6 +503,7 @@ export default function VendorAddItem() {
                                         }
                                     />
                                 </th>
+                                <th className="p-2 border">S.no</th>
                                 <th className="p-2 border">Image</th>
                                 <th className="p-2 border">Name</th>
                                 <th className="p-2 border">Price</th>
@@ -518,14 +519,14 @@ export default function VendorAddItem() {
                         <tbody>
                             {items.length > 0 ? (
                                 items
-                                    .filter((item) =>
+                                    .filter((item, index) =>
                                         (!filters.category || (item.category || "").toLowerCase() === filters.category.toLowerCase()) &&
                                         (!filters.subcategory || (item.subcategory || "").toLowerCase() === filters.subcategory.toLowerCase()) &&
                                         (!filters.mealTime || (item.mealTime || "").toLowerCase() === filters.mealTime.toLowerCase()) &&
                                         (!filters.foodType || (item.foodType || "").toLowerCase() === filters.foodType.toLowerCase()) &&
                                         (!filters.cuisine || (item.cuisine || "").toLowerCase() === filters.cuisine.toLowerCase())
                                     )
-                                    .map((item) => (
+                                    .map((item, index) => (
                                         <tr key={item._id} className="text-center">
                                             <td className="border p-2">
                                                 <input
@@ -542,7 +543,7 @@ export default function VendorAddItem() {
                                                     }}
                                                 />
                                             </td>
-
+                                            <td className="border p-2">{index + 1}</td>
                                             <td className="border p-2">
                                                 <img
                                                     src={`http://localhost:4000/uploads/vendorItems/${item.image}`}
