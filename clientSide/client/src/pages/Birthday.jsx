@@ -1441,9 +1441,18 @@ export default function Birthday() {
                       </div>
 
                       {/* Contact Info */}
-                      <p className="absolute bottom-3 right-4 text-xs text-gray-700">
-                        Contact: <span className="font-semibold">info@epudu.com</span>
-                      </p>
+                      <div className="flex gap-4 justify-end text-xs text-gray-700">
+                        <p>
+                          Contact: <span className="font-semibold"> +919030406896</span>
+                        </p>
+                        <p>
+                          Email: <span className="font-semibold">hr@epudu.com</span>
+                        </p>
+                        <p>
+                          Insta: <span className="font-semibold">@epudu_events</span>
+                        </p>
+                      </div>
+
                     </div>
                   )}
 
