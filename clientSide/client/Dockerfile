@@ -12,9 +12,9 @@ COPY . .
 RUN npm run build
 
 # production stage
-FROM node:18
+FROM node:18-alpine
 
-WORKDIR /app
+WORKDIR /client
 
 RUN npm install -g serve
 
@@ -24,7 +24,7 @@ COPY --from=build /app/dist ./dist
 
 EXPOSE 3000
 
-CMD ["serve", "-s", "dist", "-l","tcp://0.0.0.0:3000"]
+CMD ["serve", "-s", "dist", "-l","3000"]
 
 # docker build -t react-client .
 # docker run -p 5173:3000 react-client

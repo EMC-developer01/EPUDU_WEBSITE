@@ -12,9 +12,9 @@ COPY . .
 RUN npm run build
 
 # production stage
-FROM node:18
+FROM node:18-alpine
 
-WORKDIR /app
+WORKDIR /admin
 
 RUN npm install -g serve
 
@@ -24,7 +24,7 @@ COPY --from=build /app/dist ./dist
 
 EXPOSE 3001
 
-CMD ["serve", "-s", "dist", "-l","tcp://0.0.0.0:3001"]
+CMD ["serve", "-s", "dist", "-l","3001"]
 
 # docker build -t react-admin .
 # docker run -p 5174:3001 react-admin
