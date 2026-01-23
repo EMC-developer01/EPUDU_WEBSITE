@@ -20,7 +20,7 @@ import EventHistory from "./pages/EventHistory.jsx";
 import ErrorBoundary from "./pages/components/ErrorBoundary.jsx";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter basename="/client">
+    <BrowserRouter >
       <Routes>
         {/* Public Route */}
         <Route path="/" element={<Home />} />

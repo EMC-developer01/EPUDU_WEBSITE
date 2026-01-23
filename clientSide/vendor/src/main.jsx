@@ -13,7 +13,7 @@ import VendorProfile from './pages/profile.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter basename='/vendor'>
+    <BrowserRouter >
       <Routes>
         <Route path="/login" element={<VendorLogin />} />
         <Route path="/registration" element={<VendorRegistration />} />

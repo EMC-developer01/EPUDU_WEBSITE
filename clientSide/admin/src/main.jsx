@@ -19,7 +19,7 @@ import EventEdits from "./pages/EventEdits";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter basename="/admin">
+    <BrowserRouter >
       <Routes>
         {/* Public Route */}
         <Route path="/" element={<Login />} />
