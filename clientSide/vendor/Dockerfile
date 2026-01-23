@@ -24,7 +24,7 @@ COPY --from=build /app/dist ./dist
 
 EXPOSE 3002
 
-CMD ["serve", "-s", "dist", "-l","tcp://0.0.0.0:3002"]
+CMD ["serve", "-s", "dist", "-l","3002"]
 
 # docker build -t react-vendor .
 # docker run -p 5175:3002 react-vendor
