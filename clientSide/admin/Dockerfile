@@ -18,13 +18,13 @@ WORKDIR /admin
 
 RUN npm install -g serve
 
-ENV PATH="/usr/local/bin:$PATH"
+# ENV PATH="/usr/local/bin:$PATH"
 
 COPY --from=build /app/dist ./dist
 
 EXPOSE 3001
 
-CMD ["serve", "-s", "dist", "-l","3001"]
+CMD ["serve", "-s", "dist", "-l", "3001"]
 
 # docker build -t react-admin .
 # docker run -p 5174:3001 react-admin
