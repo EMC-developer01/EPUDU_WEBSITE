@@ -10,6 +10,17 @@ services:
   #     - mongo_data:/data/db
   #   networks:
   #     - fullstack-net
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - admin
+      - client
+      - vendor
+      - serverside
 
   serverside:
     build: ./serverside/backend
@@ -25,8 +36,8 @@ services:
   client:
     build: ./clientside/client
     container_name: react-client
-    ports:
-      - "5173:3000"
+    expose:
+      - "3000"
     networks:
       - fullstack-net
     depends_on:
@@ -36,8 +47,8 @@ services:
   admin:
     build: ./clientside/admin
     container_name: react-admin
-    ports:
-      - "5174:3001"
+    expose:
+      - "3001"
     networks:
       - fullstack-net
     depends_on:
@@ -47,8 +58,8 @@ services:
   vendor:
     build: ./clientside/vendor
     container_name: react-vendor
-    ports:
-      - "5175:3002"
+    expose:
+      - "3002"
     networks:
       - fullstack-net
     depends_on:
