@@ -9,8 +9,10 @@ import {
 } from "@heroicons/react/24/solid";
 import EventGalaxyPanel from "./EventPlayGround"; // Assuming you import the panel
 import axios from "axios";
-import logo from "../../assets/logo.jpeg"
-import epuduLogo from "../../assets/epuduLogo.png"
+import logo from "../../assets/logo.jpeg";
+import epuduLogo from "../../assets/epuduLogo.png";
+import epudulogo from "../../assets/epuduLog.jpeg";
+import epudulog from "../../assets/epuduLogo (2).png";
 
 export default function Header() {
   const { pathname } = useLocation();
@@ -97,7 +99,7 @@ export default function Header() {
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => navigate("/")}
           >
-            <img src={epuduLogo} alt="sample" className="h-10 w-auto" />
+            <img src={epudulog} alt="sample" className="h-50 w-auto m-1" />
             {/* <span className="font-bold text-lg">MyWebsite</span> */}
           </div>
 
