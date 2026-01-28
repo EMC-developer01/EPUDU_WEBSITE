@@ -10,6 +10,7 @@ import {
 import EventGalaxyPanel from "./EventPlayGround"; // Assuming you import the panel
 import axios from "axios";
 import logo from "../../assets/logo.jpeg"
+import epuduLogo from "../../assets/epuduLogo.png"
 
 export default function Header() {
   const { pathname } = useLocation();
@@ -96,7 +97,7 @@ export default function Header() {
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => navigate("/")}
           >
-            <img src={logo} alt="sample" className="h-10 w-auto" />
+            <img src={epuduLogo} alt="sample" className="h-10 w-auto" />
             {/* <span className="font-bold text-lg">MyWebsite</span> */}
           </div>
 
