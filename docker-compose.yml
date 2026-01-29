@@ -23,12 +23,13 @@ services:
       - serverside
     networks:
       - fullstack-net
+    restart: unless-stopped
 
   serverside:
     build: ./serverside/backend
     container_name: express-server
     ports:
-      - "4000:4000"
+      - "4000"
     env_file:
       - ./serverside/backend/.env
     networks:
