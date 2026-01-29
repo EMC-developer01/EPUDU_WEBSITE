@@ -12,7 +12,7 @@ import axios from "axios";
 import logo from "../../assets/logo.jpeg";
 import epuduLogo from "../../assets/epuduLogo.png";
 import epudulogo from "../../assets/epuduLog.jpeg";
-import epudulog from "../../assets/epuduLogo (2).png";
+import epudulog from "../../assets/epudu-logo.png";
 
 export default function Header() {
   const { pathname } = useLocation();
