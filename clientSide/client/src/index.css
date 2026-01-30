@@ -97,7 +97,7 @@
 
 /* Full height galaxy section */
 .galaxy-bg {
-  background: radial-gradient(circle at 30% 30%, #e6ccff, #8f5ccb 30%);
+  background: radial-gradient(circle at 30% 30%, #00bfff , #04026d 30%);
   position: relative;
   overflow: hidden;
 }
