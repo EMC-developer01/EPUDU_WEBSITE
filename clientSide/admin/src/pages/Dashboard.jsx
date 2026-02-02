@@ -51,7 +51,7 @@ export default function Dashboard() {
         const token = localStorage.getItem("adminToken");
 
         if (!token) {
-            navigate("/"); // Redirect to login if not authorized
+            navigate("/login"); // Redirect to login if not authorized
         }
     }, [navigate]);
 

@@ -1,4 +1,4 @@
-#build stage
+# build stage
 FROM node:18 AS build
 
 WORKDIR /app
@@ -11,20 +11,35 @@ COPY . .
 
 RUN npm run build
 
-# production stage
-FROM node:18-alpine
+# FROM node:18 AS build
 
-WORKDIR /vendor
+# WORKDIR /app
 
-RUN npm install -g serve
+# COPY package*.json ./
 
-# ENV PATH="/usr/local/bin:$PATH"
+# RUN npm install
 
-COPY --from=build /app/dist ./dist
+# COPY . .
 
-EXPOSE 3002
+# RUN npm run build
 
-CMD ["serve", "-s", "dist", "-l", "3002"]
+# # production stage
+# FROM node:18-alpine
 
-# docker build -t react-vendor .
-# docker run -p 5175:3002 react-vendor
+# WORKDIR /vendor
+
+# RUN npm install -g serve
+
+# # ENV PATH="/usr/local/bin:$PATH"
+
+# COPY --from=build /app/dist ./dist
+
+# EXPOSE 3002
+
+# CMD ["serve", "-s", "dist", "-l", "3002"]
+
+
+
+
+# # docker build -t react-vendor .
+# # docker run -p 5175:3002 react-vendor

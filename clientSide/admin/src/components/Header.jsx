@@ -8,7 +8,7 @@ export default function Header() {
 
     const handleLogout = () => {
         localStorage.removeItem("adminToken");
-        navigate("/");
+        navigate("/login");
     };
     useEffect(() => {
         const handleClickOutside = (e) => {
