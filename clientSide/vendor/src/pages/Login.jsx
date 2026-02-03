@@ -77,7 +77,7 @@ const Login = ({ onClose }) => {
                 localStorage.setItem("isVendorLoggedIn", true);
                 alert(`Welcome back, ${data.vendor.name}!`);
                 onClose?.();
-                navigate("/");
+                navigate("/dashboard");
             } else {
                 // ❌ Vendor not found — go to vendorDetails
                 setStep("vendorDetails");
