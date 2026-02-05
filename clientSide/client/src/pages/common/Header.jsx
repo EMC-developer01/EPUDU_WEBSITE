@@ -105,12 +105,12 @@ export default function Header() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8">
-            <Link to="/" className="hover:text-blue-400 transition">Home</Link>
+            <Link to="/" className={`hover:text-blue-400 transition ${isHome ? 'text-white' : 'text-black'}`}>Home</Link>
 
             <div className="relative" ref={dropdownRef}>
               <Link
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-1 hover:text-blue-400 transition"
+                className={`flex items-center gap-1 hover:text-blue-400 transition ${isHome ? 'text-white' : 'text-black'}`}
               >
                 Events <ChevronDownIcon className={`h-4 w-4 transform transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : 'rotate-0'}`} />
               </Link>
@@ -133,7 +133,7 @@ export default function Header() {
               )}
             </div>
 
-            <Link to="/contact" className="hover:text-blue-400 transition">Contact</Link>
+            <Link to="/contact" className={`hover:text-blue-400 transition ${isHome ? 'text-white' : 'text-black'}`}>Contact</Link>
           </nav>
 
           {/* Profile / Login */}
@@ -143,7 +143,7 @@ export default function Header() {
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                 className="flex items-center gap-2"
               >
-                <span>{userName}</span>
+                <span className={` ${isHome ? 'text-white' : 'text-black'}`}>{userName}</span>
 
                 {userPhoto ? (
                   <img
@@ -160,7 +160,7 @@ export default function Header() {
                 <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-xl z-50">
                   <Link
                     to="/profile"
-                    className="block px-4 py-2 hover:bg-blue-100"
+                    className="block px-4 py-2 hover:bg-blue-100 text-black"
                     onClick={() => setIsProfileMenuOpen(false)}
                   >
                     Profile
@@ -168,14 +168,14 @@ export default function Header() {
 
                   <Link
                     to="/eventHistory"
-                    className="block px-4 py-2 hover:bg-blue-100"
+                    className="block px-4 py-2 hover:bg-blue-100 text-black"
                     onClick={() => setIsProfileMenuOpen(false)}
                   >
                     Event History
                   </Link>
 
                   <Link
-                    className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+                    className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 text-black"
                     onClick={handleLogout}
                   >
                     Logout
@@ -186,7 +186,7 @@ export default function Header() {
           ) : (
             <Link
               to="/login"
-              className="hidden md:block bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+              className="hidden md:block bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition text-black"
             >
               Login
             </Link>
@@ -209,14 +209,14 @@ export default function Header() {
 
       {/* 2. Mobile Menu Content (Appears only on mobile/small screens) */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed top-[75px] left-0 w-full bg-gray-900/95 backdrop-blur-md z-[9998] pb-4">
+        <div className="md:hidden fixed top-[75px] left-0 w-full bg-gray-900/95 backdrop-blur-md z-[9998] pb-4 text-black">
           <Link to="/" className="block px-4 py-3 hover:bg-blue-600" onClick={closeMobileMenus}>
             Home
           </Link>
 
           <button
             onClick={() => setIsMobileDropdownOpen(!isMobileDropdownOpen)}
-            className="w-full flex justify-between items-center px-4 py-3 hover:bg-blue-600"
+            className="w-full flex justify-between items-center px-4 py-3 hover:bg-blue-600 text-black"
           >
             Events
             <ChevronDownIcon className={`h-4 w-4 ${isMobileDropdownOpen ? "rotate-180" : ""}`} />
@@ -237,19 +237,19 @@ export default function Header() {
             </div>
           )}
 
-          <Link to="/contact" className="block px-4 py-3 hover:bg-blue-600" onClick={closeMobileMenus}>
+          <Link to="/contact" className="block px-4 py-3 hover:bg-blue-600 text-black" onClick={closeMobileMenus}>
             Contact
           </Link>
 
           <div className="border-t border-white/20 mt-2 pt-2">
             {isLoggedIn ? (
               <>
-                <Link to="/profile" className="block px-4 py-3 hover:bg-blue-600" onClick={closeMobileMenus}>
+                <Link to="/profile" className="block px-4 py-3 hover:bg-blue-600 text-black" onClick={closeMobileMenus}>
                   Profile ({userName})
                 </Link>
                 <button
                   onClick={() => { handleLogout(); closeMobileMenus(); }}
-                  className="w-full text-left px-4 py-3 text-red-400 hover:bg-red-800/50"
+                  className="w-full text-left px-4 py-3 text-red-400 hover:bg-red-800/50 text-black"
                 >
                   Logout
                 </button>
@@ -257,7 +257,7 @@ export default function Header() {
             ) : (
               <Link
                 to="/login"
-                className="block mx-4 text-center bg-blue-600 px-4 py-2 rounded-lg mt-2"
+                className="block mx-4 text-center bg-blue-600 px-4 py-2 rounded-lg mt-2 text-black"
                 onClick={closeMobileMenus}
               >
                 Login

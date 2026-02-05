@@ -18,9 +18,14 @@ import Functions from "./pages/Functions.jsx";
 import ChangePassword from "./pages/changePassword.jsx";
 import EventHistory from "./pages/EventHistory.jsx";
 import ErrorBoundary from "./pages/components/ErrorBoundary.jsx";
+import CustomGifts from "./pages/CustomGifts.jsx";
+import PartyPlaces from "./pages/PartyPlaces.jsx";
+import FunActivities from "./pages/Funactivites.jsx";
+import Decoration from "./pages/Decoration.jsx";
+import Photography from "./pages/Photography.jsx";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter  >
+    <BrowserRouter basename="/client" >
       <Routes>
         {/* Public Route */}
         <Route path="/" element={<Home />} />
@@ -78,6 +83,46 @@ createRoot(document.getElementById("root")).render(
           element={
             <ProtectedRoute>
               <Functions />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/custom-gifts"
+          element={
+            <ProtectedRoute>
+              <CustomGifts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/party-places"
+          element={
+            <ProtectedRoute>
+              <PartyPlaces />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/fun-activities"
+          element={
+            <ProtectedRoute>
+              <FunActivities />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/decorations"
+          element={
+            <ProtectedRoute>
+              <Decoration />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/photography"
+          element={
+            <ProtectedRoute>
+              <Photography />
             </ProtectedRoute>
           }
         />

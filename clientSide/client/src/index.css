@@ -97,13 +97,13 @@
 
 /* Full height galaxy section */
 .galaxy-bg {
-  background: radial-gradient(circle at 30% 30%, #00bfff , #04026d 30%);
+  background: radial-gradient(circle at 30% 30%, #ffffff, #f9f9f9 90%);
   position: relative;
   overflow: hidden;
 }
 
 /* Layer 1 – Small moving stars */
-.galaxy-bg::before {
+/* .galaxy-bg::before {
   content: "";
   position: absolute;
   top: 0;
@@ -112,20 +112,20 @@
   height: 2px;
   background: transparent;
   box-shadow:
-    20px 30px #ffffff,
-    150px 80px #ffffff,
-    300px 120px #dddddd,
-    500px 200px #bbbbbb,
-    700px 250px #ffffff,
-    900px 80px #aaaaaa,
-    1100px 150px #ffffff,
-    1300px 300px #cccccc,
-    1600px 180px #eeeeee;
+    20px 30px #080808,
+    150px 80px #0c0c0c,
+    300px 120px #101010,
+    500px 200px #0a0a0a,
+    700px 250px #0b0606,
+    900px 80px #170909,
+    1100px 150px #0b0b0b,
+    1300px 300px #110202,
+    1600px 180px #0c0909;
   animation: moveStars 5s linear infinite, twinkle 5.5s infinite ease-in-out;
-}
+} */
 
 /* Layer 2 – Bigger stars */
-.galaxy-bg::after {
+/* .galaxy-bg::after {
   content: "";
   position: absolute;
   top: 0;
@@ -134,19 +134,19 @@
   height: 3px;
   background: transparent;
   box-shadow:
-    50px 200px #ffffff,
-    200px 50px #bbbbbb,
-    400px 180px #ffffff,
-    600px 40px #aaaaaa,
-    850px 300px #ffffff,
-    1200px 150px #eeeeee,
-    1450px 100px #dddddd;
+    50px 200px #0a0a0a,
+    200px 50px #060606,
+    400px 180px #0e0d0d,
+    600px 40px #0f0f0f,
+    850px 300px #141414,
+    1200px 150px #070707,
+    1450px 100px #080808;
   opacity: 0.75;
   animation: moveStars 8s linear infinite, twinkle 8.5s infinite ease-in-out;
-}
+} */
 
 /* Moving effect */
-@keyframes moveStars {
+/* @keyframes moveStars {
   from {
     transform: translate(0, 0);
   }
@@ -154,10 +154,10 @@
   to {
     transform: translate(-400px, -400px);
   }
-}
+} */
 
 /* Twinkling effect */
-@keyframes twinkle {
+/* @keyframes twinkle {
 
   0%,
   100% {
@@ -169,7 +169,7 @@
     opacity: 1;
     transform: scale(1.3);
   }
-}
+} */
 
 .perspective {
   perspective: 900px;
@@ -177,6 +177,16 @@
 
 #globe {
   animation: spin 18s linear infinite;
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 @keyframes spin {

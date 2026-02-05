@@ -8,18 +8,26 @@ import Banner from './common/Banner';
 import Login from './Login'; // 👈 Import Login component
 import Signup from './Signup';
 import ForgetPassword from './Forgetpassword';
+import axios from "axios";
+
 
 export default function Home() {
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const API = "http://localhost:4000/api/admin/Client-homepages-images/all";
   const IMAGE_BASE = "http://localhost:4000/uploads/homepageImages";
+  const serviceAPI = "http://localhost:4000/api/admin/client-homepage-services";
+  const Service_IMAGE_BASE = "http://localhost:4000/uploads/homepageServices";
 
   const [birthdayImg, setBirthdayImg] = useState([]);
   const [weddingImg, setWeddingImg] = useState([]);
   const [functionsImg, setFunctionsImg] = useState([]);
+  const [services, setServices] = useState([]);
   const [bIndex, setBIndex] = useState(0);
   const [wIndex, setWIndex] = useState(0);
   const [fIndex, setFIndex] = useState(0);
+
+
+
 
   useEffect(() => {
     fetch(API)
@@ -73,6 +81,17 @@ export default function Home() {
   }, []);
   const imgClass =
     "w-full h-56 object-cover transition-all duration-700 ease-in-out";
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      const res = await axios.get(`${serviceAPI}/all`);
+      const activeServices = res.data.filter(s => s.isActive);
+      setServices(activeServices);
+    };
+
+    fetchServices();
+  }, []);
+
 
   return (
     <>
@@ -163,6 +182,54 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <section
+        id="services"
+        className="relative w-screen py-28 px-8 text-center overflow-hidden bg-white"
+      >
+        <h2 className="text-6xl font-semibold text-pink-500 mb-12 tracking-wide">
+          Our Services
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
+          {services.map((service, i) => (
+            <div
+              key={service._id}
+              className="bg-pink-200 backdrop-blur-lg rounded-2xl shadow-2xl
+               hover:scale-[1.03] transition"
+            >
+              <img
+                src={`${Service_IMAGE_BASE}/${service.image}`}
+                alt={service.title}
+                className="w-full h-52 object-cover rounded-t-2xl"
+              />
+
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                  {service.title}
+                </h3>
+
+                <p className="text-gray-600 text-sm mb-6">
+                  {service.desc}
+                </p>
+
+                <Link
+                  to={service.link}
+                  className="inline-block bg-indigo-900 text-white px-5 py-2
+                 rounded-lg hover:bg-indigo-700 transition"
+                >
+                  {service.btn}
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+
+
+
+
 
       <Banner />
 
