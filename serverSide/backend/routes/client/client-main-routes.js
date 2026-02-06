@@ -8,6 +8,8 @@ import partPlaces from "./partyPlacesHistory.js";
 import funActivities from "./client-FunActivitiesRoutes.js";
 import decorservices from "./client-decorservicesRoutes.js";
 import photography from "./client-photographyRoutes.js";
+import catering from "./clinet-cateringRoutes.js";
+import servicesHistory from "./client-servicesHistory.js";
 
 const router = express.Router();
 
@@ -21,6 +23,8 @@ router.use("/custom-gifts", customGifts)
 router.use("/fun-activities", funActivities)
 router.use("/decoration", decorservices)
 router.use("/photography", photography)
+router.use("/catering", catering)
+router.use("/services", servicesHistory)
 
 
 export default router;

@@ -165,7 +165,7 @@ const Photography = () => {
                     });
 
                     toast.success("Photography booked 📸");
-                    window.location.href = "/photography-history";
+                    window.location.href = "/custom-services-History";
                 },
 
                 prefill: {

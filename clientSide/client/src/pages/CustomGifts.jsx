@@ -106,7 +106,7 @@ const CustomGifts = () => {
                             }),
                         });
 
-                        window.location.href = "/custom-services-history";
+                        window.location.href = "/custom-services-History";
                     } catch {
                         toast.error("Verification failed");
                     }

@@ -126,7 +126,7 @@ const PartyPlaces = () => {
                             }
                         );
 
-                        window.location.href = "/party-places-history";
+                        window.location.href = "/custom-services-History";
                     } catch {
                         toast.error("Verification failed");
                     }

@@ -173,6 +173,13 @@ export default function Header() {
                   >
                     Event History
                   </Link>
+                  <Link
+                    to="/custom-services-History"
+                    className="block px-4 py-2 hover:bg-blue-100 text-black"
+                    onClick={() => setIsProfileMenuOpen(false)}
+                  >
+                    Custom Services History
+                  </Link>
 
                   <Link
                     className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 text-black"
@@ -244,6 +251,12 @@ export default function Header() {
           <div className="border-t border-white/20 mt-2 pt-2">
             {isLoggedIn ? (
               <>
+                <Link to="/eventHistory" className="block px-4 py-3 hover:bg-blue-600 text-black" onClick={closeMobileMenus}>
+                  Events History
+                </Link>
+                <Link to="/custom-services-History" className="block px-4 py-3 hover:bg-blue-600 text-black" onClick={closeMobileMenus}>
+                  Custom services History
+                </Link>
                 <Link to="/profile" className="block px-4 py-3 hover:bg-blue-600 text-black" onClick={closeMobileMenus}>
                   Profile ({userName})
                 </Link>

@@ -136,7 +136,7 @@ const FunActivities = () => {
                     });
 
                     toast.success("Activities booked 🎉");
-                    window.location.href = "/fun-activities-history";
+                    window.location.href = "/custom-services-History";
                 },
 
                 prefill: {

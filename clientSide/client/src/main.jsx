@@ -23,6 +23,8 @@ import PartyPlaces from "./pages/PartyPlaces.jsx";
 import FunActivities from "./pages/Funactivites.jsx";
 import Decoration from "./pages/Decoration.jsx";
 import Photography from "./pages/Photography.jsx";
+import Catering from "./pages/Catering.jsx";
+import CustomServicesHistory from "./pages/Custum-Services-History.jsx";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter basename="/client" >
@@ -123,6 +125,22 @@ createRoot(document.getElementById("root")).render(
           element={
             <ProtectedRoute>
               <Photography />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/catering"
+          element={
+            <ProtectedRoute>
+              <Catering />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/custom-services-History"
+          element={
+            <ProtectedRoute>
+              <CustomServicesHistory />
             </ProtectedRoute>
           }
         />

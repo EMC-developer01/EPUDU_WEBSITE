@@ -152,7 +152,7 @@ const Decoration = () => {
                     );
 
                     toast.success("Decoration booked 🎀");
-                    window.location.href = "/decoration-history";
+                    window.location.href = "/custom-services-History";
                 },
 
                 prefill: {
@@ -237,8 +237,8 @@ const Decoration = () => {
                                                             handleCheckboxChange(key, item, price)
                                                         }
                                                         className={`cursor-pointer ${active
-                                                                ? "ring-4 ring-pink-500 rounded-xl"
-                                                                : ""
+                                                            ? "ring-4 ring-pink-500 rounded-xl"
+                                                            : ""
                                                             }`}
                                                     >
                                                         <ItemCard
