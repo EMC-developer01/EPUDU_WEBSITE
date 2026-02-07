@@ -34,7 +34,8 @@ app.use(cors({
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:3002",
-    "https://epudu.com"
+    "https://epudu.com",
+    "http://15.134.226.37"
   ],
   credentials: true
 }));
@@ -161,4 +162,4 @@ app.get("/get", (req, res) => {
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, "0.0.0.0", () => console.log(`🚀 Server running on port ${PORT}`));
