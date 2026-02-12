@@ -10,14 +10,16 @@ export default function Banner() {
     "Turning Ideas Into Experiences — That’s EPUDU.",
     "Crafting Emotions, Not Just Events.",
   ];
-
+  const API_URL = import.meta.env.VITE_API_URL;
+  const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+  console.log(API_URL,MEDIA_URL)
   useEffect(() => {
     const fetchBanners = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/admin/client-banner/all`,
-          { cache: "no-store" } // 🔥 important in Next.js
-        );
+        const res = await fetch(`${API_URL}/api/admin/client-banner/all`, {
+          cache: "no-store",
+        });
+
         const data = await res.json();
 
         const activeBanners = data.filter(
@@ -59,7 +61,7 @@ export default function Banner() {
             }`}
         >
           <img
-            src={`${process.env.NEXT_PUBLIC_MEDIA_URL}/banners/${banner.image}`}
+            src={`${MEDIA_URL}/banners/${banner.image}`}
             alt="Banner"
             className="w-full h-full object-cover"
           />
