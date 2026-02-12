@@ -15,7 +15,7 @@ export default function Banner() {
     const fetchBanners = async () => {
       try {
         const res = await fetch(
-          "http://localhost:4000/api/admin/client-banner/all",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/admin/client-banner/all`,
           { cache: "no-store" } // 🔥 important in Next.js
         );
         const data = await res.json();
@@ -59,7 +59,7 @@ export default function Banner() {
             }`}
         >
           <img
-            src={`http://localhost:4000/uploads/banners/${banner.image}`}
+            src={`${process.env.NEXT_PUBLIC_MEDIA_URL}/banners/${banner.image}`}
             alt="Banner"
             className="w-full h-full object-cover"
           />
