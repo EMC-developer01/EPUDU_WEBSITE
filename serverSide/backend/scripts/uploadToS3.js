@@ -42,6 +42,8 @@ const walkAndUpload = async (dir) => {
           Bucket: BUCKET,
           Key: s3Key,
           Body: fileContent,
+          ContentType: contentType,
+          ACL: "public-read",
         })
         .promise();
 

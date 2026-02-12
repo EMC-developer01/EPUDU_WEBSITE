@@ -12,7 +12,7 @@ export default function Banner() {
   ];
   const API_URL = import.meta.env.VITE_API_URL;
   const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
-  console.log(API_URL,MEDIA_URL)
+  // console.log(API_URL,MEDIA_URL)
   useEffect(() => {
     const fetchBanners = async () => {
       try {

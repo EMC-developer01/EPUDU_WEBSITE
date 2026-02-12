@@ -1,5 +1,9 @@
 export default function ItemCard({ image, name, price }) {
-    const IMAGE_BASE_URL = "http://localhost:4000/uploads/vendorItems/";
+
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+
+    const IMAGE_BASE_URL = `${MEDIA_URL}/uploads/vendorItems/`;
 
     const finalPrice = (price * 1.5).toFixed(2);
 
