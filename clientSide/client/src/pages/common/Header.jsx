@@ -15,6 +15,8 @@ import epudulogo from "../../assets/epuduLog.jpeg";
 import epudulog from "../../assets/epudu-logo.png";
 
 export default function Header() {
+  const API_URL = import.meta.env.VITE_API_URL;
+  const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
   const { pathname } = useLocation();
   // Check if the current path is exactly the root path
   const isHome = pathname === "/";
@@ -78,7 +80,7 @@ export default function Header() {
     const { mobile } = JSON.parse(storedUser);
 
     axios
-      .get(`http://localhost:4000/api/client/users/${mobile}`)
+      .get(`${API_URL}/api/client/users/${mobile}`)
       .then((res) => {
         setUserName(res.data.name);
         setUserPhoto(res.data.photo); // ✅ base64
