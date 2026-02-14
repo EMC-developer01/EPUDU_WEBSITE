@@ -8,6 +8,8 @@ import Footer from "./common/Footer";
 import Banner from "./common/Banner";
 
 export default function EventHistory() {
+  const API_URL = import.meta.env.VITE_API_URL;
+  const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -25,7 +27,7 @@ export default function EventHistory() {
       }
 
       const res = await axios.get(
-        `http://localhost:4000/api/client/birthday/user/${userId}`
+        `${API_URL}/api/client/birthday/user/${userId}`
       );
 
       const fetchedEvents = Array.isArray(res.data)
@@ -53,7 +55,7 @@ export default function EventHistory() {
       }
 
       const res = await axios.post(
-        "http://localhost:4000/api/payment/create-order",
+        `${API_URL}/api/payment/create-order`,
         { amount }
       );
 
@@ -69,13 +71,13 @@ export default function EventHistory() {
 
         handler: async (response) => {
           const verifyRes = await axios.post(
-            "http://localhost:4000/api/payment/verify",
+            `${API_URL}/api/payment/verify`,
             response
           );
 
           if (verifyRes.data.success) {
             await axios.put(
-              `http://localhost:4000/api/client/birthday/update/${event._id}`,
+              `${API_URL}/api/client/birthday/update/${event._id}`,
               {
                 paymentStatus: "Full Paid",
                 bookingStatus: "Booked",
@@ -204,7 +206,7 @@ export default function EventHistory() {
                               )
                             ) {
                               await fetch(
-                                `http://localhost:4000/api/client/birthday/delete/${event._id}`,
+                                `${API_URL}/api/client/birthday/delete/${event._id}`,
                                 { method: "DELETE" }
                               );
                               window.location.reload();
