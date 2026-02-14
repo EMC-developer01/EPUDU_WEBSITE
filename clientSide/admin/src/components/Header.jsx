@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Header() {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
     const navigate = useNavigate();
     const [usersDropdownOpen, setUsersDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
