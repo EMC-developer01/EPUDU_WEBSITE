@@ -7,6 +7,8 @@ import Banner from "./common/Banner";
 import Footer from "./common/Footer";
 
 const CustomGifts = () => {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -56,7 +58,7 @@ const CustomGifts = () => {
                 return;
             }
 
-            const orderRes = await fetch("http://localhost:4000/api/payment/create-order", {
+            const orderRes = await fetch(`${API_URL}/api/payment/create-order`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ amount }),
@@ -77,7 +79,7 @@ const CustomGifts = () => {
 
                 handler: async (response) => {
                     try {
-                        const verifyRes = await fetch("http://localhost:4000/api/payment/verify", {
+                        const verifyRes = await fetch(`${API_URL}/api/payment/verify`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
@@ -97,7 +99,7 @@ const CustomGifts = () => {
                         paymentCompleted = true;
                         toast.success("Payment Successful 🎉");
 
-                        await fetch("http://localhost:4000/api/client/custom-gifts/add", {
+                        await fetch(`${API_URL}/api/client/custom-gifts/add`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
