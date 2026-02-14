@@ -5,6 +5,8 @@ import Footer from "./common/Footer";
 import axios from "axios";
 
 const Profile = () => {
+  const API_URL = import.meta.env.VITE_API_URL;
+  const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
   const navigate = useNavigate();
 
   const [user, setUser] = useState({});
@@ -29,7 +31,7 @@ const Profile = () => {
     const { mobile } = JSON.parse(storedUser);
 
     axios
-      .get(`http://localhost:4000/api/client/users/${mobile}`)
+      .get(`${API_URL}/api/client/users/${mobile}`)
       .then((res) => {
         setUser(res.data);
         setFormData(res.data);
@@ -53,7 +55,7 @@ const Profile = () => {
   const handleSave = async () => {
     try {
       await axios.put(
-        `http://localhost:4000/api/client/users/${user._id}`,
+        `${API_URL}/api/client/users/${user._id}`,
         formData
       );
 
