@@ -2,13 +2,15 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function ChangePassword() {
+  API_URL = import.meta.env.VITE_API_URL;
+  const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
   const navigate = useNavigate();
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const API_URL = "http://localhost:4000/api/users/change-password";
+  API_URL = `${API_URL}/api/users/change-password`;
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
@@ -92,9 +94,8 @@ export default function ChangePassword() {
           />
           <button
             type="submit"
-            className={`w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition ${
-              loading ? "opacity-70 cursor-not-allowed" : ""
-            }`}
+            className={`w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition ${loading ? "opacity-70 cursor-not-allowed" : ""
+              }`}
             disabled={loading}
           >
             {loading ? "Changing..." : "Change Password"}
