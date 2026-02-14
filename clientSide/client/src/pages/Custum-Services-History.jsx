@@ -8,6 +8,8 @@ import Footer from "./common/Footer";
 import Banner from "./common/Banner";
 
 export default function CustomServicesHistory() {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
     const navigate = useNavigate();
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -23,7 +25,7 @@ export default function CustomServicesHistory() {
             }
 
             const res = await axios.get(
-                `http://localhost:4000/api/client/services/history/${clientId}`
+                `${API_URL}/api/client/services/history/${clientId}`
             );
 
             setServices(res.data.history || []);
@@ -45,7 +47,7 @@ export default function CustomServicesHistory() {
             if (amount <= 0) return alert("Invalid amount");
 
             const orderRes = await axios.post(
-                "http://localhost:4000/api/payment/create-order",
+                `${API_URL}/api/payment/create-order`,
                 { amount }
             );
 
@@ -61,13 +63,13 @@ export default function CustomServicesHistory() {
 
                 handler: async (response) => {
                     const verifyRes = await axios.post(
-                        "http://localhost:4000/api/payment/verify",
+                        `${API_URL}/api/payment/verify`,
                         response
                     );
 
                     if (verifyRes.data.success) {
                         await axios.put(
-                            `http://localhost:4000/api/client/services/update/${service._id}`,
+                            `${API_URL}/api/client/services/update/${service._id}`,
                             {
                                 paymentStatus: "Paid",
                                 paymentId: response.razorpay_payment_id,
