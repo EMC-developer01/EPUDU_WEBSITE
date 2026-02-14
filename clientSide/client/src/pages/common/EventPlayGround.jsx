@@ -9,10 +9,10 @@ const fallback = "/default.jpg";
 const API_URL = import.meta.env.VITE_API_URL;
 const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
-const API = "http://localhost:4000/api/admin/Client-homepages-images/all";
-const IMAGE_BASE = "http://localhost:4000/uploads/homepageImages";
-const VIDEO_API = "http://localhost:4000/api/admin/client-homepage-videos/all";
-const VIDEO_BASE = "http://localhost:4000/uploads/homepageVideos";
+const API = `${API_URL}/api/admin/Client-homepages-images/all`;
+const IMAGE_BASE = `${MEDIA_URL}/homepageImages`;
+const VIDEO_API = `${API_URL}/api/admin/client-homepage-videos/all`;
+const VIDEO_BASE = `${MEDIA_URL}/homepageVideos`;
 
 
 export default function EventGalaxyPanel() {
