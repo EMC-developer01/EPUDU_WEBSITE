@@ -20,6 +20,12 @@ const API = "http://localhost:4000/api/admin/client-banner";
 const IMAGE_BASE = "http://localhost:4000/uploads/banners";
 
 export default function ClientBanner() {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+
+    const API = `${API_URL}/api/admin/client-banner`;
+    const IMAGE_BASE = `${API_URL}/uploads/banners`;
+
     const [banners, setBanners] = useState([]);
     const [editingId, setEditingId] = useState(null);
     const [sidebarOpen, setSidebarOpen] = useState(true);
