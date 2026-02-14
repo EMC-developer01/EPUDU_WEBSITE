@@ -2,6 +2,8 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const ForgetPassword = ({ onClose, onSwitchToLogin }) => {
+  const API_URL = import.meta.env.VITE_API_URL;
+  const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
   const handleSubmit = (e) => {
     e.preventDefault();
     alert("Password reset link sent to your email!");
