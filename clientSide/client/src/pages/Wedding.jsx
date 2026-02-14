@@ -6,6 +6,8 @@ import Footer from './common/Footer';
 import Banner from './common/Banner';
 
 export default function Wedding() {
+  const API_URL = import.meta.env.VITE_API_URL;
+  const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
@@ -147,9 +149,8 @@ export default function Wedding() {
                         <button
                           key={date}
                           onClick={() => isAvailable && setSelectedDate(date)}
-                          className={`p-2 rounded-md text-white ${
-                            isSelected ? 'bg-yellow-400' : isAvailable ? 'bg-green-500' : 'bg-gray-400'
-                          }`}
+                          className={`p-2 rounded-md text-white ${isSelected ? 'bg-yellow-400' : isAvailable ? 'bg-green-500' : 'bg-gray-400'
+                            }`}
                         >
                           {date.split('-')[2]}
                         </button>
@@ -167,13 +168,12 @@ export default function Wedding() {
                             <button
                               key={time}
                               onClick={() => status === "available" && setSelectedTime(time)}
-                              className={`p-2 rounded-md text-white ${
-                                isSelected ? 'bg-yellow-400' : status === "available"
+                              className={`p-2 rounded-md text-white ${isSelected ? 'bg-yellow-400' : status === "available"
                                   ? 'bg-green-500'
                                   : status === "booked"
-                                  ? 'bg-red-500'
-                                  : 'bg-gray-400'
-                              }`}
+                                    ? 'bg-red-500'
+                                    : 'bg-gray-400'
+                                }`}
                             >
                               {time}
                             </button>
