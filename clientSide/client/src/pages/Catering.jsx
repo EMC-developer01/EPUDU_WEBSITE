@@ -14,6 +14,8 @@ import { A11y } from "swiper/modules";
 import "swiper/css";
 
 const Catering = () => {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -45,7 +47,7 @@ const Catering = () => {
 
     const fetchItems = async () => {
         try {
-            const res = await axios.get("http://localhost:4000/api/vendor/items/getitems");
+            const res = await axios.get(`${API_URL}/api/vendor/items/getitems`);
             const allItems = res.data.items;
 
             const cateringItems = allItems.filter(i => i.category === "Catering");
@@ -124,7 +126,7 @@ const Catering = () => {
 
         try {
             const orderRes = await fetch(
-                "http://localhost:4000/api/payment/create-order",
+                `${API_URL}/api/payment/create-order`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -145,7 +147,7 @@ const Catering = () => {
 
                 handler: async (response) => {
                     const verifyRes = await fetch(
-                        "http://localhost:4000/api/payment/verify",
+                        `${API_URL}/api/payment/verify`,
                         {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
@@ -164,7 +166,7 @@ const Catering = () => {
                     paymentCompleted = true;
 
                     await fetch(
-                        "http://localhost:4000/api/client/catering/add",
+                        `${API_URL}/api/client/catering/add`,
                         {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
