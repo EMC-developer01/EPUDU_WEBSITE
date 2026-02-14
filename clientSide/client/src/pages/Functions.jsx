@@ -6,8 +6,6 @@ import Footer from './common/Footer';
 import Banner from './common/Banner';
 
 export default function Functions() {
-  const API_URL = import.meta.env.VITE_API_URL;
-  const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
   const [step, setStep] = useState(1);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);

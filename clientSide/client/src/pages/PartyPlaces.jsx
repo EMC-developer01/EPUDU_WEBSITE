@@ -7,6 +7,9 @@ import Banner from "./common/Banner";
 import Footer from "./common/Footer";
 
 const PartyPlaces = () => {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -68,7 +71,7 @@ const PartyPlaces = () => {
             }
 
             const orderRes = await fetch(
-                "http://localhost:4000/api/payment/create-order",
+                `${API_URL}/api/payment/create-order`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -92,7 +95,7 @@ const PartyPlaces = () => {
                 handler: async (response) => {
                     try {
                         const verifyRes = await fetch(
-                            "http://localhost:4000/api/payment/verify",
+                           `${API_URL}/api/payment/verify`,
                             {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
