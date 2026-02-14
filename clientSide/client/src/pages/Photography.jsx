@@ -14,6 +14,8 @@ import { A11y } from "swiper/modules";
 import "swiper/css";
 
 const Photography = () => {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -41,7 +43,7 @@ const Photography = () => {
         const fetchItems = async () => {
             try {
                 const res = await axios.get(
-                    "http://localhost:4000/api/vendor/items/getitems"
+                    `${API_URL}/api/vendor/items/getitems`
                 );
                 setPhotographyItems(
                     res.data.items.filter((i) => i.category === "Photography")
@@ -119,7 +121,7 @@ const Photography = () => {
 
         try {
             const orderRes = await fetch(
-                "http://localhost:4000/api/payment/create-order",
+                `${API_URL}/api/payment/create-order`,
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -140,7 +142,7 @@ const Photography = () => {
 
                 handler: async (response) => {
                     const verifyRes = await fetch(
-                        "http://localhost:4000/api/payment/verify",
+                        `${API_URL}/api/payment/verify`,
                         {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
@@ -158,7 +160,7 @@ const Photography = () => {
 
                     paymentCompleted = true;
 
-                    await fetch("http://localhost:4000/api/client/photography/add", {
+                    await fetch(`${API_URL}/api/client/photography/add`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ ...formData, paymentStatus: "Paid" }),
@@ -264,8 +266,8 @@ const Photography = () => {
                                                         )
                                                     }
                                                     className={`cursor-pointer ${selected
-                                                            ? "ring-4 ring-green-500 rounded-xl"
-                                                            : ""
+                                                        ? "ring-4 ring-green-500 rounded-xl"
+                                                        : ""
                                                         }`}
                                                 >
                                                     <ItemCard
