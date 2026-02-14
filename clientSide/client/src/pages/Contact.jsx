@@ -7,6 +7,8 @@ import Banner from "./common/Banner";
 import Footer from "./common/Footer";
 
 export default function Contact() {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
     const [form, setForm] = useState({
         name: "",
         email: "",
@@ -24,7 +26,7 @@ export default function Contact() {
         setLoading(true);
 
         try {
-            await axios.post("http://localhost:4000/api/client/contact/send", form);
+            await axios.post(`${API_URL}/api/client/contact/send`, form);
             alert("Message sent successfully!");
             setForm({ name: "", email: "", message: "" });
         } catch {
