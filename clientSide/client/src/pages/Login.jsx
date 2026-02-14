@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Login = ({ onClose }) => {
+  const API_URL = import.meta.env.VITE_API_URL;
+  const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
   let [step, setStep] = useState("mobile"); // mobile | otp | name
   let [mobile, setMobile] = useState("");
   let [otp, setOtp] = useState("");
@@ -10,7 +12,7 @@ const Login = ({ onClose }) => {
   let [name, setName] = useState("");
   let navigate = useNavigate();
 
-  const API_URL = "http://localhost:4000/api";
+  const API_URL = `${API_URL}/api`;
 
   // Step 1️⃣ — Send OTP
   const handleSendOtp = async (e) => {
@@ -27,7 +29,7 @@ const Login = ({ onClose }) => {
     // setStep("otp");
 
     try {
-      const res = await fetch("http://localhost:4000/api/send-otp", {
+      const res = await fetch(`${API_URL}/api/send-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mobile }),
@@ -86,7 +88,7 @@ const Login = ({ onClose }) => {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:4000/api/verify-otp", {
+      const res = await fetch(`${API_URL}/api/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ otp, mobile }),
@@ -245,7 +247,7 @@ const Login = ({ onClose }) => {
             </button>
           </form>
         )}
-        
+
       </div>
     </div>
   );
