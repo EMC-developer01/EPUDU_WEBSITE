@@ -14,6 +14,8 @@ import { A11y } from "swiper/modules";
 import "swiper/css";
 
 const FunActivities = () => {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -38,7 +40,7 @@ const FunActivities = () => {
     useEffect(() => {
         const fetchItems = async () => {
             try {
-                const res = await axios.get("http://localhost:4000/api/vendor/items/getitems");
+                const res = await axios.get(`${API_URL}/api/vendor/items/getitems`);
                 setEntertainmentItems(
                     res.data.items.filter(i => i.category === "Entertainment")
                 );
@@ -95,7 +97,7 @@ const FunActivities = () => {
         }
 
         try {
-            const orderRes = await fetch("http://localhost:4000/api/payment/create-order", {
+            const orderRes = await fetch(`${API_URL}/api/payment/create-order`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ amount: formData.totalAmount }),
@@ -113,7 +115,7 @@ const FunActivities = () => {
                 order_id: orderData.order.id,
 
                 handler: async (response) => {
-                    const verifyRes = await fetch("http://localhost:4000/api/payment/verify", {
+                    const verifyRes = await fetch(`${API_URL}/api/payment/verify`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -129,7 +131,7 @@ const FunActivities = () => {
 
                     paymentCompleted = true;
 
-                    await fetch("http://localhost:4000/api/client/fun-activities/add", {
+                    await fetch(`${API_URL}/api/client/fun-activities/add`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ ...formData, paymentStatus: "Paid" }),
