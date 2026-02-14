@@ -12,11 +12,13 @@ import axios from "axios";
 
 
 export default function Home() {
+  const API_URL = import.meta.env.VITE_API_URL;
+  const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
-  const API = "http://localhost:4000/api/admin/Client-homepages-images/all";
-  const IMAGE_BASE = "http://localhost:4000/uploads/homepageImages";
-  const serviceAPI = "http://localhost:4000/api/admin/client-homepage-services";
-  const Service_IMAGE_BASE = "http://localhost:4000/uploads/homepageServices";
+  const API = `${API_URL}/api/admin/Client-homepages-images/all`;
+  const IMAGE_BASE = `${API_URL}/uploads/homepageImages`;
+  const serviceAPI = `${API_URL}/api/admin/client-homepage-services`;
+  const Service_IMAGE_BASE = `${API_URL}/uploads/homepageServices`;
 
   const [birthdayImg, setBirthdayImg] = useState([]);
   const [weddingImg, setWeddingImg] = useState([]);
