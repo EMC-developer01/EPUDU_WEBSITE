@@ -118,7 +118,7 @@ const PartyPlaces = () => {
                         toast.success("Venue Booked 🎉");
 
                         await fetch(
-                            "http://localhost:4000/api/client/party-places/add",
+                            `${API_URL}/api/client/party-places/add`,
                             {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
