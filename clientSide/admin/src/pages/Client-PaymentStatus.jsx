@@ -6,13 +6,16 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 
 const ClientPaymentStatus = () => {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+
     const [events, setEvents] = useState([]);
     const [search, setSearch] = useState("");
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [payments, setPayments] = useState([])
 
     useEffect(() => {
-        fetch("http://localhost:4000/api/payment/all")
+        fetch(`${API_URL}/api/payment/all`)
             .then(res => res.json())
             .then(setPayments);
     }, []);
