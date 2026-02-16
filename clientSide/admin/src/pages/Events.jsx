@@ -15,6 +15,10 @@ import {
 } from "@/components/ui/table";
 import { Edit, Trash2, Save, X, Search } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_URL;
+const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+
+
 export default function Events() {
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);
@@ -33,7 +37,7 @@ export default function Events() {
     const [formData, setFormData] = useState({});
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
-    const BASE_URL = "http://localhost:4000/api/client";
+    const BASE_URL = `${API_URL}/api/client`;
 
     // Fetch events
     const fetchEvents = async () => {
