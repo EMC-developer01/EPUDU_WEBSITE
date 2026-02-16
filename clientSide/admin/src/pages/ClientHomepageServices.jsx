@@ -15,9 +15,12 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Edit, Power, Image as ImageIcon } from "lucide-react";
+const API_URL = import.meta.env.VITE_API_URL;
+const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
-const API = "http://localhost:4000/api/admin/client-homepage-services";
-const IMAGE_BASE = "http://localhost:4000/uploads/homepageServices";
+
+const API = `${API_URL}/api/admin/client-homepage-services`;
+const IMAGE_BASE =`${MEDIA_URL}/homepageServices`;
 
 function ClientHomepageServices() {
     const [services, setServices] = useState([]);

@@ -15,9 +15,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Edit, Power, Video } from "lucide-react";
+const API_URL = import.meta.env.VITE_API_URL;
+const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
-const API = "http://localhost:4000/api/admin/client-homepage-videos";
-const VIDEO_BASE = "http://localhost:4000/uploads/homepageVideos";
+
+const API = `${API_URL}/admin/client-homepage-videos`;
+const VIDEO_BASE = `${MEDIA_URL}/uploads/homepageVideos`;
 
 function ClientHomepageVideo() {
   const [videos, setVideos] = useState([]);
@@ -97,8 +100,8 @@ function ClientHomepageVideo() {
       statusFilter === "all"
         ? true
         : statusFilter === "active"
-        ? v.isActive
-        : !v.isActive
+          ? v.isActive
+          : !v.isActive
     )
     .filter((v) =>
       v.title.toLowerCase().includes(search.toLowerCase())
@@ -220,11 +223,10 @@ function ClientHomepageVideo() {
 
                         <TableCell>
                           <span
-                            className={`px-3 py-1 rounded-full text-xs ${
-                              item.isActive
+                            className={`px-3 py-1 rounded-full text-xs ${item.isActive
                                 ? "bg-green-100 text-green-700"
                                 : "bg-red-100 text-red-700"
-                            }`}
+                              }`}
                           >
                             {item.isActive ? "Active" : "Inactive"}
                           </span>
