@@ -13,6 +13,9 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { UserPlus, Edit, Trash2, Save, X } from "lucide-react";
+const API_URL = import.meta.env.VITE_API_URL;
+const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+
 
 export default function VendorUsers() {
     const [vendors, setVendors] = useState([]);
@@ -20,7 +23,7 @@ export default function VendorUsers() {
     const [formData, setFormData] = useState({ name: "", mobile: "", mail: "", });
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
-    const BASE_URL = "http://localhost:4000/api/vendor/users";
+    const BASE_URL = `${API_URL}/api/vendor/users`;
 
     // ===== Fetch Vendors =====
     const fetchVendors = async () => {
@@ -86,7 +89,7 @@ export default function VendorUsers() {
                         <Button
                             onClick={() => {
                                 setEditingVendor(null);
-                                setFormData({ name: "", mobile: "", mail:"" });
+                                setFormData({ name: "", mobile: "", mail: "" });
                             }}
                             className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
                         >
