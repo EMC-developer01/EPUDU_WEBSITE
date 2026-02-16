@@ -14,6 +14,9 @@ import {
 import { Search, Edit } from "lucide-react";
 
 export default function VendorOrderList() {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [orders, setOrders] = useState([]);
     const [total, setTotal] = useState(0);
@@ -41,7 +44,7 @@ export default function VendorOrderList() {
 
     // Edit modal state
     const [editOrder, setEditOrder] = useState(null);
-    const BASE_URL = "http://localhost:4000/api/vendor/orders";
+    const BASE_URL = `${API_URL}/api/vendor/orders`;
 
     // Fetch orders (server may ignore some params if not implemented — we still send them)
     const fetchOrders = async () => {

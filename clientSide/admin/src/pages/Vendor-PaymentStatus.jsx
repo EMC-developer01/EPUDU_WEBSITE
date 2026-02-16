@@ -4,12 +4,15 @@ import Sidebar from "@/components/Sidebar";
 import Header from "@/components/Header";
 
 const VendorPaymentStatus = () => {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [orders, setOrders] = useState([]);
     const [search, setSearch] = useState("");
 
     useEffect(() => {
-        fetch("http://localhost:4000/api/vendor/orders/")
+        fetch(`${API_URL}/api/vendor/orders/`)
             .then(res => res.json())
             .then(res => setOrders(res.data || []))
             .catch(console.error);
