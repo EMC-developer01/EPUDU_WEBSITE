@@ -13,13 +13,15 @@ import { A11y } from "swiper/modules";
 
 import "swiper/css";
 import "swiper/css/a11y";
+const API_URL = import.meta.env.VITE_API_URL;
+const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
 
 export default function EventEdits() {
     const navigate = useNavigate();
     const { id } = useParams();
 
-    const BASE_URL = "http://localhost:4000/api/client";
+    const BASE_URL = `${API_URL}/api/client`;
 
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [loading, setLoading] = useState(true);
@@ -139,7 +141,7 @@ export default function EventEdits() {
     const [entertainmentItems, setEntertainmentItems] = useState([]);
     const fetchItems = async () => {
         try {
-            const res = await axios.get("http://localhost:4000/api/vendor/items/getitems");
+            const res = await axios.get(`${API_URL}/api/vendor/items/getitems`);
             const allItems = res.data.items;
             // console.log(res.data.items);
 

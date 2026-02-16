@@ -13,8 +13,11 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { ArrowLeft, Save } from "lucide-react";
 import { GoogleMap, Marker, InfoWindow, useLoadScript } from "@react-google-maps/api";
+const API_URL = import.meta.env.VITE_API_URL;
+const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
-const BASE_URL = "http://localhost:4000/api/client";
+
+const BASE_URL = `${API_URL}/api/client`;
 
 
 
@@ -467,7 +470,7 @@ const EventEdits = () => {
 
 
     const ItemCard = ({ image, name, price }) => {
-        const IMAGE_BASE_URL = "http://localhost:4000/uploads/vendorItems/";
+        const IMAGE_BASE_URL = `${MEDIA_URL}/vendorItems/`;
 
         const finalPrice = (price * 1.5).toFixed(2);
 
