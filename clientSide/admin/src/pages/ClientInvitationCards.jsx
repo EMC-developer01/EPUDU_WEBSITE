@@ -16,8 +16,12 @@ import {
 } from "@/components/ui/table";
 import { Edit, Power, Image as ImageIcon } from "lucide-react";
 
-const API = "http://localhost:4000/api/admin/client-invitation";
-const IMAGE_BASE = "http://localhost:4000/";
+const API_URL = import.meta.env.VITE_API_URL;
+const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+
+
+const API = `${API_URL}/api/admin/client-invitation`;
+const IMAGE_BASE = `${API_URL}`;
 
 export default function ClientInvitationCards() {
     const [cards, setCards] = useState([]);
