@@ -10,9 +10,12 @@ export default function VendorRegistration() {
 
     const [vendorSignature, setVendorSignature] = useState(null);
     const [vendorSignaturePreview, setVendorSignaturePreview] = useState(null);
+    API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
 
-    const API_URL = "http://localhost:4000/api";
+
+    API_URL = `${API_URL}/api`;
 
     // Redirect if no vendor found
     useEffect(() => {

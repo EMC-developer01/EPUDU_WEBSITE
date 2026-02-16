@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Header from "../components/Header";
 
+const API_URL = import.meta.env.VITE_API_URL;
+const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+
+
 const isSameDay = (d1, d2) =>
     d1.getFullYear() === d2.getFullYear() &&
     d1.getMonth() === d2.getMonth() &&
@@ -61,7 +65,7 @@ const VendorOrdersList = () => {
         try {
             setLoading(true);
             const res = await axios.get(
-                `http://localhost:4000/api/vendor/orders?vendorId=${vendorId}`
+                `${API_URL}/api/vendor/orders?vendorId=${vendorId}`
             );
             setOrders(res.data.data || []);
         } catch (err) {
@@ -83,7 +87,7 @@ const VendorOrdersList = () => {
 
         try {
             await axios.patch(
-                `http://localhost:4000/api/vendor/orders/${editOrder._id}/status`,
+                `${API_URL}/api/vendor/orders/${editOrder._id}/status`,
                 { status: newStatus }
             );
 

@@ -42,8 +42,10 @@ export default function VendorAddItem() {
         Venue: ["Indoor", "Outdoor", "Banquet Hall", "Open Garden"],
         Entertainment: ["Games / Fun Activities", "Music / DJ / Sound System", "Dance", "Magic Show", "Puppet Show", "Cartoon Character", "Live Performance"],
     };
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
-    const API = "http://localhost:4000/api/vendor";
+    const API = `${API_URL}/api/vendor`;
 
 
 
@@ -173,7 +175,7 @@ export default function VendorAddItem() {
             PhotographyPackage: item.PhotographyPackage || "",
             image: null,
         });
-        setPreview(`http://localhost:4000/uploads/vendorItems/${item.image}`);
+        setPreview(`${MEDIA_URL}/vendorItems/${item.image}`);
     };
 
     const handleUpdate = async () => {

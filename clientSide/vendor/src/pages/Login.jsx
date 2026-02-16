@@ -11,8 +11,11 @@ const Login = ({ onClose }) => {
     let [shopName, setShopName] = useState("");
     let [vendorType, setVendorType] = useState("");
     let navigate = useNavigate();
+    API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
-    const API_URL = "http://localhost:4000/api";
+
+    API_URL = `${API_URL}/api`;
 
     // Step 1️⃣ — Send OTP
     const handleSendOtp = async (e) => {

@@ -5,6 +5,9 @@ import Header from "../components/Header";
 const VendorProfile = () => {
     const storedvendor = JSON.parse(localStorage.getItem("vendor"));
     const vendorMobile = storedvendor?.mobile;
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+
 
 
     const [vendor, setVendor] = useState({});
@@ -15,7 +18,7 @@ const VendorProfile = () => {
     useEffect(() => {
         const fetchVendor = async () => {
             const res = await fetch(
-                `http://localhost:4000/api/vendor/users/${vendorMobile}`
+                `${API_URL}/api/vendor/users/${vendorMobile}`
             );
             const data = await res.json();
             setVendor(data.vendor);
@@ -27,7 +30,7 @@ const VendorProfile = () => {
     console.log(vendor);
     // 🔹 Save changes
     const handleSave = async () => {
-        await fetch(`http://localhost:4000/api/vendor/users/${vendor._id}`, {
+        await fetch(`${API_URL}/api/vendor/users/${vendor._id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(formData),

@@ -3,6 +3,9 @@ import Header from "../components/Header";
 import axios from "axios";
 
 export default function VendorDashboard() {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -16,7 +19,7 @@ export default function VendorDashboard() {
     const fetchVendorOrders = async () => {
         try {
             const res = await axios.get(
-                `http://localhost:4000/api/vendor/orders`,
+                `${API_URL}/api/vendor/orders`,
                 { params: { vendorId } }
             );
             setOrders(res.data.data || []);
