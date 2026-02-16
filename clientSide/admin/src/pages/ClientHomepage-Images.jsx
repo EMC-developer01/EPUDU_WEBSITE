@@ -20,6 +20,12 @@ const API = "http://localhost:4000/api/admin/Client-homepages-images";
 const IMAGE_BASE = "http://localhost:4000/uploads/homepageImages";
 
 export default function ClientHomepageImages() {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+
+    const API = `${API_URL}/api/admin/Client-homepages-images`;
+    const IMAGE_BASE = `${MEDIA_URL}/homepageImages`;
+
     const [images, setImages] = useState([]);
     const [editingId, setEditingId] = useState(null);
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -307,8 +313,8 @@ export default function ClientHomepageImages() {
                                                 <TableCell>
                                                     <span
                                                         className={`px-3 py-1 rounded-full text-xs ${item.isActive
-                                                                ? "bg-green-100 text-green-700"
-                                                                : "bg-red-100 text-red-700"
+                                                            ? "bg-green-100 text-green-700"
+                                                            : "bg-red-100 text-red-700"
                                                             }`}
                                                     >
                                                         {item.isActive
