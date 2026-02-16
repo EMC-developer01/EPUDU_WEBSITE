@@ -52,10 +52,11 @@ const getDistanceKm = (lat1, lon1, lat2, lon2) => {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
-
+let API_URL = import.meta.env.VITE_API_URL;
+const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 export default function Birthday() {
-  API_URL = import.meta.env.VITE_API_URL;
-  const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+  // const API_URL = import.meta.env.VITE_API_URL;
+  // const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
   API_URL = `${API_URL}/api/client`;
 
