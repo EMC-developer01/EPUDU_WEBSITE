@@ -18,6 +18,9 @@ import axios from "axios";
 
 
 export default function Dashboard() {
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+
     const [userCount, setUserCount] = useState(0);
     const [vendorCount, setVendorCount] = useState(0);
     const [eventCount, setEventCount] = useState(0);
@@ -61,7 +64,7 @@ export default function Dashboard() {
         // Fetch users from backend
         const fetchUsers = async () => {
             try {
-                const response = await axios.get("http://localhost:4000/api/client/users/");
+                const response = await axios.get(`${API_URL}/api/client/users/`);
                 // Assuming the response data is an array of users
                 setUserCount(response.data.length);
             } catch (error) {
@@ -75,7 +78,7 @@ export default function Dashboard() {
         // Fetch users from backend
         const fetchUsers = async () => {
             try {
-                const response = await axios.get("http://localhost:4000/api/vendor/users/");
+                const response = await axios.get(`${API_URL}/api/vendor/users/`);
                 // Assuming the response data is an array of users
                 setVendorCount(response.data.length);
             } catch (error) {
@@ -89,10 +92,10 @@ export default function Dashboard() {
         const fetchEvents = async () => {
             try {
                 const endpoints = [
-                    // "http://localhost:4000/api/client/wedding",
-                    "http://localhost:4000/api/client/birthday/all",
-                    // "http://localhost:4000/api/client/functions",
-                    // "http://localhost:4000/api/client/reception"
+                    // `${API_URL}/api/client/wedding`,
+                    `${API_URL}/api/client/birthday/all`,
+                    // `${API_URL}/api/client/functions`,
+                    // `${API_URL}/api/client/reception`
                 ];
 
                 // Fetch all event types in parallel
@@ -117,7 +120,7 @@ export default function Dashboard() {
     useEffect(() => {
         const fetchPayments = async () => {
             try {
-                const response = await axios.get("http://localhost:4000/api/payment/all");
+                const response = await axios.get(`${API_URL}/api/payment/all`);
 
                 const total = response.data.reduce((sum, p) => {
                     return sum + (Number(p.amount) || 0);
@@ -134,7 +137,7 @@ export default function Dashboard() {
     }, []);
     useEffect(() => {
         axios
-            .get("http://localhost:4000/api/client/birthday/status/summary")
+            .get(`${API_URL}/api/client/birthday/status/summary`)
             .then(res => {
                 console.log(res.data.pending)
                 console.log(res.data.ongoing)
