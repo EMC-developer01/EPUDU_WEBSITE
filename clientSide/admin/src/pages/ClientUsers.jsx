@@ -19,8 +19,11 @@ export default function ClientUsers() {
     const [editingUser, setEditingUser] = useState(null);
     const [formData, setFormData] = useState({ name: "", mobile: "", mail: "" });
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
-    const BASE_URL = "http://localhost:4000/api/client/users";
+
+    const BASE_URL = `${API_URL}/api/client/users`;
 
     // ✅ Fetch users
     const fetchUsers = async () => {
