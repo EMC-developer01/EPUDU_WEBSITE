@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Login = ({ onClose }) => {
-  API_URL = import.meta.env.VITE_API_URL;
+  let API_URL = import.meta.env.VITE_API_URL;
   const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
   let [step, setStep] = useState("mobile"); // mobile | otp | name
   let [mobile, setMobile] = useState("");

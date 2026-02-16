@@ -35,7 +35,7 @@ app.use(cors({
     "http://localhost:3001",
     "http://localhost:3002",
     "https://epudu.com",
-    "http://43.205.46.167"
+    "http://43.205.46.167/client"
   ],
 
   credentials: true
