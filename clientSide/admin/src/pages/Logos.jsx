@@ -15,9 +15,12 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Edit, Power, Image as ImageIcon } from "lucide-react";
+const API_URL = import.meta.env.VITE_API_URL;
+const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
-const API = "http://localhost:4000/api/admin/logos";
-const IMAGE_BASE = "http://localhost:4000/uploads/logos";
+
+const API = `${API_URL}/api/admin/logos`;
+const IMAGE_BASE = `${MEDIA_URL}/logos`;
 
 export default function Logos() {
     const [logos, setLogos] = useState([]);
@@ -186,8 +189,8 @@ export default function Logos() {
                                                 <TableCell>
                                                     <span
                                                         className={`px-3 py-1 rounded-full text-xs ${item.isActive
-                                                                ? "bg-green-100 text-green-700"
-                                                                : "bg-red-100 text-red-700"
+                                                            ? "bg-green-100 text-green-700"
+                                                            : "bg-red-100 text-red-700"
                                                             }`}
                                                     >
                                                         {item.isActive ? "Active" : "Inactive"}
