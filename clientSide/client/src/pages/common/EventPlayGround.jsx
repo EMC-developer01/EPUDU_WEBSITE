@@ -21,8 +21,10 @@ export default function EventGalaxyPanel() {
     const fallback = "/default.jpg";
     const API_URL = import.meta.env.VITE_API_URL;
     const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+    console.log(API_URL)
 
     const API = `${API_URL}/api/admin/Client-homepages-images/all`;
+    console.log(API)
     const IMAGE_BASE = `${MEDIA_URL}/homepageImages`;
     const VIDEO_API = `${API_URL}/api/admin/client-homepage-videos/all`;
     const VIDEO_BASE = `${MEDIA_URL}/homepageVideos`;
