@@ -4,18 +4,29 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import api from "./api";
 
-const logoLetters = ["E", "P", "U", "D", "U"];
-const fallback = "/default.jpg";
-const API_URL = import.meta.env.VITE_API_URL;
-const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+// const logoLetters = ["E", "P", "U", "D", "U"];
+// const fallback = "/default.jpg";
+// const API_URL = import.meta.env.VITE_API_URL;
+// const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
-const API = `${API_URL}/api/admin/Client-homepages-images/all`;
-const IMAGE_BASE = `${MEDIA_URL}/homepageImages`;
-const VIDEO_API = `${API_URL}/api/admin/client-homepage-videos/all`;
-const VIDEO_BASE = `${MEDIA_URL}/homepageVideos`;
+// const API = `${API_URL}/api/admin/Client-homepages-images/all`;
+// const IMAGE_BASE = `${MEDIA_URL}/homepageImages`;
+// const VIDEO_API = `${API_URL}/api/admin/client-homepage-videos/all`;
+// const VIDEO_BASE = `${MEDIA_URL}/homepageVideos`;
 
 
 export default function EventGalaxyPanel() {
+
+    const logoLetters = ["E", "P", "U", "D", "U"];
+    const fallback = "/default.jpg";
+    const API_URL = import.meta.env.VITE_API_URL;
+    const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+
+    const API = `${API_URL}/api/admin/Client-homepages-images/all`;
+    const IMAGE_BASE = `${MEDIA_URL}/homepageImages`;
+    const VIDEO_API = `${API_URL}/api/admin/client-homepage-videos/all`;
+    const VIDEO_BASE = `${MEDIA_URL}/homepageVideos`;
+
     const [events, setEvents] = useState([]);
     const [logoImages, setLogoImages] = useState([]);
     const [loading, setLoading] = useState(true);
