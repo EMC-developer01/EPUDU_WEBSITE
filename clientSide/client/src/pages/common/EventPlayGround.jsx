@@ -51,7 +51,7 @@ export default function EventGalaxyPanel() {
                 const selectedImages = activeEvents.slice(0, 5);
                 console.log(selectedImages);
 
-                const imagesForLetters = selectedImages.map(i =>i.image ? `${IMAGE_BASE}/${i.image}` : fallback);
+                const imagesForLetters = selectedImages.map(i => i.image ? `${IMAGE_BASE}/${i.image}` : fallback);
                 setLogoImages(imagesForLetters);
                 console.log(imagesForLetters);
 
