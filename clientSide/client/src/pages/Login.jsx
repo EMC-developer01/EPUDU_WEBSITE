@@ -12,7 +12,7 @@ const Login = ({ onClose }) => {
   let [name, setName] = useState("");
   let navigate = useNavigate();
 
-  API_URL = `${API_URL}/api`;
+  API_URL = `${import.meta.env.VITE_API_URL}/api`;
 
   // Step 1️⃣ — Send OTP
   const handleSendOtp = async (e) => {
