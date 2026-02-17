@@ -36,6 +36,7 @@ app.use(cors({
     "http://localhost:3002",
     "https://epudu.com",
     "http://43.205.46.167"
+    "http://43.205.46.167",
   ],
 
   credentials: true
@@ -49,8 +50,6 @@ app.use(
   express.static("uploads/homepageVideos")
 );
 app.use("/uploads", express.static("uploads"));
-
-
 // CLIENT
 app.use("/client", express.static(path.join(__dirname, "../clientSide/client/dist")));
 
