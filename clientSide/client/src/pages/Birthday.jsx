@@ -52,13 +52,14 @@ const getDistanceKm = (lat1, lon1, lat2, lon2) => {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
-let API_URL = import.meta.env.VITE_API_URL;
-const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+// let API_URL = import.meta.env.VITE_API_URL;
+// const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 export default function Birthday() {
-  // const API_URL = import.meta.env.VITE_API_URL;
-  // const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
-
+  let API_URL = import.meta.env.VITE_API_URL;
+  const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+  const invitation_Api = `${API_URL}/api/admin`;
   API_URL = `${API_URL}/api/client`;
+
 
   const [cards, setCards] = useState([]);
   const [selectedCard, setSelectedCard] = useState(null);
@@ -68,7 +69,7 @@ export default function Birthday() {
 
     const fetchCards = async () => {
       try {
-        const res = await axios.get(`${API_URL}/api/admin/client-invitation/all`);
+        const res = await axios.get(`${invitation_Api}/client-invitation/all`);
         const activeCards = res.data.filter(c => c.isActive);
 
         if (isMounted) {
@@ -1373,7 +1374,7 @@ export default function Birthday() {
                     {cards.map(card => (
                       <img
                         key={card._id}
-                        src={`${API_URL}/${card.image}`}
+                        src={`${MEDIA_URL}/${card.image}`}
                         alt={card.cardName}
                         className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-4 ${selectedCard?._id === card._id ? "border-blue-500" : "border-transparent"}`}
                         onClick={() => setSelectedCard(card)}
@@ -1388,7 +1389,7 @@ export default function Birthday() {
                       className="p-6 border-2 border-pink-300 rounded-2xl shadow-lg w-full max-w-md relative text-gray-800"
                       style={{
                         backgroundImage: selectedCard
-                          ? `url("${API_URL}/${selectedCard.image}")`
+                          ? `url("${MEDIA_URL}/${selectedCard.image}")`
                           : "linear-gradient(to bottom right, #fff, #fff9c4)",
                         backgroundSize: "cover",
                         backgroundPosition: "center",

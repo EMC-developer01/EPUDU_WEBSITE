@@ -19,7 +19,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
 
-const API = `${API_URL}/admin/client-homepage-videos`;
+const API = `${API_URL}/api/admin/client-homepage-videos`;
 const VIDEO_BASE = `${MEDIA_URL}/uploads/homepageVideos`;
 
 function ClientHomepageVideo() {

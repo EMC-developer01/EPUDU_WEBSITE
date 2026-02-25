@@ -5,6 +5,7 @@ import axios from "axios";
 
 export default function Login() {
     const API_URL = import.meta.env.VITE_API_URL;
+    console.log("API_URL:", import.meta.env.VITE_API_URL);
     const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
     const navigate = useNavigate();

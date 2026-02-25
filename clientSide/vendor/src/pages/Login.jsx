@@ -11,7 +11,7 @@ const Login = ({ onClose }) => {
     let [shopName, setShopName] = useState("");
     let [vendorType, setVendorType] = useState("");
     let navigate = useNavigate();
-    API_URL = import.meta.env.VITE_API_URL;
+    let API_URL = import.meta.env.VITE_API_URL;
     const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
 
@@ -73,7 +73,7 @@ const Login = ({ onClose }) => {
             const vendorres = await fetch(`${API_URL}/vendor/users/${encodeURIComponent(fullMobile)}`);
             const data = await vendorres.json();
 
-            if (res.ok && data.vendor) {
+            if (vendorres.ok && data.vendor) {
                 // ✅ Vendor exists — login directly
                 localStorage.setItem("vendor", JSON.stringify(data.vendor));
                 localStorage.setItem("vendorId", data.vendor._id);
@@ -138,7 +138,7 @@ const Login = ({ onClose }) => {
         const savedVendor = JSON.parse(localStorage.getItem("vendor"));
         if (savedVendor) {
             localStorage.setItem("vendorId", savedVendor._id);
-            navigate("/");
+            navigate("/dashboard", { replace: true });
         }
     }, []);
 

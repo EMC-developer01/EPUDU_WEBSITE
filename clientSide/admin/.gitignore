@@ -6,7 +6,9 @@
 # yarn-error.log*
 # pnpm-debug.log*
 # lerna-debug.log*
-
+.env
+env
+dist/*
 node_modules
 # dist
 # dist-ssr
