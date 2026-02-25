@@ -18,6 +18,8 @@ export default defineConfig({
   },
   server: {
     host: true,
-    port: 5175
+    port: 5175,
+    allowedHosts: ['epudu.com']
+
   }
 })
