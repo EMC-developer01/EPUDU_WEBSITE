@@ -58,7 +58,7 @@ export default function Birthday() {
   let API_URL = import.meta.env.VITE_API_URL;
   const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
   const invitation_Api = `${API_URL}/api/admin`;
-  API_URL = `${API_URL}/api/client`;
+  API_URL = `${API_URL}/api/`;
 
 
   const [cards, setCards] = useState([]);
@@ -495,7 +495,7 @@ export default function Birthday() {
 
   const fetchItems = async () => {
     try {
-      const res = await axios.get(`${API_URL}/api/vendor/items/getitems`);
+      const res = await axios.get(`${API_URL}/vendor/items/getitems`);
       const allItems = res.data.items;
       // console.log(res.data.items);
 
@@ -593,7 +593,7 @@ export default function Birthday() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/birthday/create`, {
+      const res = await fetch(`${API_URL}/client/birthday/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, ...formData }),
@@ -671,7 +671,7 @@ export default function Birthday() {
         step: stepNumber,
         formData: stepData,
       });
-      const res = await fetch(`${API_URL}/birthday/update-step`, {
+      const res = await fetch(`${API_URL}/client/birthday/update-step`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1034,7 +1034,7 @@ export default function Birthday() {
   useEffect(() => {
     if (id) {
       axios
-        .get(`${API_URL}/api/client/birthday/order/${id}`)
+        .get(`${API_URL}/client/birthday/order/${id}`)
         .then((res) => {
           if (res.data) {
             setFormData((prev) => ({
