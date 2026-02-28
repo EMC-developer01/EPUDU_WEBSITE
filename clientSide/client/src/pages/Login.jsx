@@ -88,7 +88,7 @@ const Login = ({ onClose }) => {
     e.preventDefault();
 
     try {
-      const res = await fetch(`${API_URL}/api/verify-otp`, {
+      const res = await fetch(`${API_URL}/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ otp, mobile }),
