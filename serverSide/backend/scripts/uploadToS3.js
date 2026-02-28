@@ -36,7 +36,7 @@ const walkAndUpload = async (dir) => {
         .relative(LOCAL_ROOT, fullPath)
         .replace(/\\/g, "/");
 
-      const s3Key = `uploads/${relativePath}`;
+      const s3Key = `${relativePath}`;
 
       const fileContent = fs.readFileSync(fullPath);
 
@@ -50,7 +50,7 @@ const walkAndUpload = async (dir) => {
           Key: s3Key,
           Body: fileContent,
           ContentType: contentType,
-          // ACL: "public-read",
+          ACL: "public-read",
         })
         .promise();
 
