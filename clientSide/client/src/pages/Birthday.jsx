@@ -2905,7 +2905,7 @@ export default function Birthday() {
                     };
                     setFormData(pendingData);
 
-                    await fetch(`${API_URL}/api/client/birthday/update-step`, {
+                    await fetch(`${API_URL}/client/birthday/update-step`, {
                       method: "PUT",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
@@ -2916,7 +2916,7 @@ export default function Birthday() {
                     });
 
                     // ✅ STEP 2: Create Razorpay order
-                    const orderRes = await fetch(`${API_URL}/api/payment/create-order`, {
+                    const orderRes = await fetch(`${API_URL}/payment/create-order`, {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ amount: advance }),
@@ -2938,7 +2938,7 @@ export default function Birthday() {
                       setFormData(reverted);
                       console.log(reverted);
 
-                      await fetch(`${API_URL}/api/client/birthday/update-step`, {
+                      await fetch(`${API_URL}/client/birthday/update-step`, {
                         method: "PUT",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -2963,7 +2963,7 @@ export default function Birthday() {
                         try {
                           // ✅ STEP 4: Verify payment on backend
 
-                          const verifyRes = await fetch(`${API_URL}/api/payment/verify`, {
+                          const verifyRes = await fetch(`${API_URL}/payment/verify`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
@@ -3007,7 +3007,7 @@ export default function Birthday() {
                             // ********************************************
                             // 🔥 STEP A: Update backend after payment
                             // ********************************************
-                            await fetch(`${API_URL}/api/client/birthday/update-step`, {
+                            await fetch(`${API_URL}/client/birthday/update-step`, {
                               method: "PUT",
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({
@@ -3020,7 +3020,7 @@ export default function Birthday() {
                             // ********************************************
                             // 🔥 STEP B — SYNC BIRTHDAY → VENDOR ORDERS
                             // ********************************************
-                            await fetch(`${API_URL}/api/vendor/orders/sync`, {
+                            await fetch(`${API_URL}/vendor/orders/sync`, {
                               method: "POST",
                               headers: { "Content-Type": "application/json" },
                             });
@@ -3028,7 +3028,7 @@ export default function Birthday() {
                             // ********************************************
                             // 🔥 STEP C — INFORM ADMIN
                             // ********************************************
-                            await fetch(`${API_URL}/api/admin/notifications/sendAdminNotification`, {
+                            await fetch(`${API_URL}/admin/notifications/sendAdminNotification`, {
                               method: "POST",
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({
@@ -3041,7 +3041,7 @@ export default function Birthday() {
                             // ********************************************
                             // 🔥 STEP D — INFORM CLIENT (Frontend Notification)
                             // ********************************************
-                            await fetch(`${API_URL}/api/client/notifications/client-bill`, {
+                            await fetch(`${API_URL}/client/notifications/client-bill`, {
                               method: "POST",
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({
