@@ -58,7 +58,7 @@ export default function Birthday() {
   let API_URL = import.meta.env.VITE_API_URL;
   const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
   const invitation_Api = `${API_URL}/api/admin`;
-  API_URL = `${API_URL}/api/`;
+  API_URL = `${API_URL}/api`;
 
 
   const [cards, setCards] = useState([]);
