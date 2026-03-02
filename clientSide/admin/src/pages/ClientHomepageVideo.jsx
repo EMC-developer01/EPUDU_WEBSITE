@@ -20,7 +20,7 @@ const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
 
 const API = `${API_URL}/api/admin/client-homepage-videos`;
-const VIDEO_BASE = `${MEDIA_URL}/uploads/homepageVideos`;
+const VIDEO_BASE = `${MEDIA_URL}/homepageVideos`;
 
 function ClientHomepageVideo() {
   const [videos, setVideos] = useState([]);
