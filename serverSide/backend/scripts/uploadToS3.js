@@ -1,65 +1,39 @@
-import "dotenv/config";
-import fs from "fs";
-import path from "path";
 import AWS from "aws-sdk";
-import { fileURLToPath } from "url";
+import multer from "multer";
 import mime from "mime-types";
 
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// S3 config
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   region: process.env.AWS_REGION,
 });
 
-const BUCKET = process.env.AWS_BUCKET_NAME;
-console.log(process.env.AWS_BUCKET_NAME)
-const LOCAL_ROOT = path.join(__dirname, "../uploads");
+const upload = multer({
+  storage: multer.memoryStorage(),
+});
 
-// 🔁 walk folders recursively
-const walkAndUpload = async (dir) => {
-  const items = fs.readdirSync(dir);
+export const uploadImage = async (req, res) => {
+  try {
+    const file = req.file;
 
-  for (const item of items) {
-    const fullPath = path.join(dir, item);
-    const stat = fs.statSync(fullPath);
+    const key = `uploads/${Date.now()}-${file.originalname}`;
 
-    if (stat.isDirectory()) {
-      await walkAndUpload(fullPath);
-    } else {
-      // preserve relative path
-      const relativePath = path
-        .relative(LOCAL_ROOT, fullPath)
-        .replace(/\\/g, "/");
+    const result = await s3
+      .upload({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+        ACL: "public-read",
+      })
+      .promise();
 
-      const s3Key = `uploads/${relativePath}`;
-
-      const fileContent = fs.readFileSync(fullPath);
-
-      // ✅ FIXED: define contentType here
-      const contentType =
-        mime.lookup(fullPath) || "application/octet-stream";
-
-      await s3
-        .upload({
-          Bucket: BUCKET,
-          Key: s3Key,
-          Body: fileContent,
-          ContentType: contentType,
-          ACL: "public-read",
-        })
-        .promise();
-
-      console.log("Uploaded:", s3Key);
-    }
+    res.json({
+      success: true,
+      url: result.Location,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Upload failed" });
   }
 };
-
-
-walkAndUpload(LOCAL_ROOT)
-  .then(() => console.log("✅ Folder structure preserved & uploaded to S3"))
-  .catch(console.error);
