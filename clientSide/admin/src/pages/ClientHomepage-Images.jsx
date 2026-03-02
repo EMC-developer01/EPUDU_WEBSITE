@@ -16,15 +16,15 @@ import {
 } from "@/components/ui/table";
 import { Edit, Power, Image as ImageIcon } from "lucide-react";
 
-const API = "http://localhost:4000/api/admin/Client-homepages-images";
-const IMAGE_BASE = "http://localhost:4000/uploads/homepageImages";
+// const API = "http://localhost:4000/api/admin/Client-homepages-images";
+// const IMAGE_BASE = "http://localhost:4000/uploads/homepageImages";
 
 export default function ClientHomepageImages() {
     const API_URL = import.meta.env.VITE_API_URL;
     const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
     const API = `${API_URL}/api/admin/Client-homepages-images`;
-    const IMAGE_BASE = `${MEDIA_URL}/homepageImages`;
+    const IMAGE_BASE = `${MEDIA_URL}/uploads/homepageImages`;
 
     const [images, setImages] = useState([]);
     const [editingId, setEditingId] = useState(null);
