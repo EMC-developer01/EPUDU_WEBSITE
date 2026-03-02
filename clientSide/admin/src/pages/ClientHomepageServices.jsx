@@ -20,7 +20,7 @@ const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
 
 const API = `${API_URL}/api/admin/client-homepage-services`;
-const IMAGE_BASE =`${MEDIA_URL}/homepageservices`;
+const IMAGE_BASE =`${MEDIA_URL}/uploads/homepageservices`;
 
 function ClientHomepageServices() {
     const [services, setServices] = useState([]);

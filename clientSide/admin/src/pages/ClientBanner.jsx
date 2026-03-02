@@ -24,7 +24,7 @@ export default function ClientBanner() {
     const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
     const API = `${API_URL}/api/admin/client-banner`;
-    const IMAGE_BASE = `${MEDIA_URL}/banners`;
+    const IMAGE_BASE = `${MEDIA_URL}/uploads/banners`;
 
     const [banners, setBanners] = useState([]);
     const [editingId, setEditingId] = useState(null);
