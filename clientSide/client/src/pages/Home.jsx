@@ -18,7 +18,7 @@ export default function Home() {
   const API = `${API_URL}/api/admin/Client-homepages-images/all`;
   const IMAGE_BASE = `${API_URL}/uploads/homepageImages`;
   const serviceAPI = `${API_URL}/api/admin/client-homepage-services`;
-  const Service_IMAGE_BASE = `${MEDIA_URL}/homepageServices`;
+  const Service_IMAGE_BASE = `${MEDIA_URL}/homepageservices`;
 
   const [birthdayImg, setBirthdayImg] = useState([]);
   const [weddingImg, setWeddingImg] = useState([]);
