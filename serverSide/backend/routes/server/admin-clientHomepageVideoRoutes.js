@@ -9,14 +9,16 @@ import {
 
 const router = express.Router();
 
-const storage = multer.diskStorage({
-    destination: "uploads/homepageVideos",
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + "-" + file.originalname);
-    },
-});
+// const storage = multer.diskStorage({
+//     destination: "uploads/homepageVideos",
+//     filename: (req, file, cb) => {
+//         cb(null, Date.now() + "-" + file.originalname);
+//     },
+// });
 
-const upload = multer({ storage });
+const upload = multer({ 
+    storage: multer.memoryStorage(),
+ });
 
 router.post("/add", upload.single("video"), addVideo);
 router.get("/all", getAllVideos);

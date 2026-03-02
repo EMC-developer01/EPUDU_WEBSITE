@@ -8,14 +8,16 @@ import {
 } from "../../controllers/server/admin-ClientInvitationCardController.js";
 
 /* ---------------- MULTER ---------------- */
-const storage = multer.diskStorage({
-    destination: "uploads/invitationCards",
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + "-" + file.originalname);
-    },
-});
+// const storage = multer.diskStorage({
+//     destination: "uploads/invitationCards",
+//     filename: (req, file, cb) => {
+//         cb(null, Date.now() + "-" + file.originalname);
+//     },
+// });
 
-const upload = multer({ storage });
+const upload = multer({ 
+    storage: multer.memoryStorage(),
+ });
 
 const router = express.Router();
 

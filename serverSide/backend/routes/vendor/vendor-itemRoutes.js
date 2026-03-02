@@ -5,14 +5,16 @@ import { addVendorItem, deleteVendorItem, getVendorItems, updateVendorItem } fro
 const router = express.Router();
 
 // Multer Setup
-const storage = multer.diskStorage({
-    destination: "uploads/vendorItems",
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + "-" + file.originalname);
-    }
-});
+// const storage = multer.diskStorage({
+//     destination: "uploads/vendorItems",
+//     filename: (req, file, cb) => {
+//         cb(null, Date.now() + "-" + file.originalname);
+//     }
+// });
 
-const upload = multer({ storage });
+const upload = multer({ 
+    storage: multer.memoryStorage(),
+ });
 
 // ADD ITEM
 router.post("/additem", upload.single("image"), addVendorItem);

@@ -4,7 +4,9 @@ import { registerVendorAgreement } from "../../controllers/vendor/vendor-registr
 
 const router = express.Router();
 
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ 
+    storage: multer.memoryStorage(),
+ });
 
 router.post("/register", upload.single("vendorSignature"), registerVendorAgreement);
 

@@ -8,16 +8,18 @@ import {
 } from "../../controllers/server/admin-clientBannerController.js";
 
 /* ---------------- MULTER SETUP ---------------- */
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "uploads/banners"); // 👈 separate folder for banners
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + "-" + file.originalname);
-    },
-});
+// const storage = multer.diskStorage({
+//     destination: (req, file, cb) => {
+//         cb(null, "uploads/banners"); // 👈 separate folder for banners
+//     },
+//     filename: (req, file, cb) => {
+//         cb(null, Date.now() + "-" + file.originalname);
+//     },
+// });
 
-const upload = multer({ storage });
+const upload = multer({ 
+    storage: multer.memoryStorage(),
+ });
 
 const router = express.Router();
 

@@ -10,14 +10,16 @@ import {
 const router = express.Router();
 
 /* ---------------- MULTER SETUP ---------------- */
-const storage = multer.diskStorage({
-    destination: "uploads/homepageImages",
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + "-" + file.originalname);
-    },
-});
+// const storage = multer.diskStorage({
+//     destination: "uploads/homepageImages",
+//     filename: (req, file, cb) => {
+//         cb(null, Date.now() + "-" + file.originalname);
+//     },
+// });
 
-const upload = multer({ storage });
+const upload = multer({ 
+    storage: multer.memoryStorage(),
+ });
 
 /* ---------------- ROUTES ---------------- */
 

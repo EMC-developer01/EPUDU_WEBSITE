@@ -4,14 +4,16 @@ import multer from "multer";
 import { addService, getAllServices, updateService, updateStatus } from "../../controllers/server/admin-clientHomepageService.js";
 
 const router = express.Router();
-const storage = multer.diskStorage({
-    destination: "uploads/homepageservices",
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + "-" + file.originalname);
-    },
-});
+// const storage = multer.diskStorage({
+//     destination: "uploads/homepageservices",
+//     filename: (req, file, cb) => {
+//         cb(null, Date.now() + "-" + file.originalname);
+//     },
+// });
 
-const upload = multer({ storage });
+const upload = multer({ 
+    storage: multer.memoryStorage(),
+ });
 
 
 
