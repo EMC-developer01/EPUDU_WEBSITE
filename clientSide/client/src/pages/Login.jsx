@@ -199,7 +199,8 @@ const Login = ({ onClose }) => {
             <button
               type="submit"
               className="w-full px-5 py-2 rounded-lg"
-              style="background-color:#2563eb; color:#ffffff;">
+              style={{ backgroundColor: "#2563eb", color: "#ffffff" }}
+            >
               Send OTP
             </button>
           </form>
