@@ -177,7 +177,7 @@ const Login = ({ onClose }) => {
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-2 right-3 text-gray-700 hover:text-gray-900 text-xl"
+          className="absolute top-2 right-3 text-gray/700 hover:text-gray/900 text-xl"
         >
           ✕
         </button>
