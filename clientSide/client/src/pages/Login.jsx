@@ -175,6 +175,7 @@ const Login = ({ onClose }) => {
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
       <div className="relative bg-white/90 rounded-xl shadow-2xl p-8 w-[90%] max-w-sm mx-auto">
         <button
+          type="button"
           onClick={onClose}
           className="absolute top-2 right-3 text-gray-700 hover:text-gray-900 text-xl"
         >
@@ -196,7 +197,7 @@ const Login = ({ onClose }) => {
               required
             />
             <button
-              type="submit"
+              type="button"
               className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
             >
               Send OTP
@@ -218,7 +219,7 @@ const Login = ({ onClose }) => {
               required
             />
             <button
-              type="submit"
+              type="button"
               className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
             >
               Verify OTP
@@ -240,7 +241,7 @@ const Login = ({ onClose }) => {
               required
             />
             <button
-              type="submit"
+              type="button"
               className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
             >
               Continue
