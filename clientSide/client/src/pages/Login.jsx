@@ -177,7 +177,8 @@ const Login = ({ onClose }) => {
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-2 right-3 bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 text-xl"
+          className="absolute top-2 right-3 px-5 py-2 rounded-lg text-xl"
+          style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
         >
           ✕
         </button>
@@ -221,7 +222,8 @@ const Login = ({ onClose }) => {
             />
             <button
               type="submit"
-              className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
+              className="w-full py-2 rounded-lg"
+              style={{ backgroundColor: "#16a34a", color: "#ffffff" }}
             >
               Verify OTP
             </button>
@@ -243,7 +245,8 @@ const Login = ({ onClose }) => {
             />
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+              className="w-full py-2 rounded-lg"
+              style={{ backgroundColor: "#2563eb", color: "#ffffff" }}
             >
               Continue
             </button>
