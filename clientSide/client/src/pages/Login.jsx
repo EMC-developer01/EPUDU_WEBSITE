@@ -172,8 +172,8 @@ const Login = ({ onClose }) => {
   }, []);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-50">
-      <div className="relative bg-white/90 rounded-xl shadow-2xl p-8 w-[90%] max-w-sm mx-auto">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="relative bg-white rounded-xl shadow-2xl p-8 w-[90%] max-w-sm mx-auto">
         <button
           type="button"
           onClick={onClose}
