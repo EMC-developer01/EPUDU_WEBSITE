@@ -197,7 +197,7 @@ const Login = ({ onClose }) => {
               required
             />
             <button
-              type="button"
+              type="submit"
               className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
             >
               Send OTP
@@ -219,7 +219,7 @@ const Login = ({ onClose }) => {
               required
             />
             <button
-              type="button"
+              type="submit"
               className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
             >
               Verify OTP
@@ -241,7 +241,7 @@ const Login = ({ onClose }) => {
               required
             />
             <button
-              type="button"
+              type="submit"
               className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
             >
               Continue
