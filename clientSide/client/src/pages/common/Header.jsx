@@ -13,7 +13,7 @@ import logo from "../../assets/logo.jpeg";
 // import epuduLogo from "../../assets/epuduLogo.png";
 // import epudulogo from "../../assets/epuduLog.jpeg";
 import epudulog from "../../assets/epudu-logo.png";
-import epudulogo from "../../assets/logo.png";
+import epudulogo from "../../../dist/logo.png";
 
 export default function Header() {
   const API_URL = import.meta.env.VITE_API_URL;
