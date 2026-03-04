@@ -97,7 +97,7 @@ export default function Header() {
     >
       {/* 1. Navigation Bar (Fixed 75px height) */}
       <header className={`h-[75px] w-full overflow-visible !important z-[9999]  ${isHome ? 'absolute top-0 left-0' : 'relative shadow-md'} `}>
-        <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-4">
+        <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-1">
           {/* Logo */}
           <div
             className="flex items-center gap-2 cursor-pointer"
