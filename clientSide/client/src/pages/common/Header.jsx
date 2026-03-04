@@ -96,14 +96,14 @@ export default function Header() {
       className={`w-full galaxy-bg text-white z-50  ${isHome ? 'relative min-h-screen' : 'fixed top-0 left-0 shadow-md h-[75px]'}`}
     >
       {/* 1. Navigation Bar (Fixed 75px height) */}
-      <header className={`h-[75px] w-full overflow-visible !important z-[9999]  ${isHome ? 'absolute top-0 left-0' : 'relative shadow-md'} `}>
+      <header className={`w-full overflow-visible !important z-[9999]  ${isHome ? 'h-[75px] absolute top-0 left-0' : 'py-[1px] relative shadow-md'} `}>
         <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-1">
           {/* Logo */}
           <div
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => navigate("/")}
           >
-            <img src={isHome ? epudulogo : epudutry} alt="sample" className="h-50 w-auto m-1" />
+            <img src={isHome ? epudulogo : epudutry} alt="sample" className="h-60 w-auto m-1 py-1" />
             {/* <span className="font-bold text-lg">MyWebsite</span> */}
           </div>
 
