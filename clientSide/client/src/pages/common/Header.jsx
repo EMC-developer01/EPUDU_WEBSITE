@@ -103,7 +103,7 @@ export default function Header() {
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => navigate("/")}
           >
-            <img src={isHome ? epudulogo : epudutry} alt="sample" className="h-65 w-auto object-contain" />
+            <img src={isHome ? epudulogo : epudutry} alt="sample" className="h-65 w-auto " />
             {/* <span className="font-bold text-lg">MyWebsite</span> */}
           </div>
 
