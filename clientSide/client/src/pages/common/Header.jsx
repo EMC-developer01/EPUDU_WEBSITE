@@ -93,7 +93,7 @@ export default function Header() {
   return (
     // The outer container dictates the full height and content
     <div
-      className={`w-full galaxy-bg text-white z-50  ${isHome ? 'relative min-h-screen overflow-visible' : 'fixed top-0 left-0 shadow-md h-[75px] overflow-visible '}`}
+      className={`w-full galaxy-bg text-white z-50  ${isHome ? 'relative min-h-screen ' : 'fixed top-0 left-0 shadow-md h-[75px]'}`}
     >
       {/* 1. Navigation Bar (Fixed 75px height) */}
       <header className={`h-[85px] w-full overflow-visible !important z-[9999]  ${isHome ? 'absolute top-0 left-0' : 'relative shadow-md'} `}>
@@ -107,7 +107,7 @@ export default function Header() {
             {/* <span className="font-bold text-lg">MyWebsite</span> */}
           </div>
 
-          {/* Desktop Nav */}
+          {/* Desktop Nav */}  
           <nav className="hidden md:flex items-center gap-8">
             <Link to="/" className={`hover:text-blue-400 transition ${isHome ? 'text-white' : 'text-black'}`}>Home</Link>
 
@@ -161,7 +161,7 @@ export default function Header() {
               </Link>
 
               {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-xl z-50" style={{ backgroundColor: "#e7e7f1" }}>
+                <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-xl z-50" style={{ backgroundColor: "#e7e7f1"}}>
                   <Link
                     to="/profile"
                     className="block px-4 py-2 hover:bg-blue-100 text-black"
@@ -207,13 +207,13 @@ export default function Header() {
           {/* Mobile Menu Button */}
           <button
             className="md:hidden p-2"
-            style={{ backgroundColor: "indigo", color: "#ffffff" }}
+            style={{ backgroundColor: "indigo", color: "#ffffff" }} 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
-              <XMarkIcon className="h-7 w-7" />
+              <XMarkIcon className="h-7 w-7"/>
             ) : (
-              <Bars3Icon className="h-7 w-7" />
+              <Bars3Icon className="h-7 w-7"/>
             )}
           </button>
         </div>
