@@ -207,6 +207,7 @@ export default function Header() {
           {/* Mobile Menu Button */}
           <button
             className="md:hidden p-2"
+            style={{ backgroundColor: "indigo", color: "#ffffff" }} 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
