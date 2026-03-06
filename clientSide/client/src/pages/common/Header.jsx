@@ -210,9 +210,9 @@ export default function Header() {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
-              <XMarkIcon className="h-7 w-7" style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}  />
+              <XMarkIcon className="h-7 w-7"  />
             ) : (
-              <Bars3Icon className="h-7 w-7" style={{ backgroundColor: "#4f46e5", color: "#ffffff" }} />
+              <Bars3Icon className="h-7 w-7" />
             )}
           </button>
         </div>
