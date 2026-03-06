@@ -112,12 +112,12 @@ export default function Header() {
             <Link to="/" className={`hover:text-blue-400 transition ${isHome ? 'text-white' : 'text-black'}`}>Home</Link>
 
             <div className="relative" ref={dropdownRef}>
-              <button
+              <Link
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className={`flex items-center gap-1 hover:text-blue-400 transition ${isHome ? 'text-white' : 'text-black'}`}
               >
                 Events <ChevronDownIcon className={`h-4 w-4 transform transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : 'rotate-0'}`} />
-              </button>
+              </Link>
 
               {isDropdownOpen && (
                 <div className="absolute left-0  top-full mt-2 w-40 bg-white text-black rounded-lg shadow-xl z-[10000] ring-1 ring-black ring-opacity-5 focus:outline-none">
