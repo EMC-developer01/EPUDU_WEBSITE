@@ -93,7 +93,7 @@ export default function Header() {
   return (
     // The outer container dictates the full height and content
     <div
-      className={`w-full galaxy-bg text-white z-50  ${isHome ? 'relative min-h-screen' : 'fixed top-0 left-0 shadow-md h-[75px]'}`}
+      className={`w-full galaxy-bg text-white z-50  ${isHome ? 'relative min-h-screen overflow-visible' : 'fixed top-0 left-0 shadow-md h-[75px] overflow-visible'}`}
     >
       {/* 1. Navigation Bar (Fixed 75px height) */}
       <header className={`h-[85px] w-full overflow-visible !important z-[9999]  ${isHome ? 'absolute top-0 left-0' : 'relative shadow-md'} `}>
@@ -211,9 +211,9 @@ export default function Header() {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
-              <XMarkIcon className="h-7 w-7"  />
+              <XMarkIcon className="h-7 w-7"/>
             ) : (
-              <Bars3Icon className="h-7 w-7" />
+              <Bars3Icon className="h-7 w-7"/>
             )}
           </button>
         </div>

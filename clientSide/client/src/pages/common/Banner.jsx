@@ -53,7 +53,7 @@ export default function Banner() {
   if (!banners.length) return null;
 
   return (
-    <section className="relative w-full h-[350px] overflow-hidden">
+    <section className="relative w-full h-[350px] ">
       {banners.map((banner, index) => (
         <div
           key={banner._id}
@@ -63,7 +63,7 @@ export default function Banner() {
           <img
             src={`${MEDIA_URL}/banners/${banner.image}`}
             alt="Banner"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover overflow-hidden"
           />
 
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
