@@ -29,7 +29,6 @@ const geocodeAddress = async (address) => {
   return new Promise((resolve) => {
     geocoder.geocode({ address }, (results, status) => {
       if (status === "OK" && results[0]) {
-        np
         const loc = results[0].geometry.location;
         resolve({ lat: loc.lat(), lng: loc.lng() });
       } else {
@@ -60,24 +59,6 @@ export default function Birthday() {
   const invitation_Api = `${API_URL}/api/admin`;
   API_URL = `${API_URL}/api`;
 
-  const [search, setSearch] = useState("");
-  const [filterLocation, setFilterLocation] = useState("");
-  const [filterRating, setFilterRating] = useState("");
-  const [filterPrice, setFilterPrice] = useState("");
-  const filteredVenues = venues.filter((v) => {
-    return (
-      v.name.toLowerCase().includes(search.toLowerCase()) &&
-      (filterLocation ? v.location === filterLocation : true) &&
-      (filterRating ? v.stars >= Number(filterRating) : true) &&
-      (filterPrice
-        ? filterPrice === "low"
-          ? v.cost < 50000
-          : filterPrice === "mid"
-            ? v.cost >= 50000 && v.cost <= 150000
-            : v.cost > 150000
-        : true)
-    );
-  });
 
   const [cards, setCards] = useState([]);
   const [selectedCard, setSelectedCard] = useState(null);
@@ -371,119 +352,7 @@ export default function Birthday() {
     }));
   }, [costs.total]);
 
-  // const calculateEntertainmentCost = () => {
-  //   let total = 0;
 
-  //   // Go through all submenu categories inside entertainment
-  //   const ent = formData.entertainment;
-
-  //   const allKeys = [
-  //     "CartoonCharacter",
-  //     "Dance",
-  //     "LivePerformance",
-  //     "MagicShow",
-  //     "Music_DJ_SoundSystem",
-  //     "PuppetShow",
-  //     "activitiesSelected",
-  //   ];
-
-  //   allKeys.forEach((key) => {
-  //     const selectedItems = ent[key] || [];
-
-  //     selectedItems.forEach((name) => {
-  //       if (name !== "Other") {
-  //         const found = entertainmentItems.find((i) => i.name === name);
-  //         if (found) total += Number(found.price) || 0;
-  //       }
-  //     });
-  //   });
-
-  //   // ✔ Emcee pricing (optional: adjust as needed)
-  //   if (ent.emceeRequired === "Yes") {
-  //     total += 2000; // your default emcee cost
-  //   }
-
-  //   setCosts((prev) => {
-  //     const updated = { ...prev, entertainment: total };
-  //     updated.total =
-  //       updated.food +
-  //       updated.decoration +
-  //       updated.photography +
-  //       updated.entertainment +
-  //       updated.venue;
-
-  //     return updated;
-  //   });
-  // };
-  // useEffect(() => {
-  //   calculateEntertainmentCost();
-  // }, [formData.entertainment]);
-
-  // const calculatePhotographyCost = () => {
-  //   let total = 0;
-
-  //   // Selected photography/videography packages
-  //   const selectedPackages = formData.photography.packageType || [];
-
-  //   selectedPackages.forEach((name) => {
-  //     if (name !== "Other") {
-  //       const found = photographyItems.find((i) => i.name === name);
-  //       if (found) total += Number(found.price) || 0;
-  //     }
-  //   });
-
-  //   // Team requirement (optional)
-  //   if (formData.photography.photoTeam === "Required") {
-  //     total += 2500; // default team charge
-  //   }
-
-  //   // Instant photo (optional logic)
-  //   if (formData.photography.instantPhoto === "Yes") {
-  //     total += 1000; // default instant photo package
-  //   }
-
-  //   setCosts((prev) => {
-  //     const updated = { ...prev, photography: total };
-
-  //     updated.total =
-  //       updated.food +
-  //       updated.decoration +
-  //       updated.photography +
-  //       updated.entertainment +
-  //       updated.venue;
-
-  //     return updated;
-  //   });
-  // };
-  // useEffect(() => {
-  //   calculatePhotographyCost();
-  // }, [formData.photography]);
-  // const calculateEventStaffCost = () => {
-  //   const foodServers = Number(formData.eventStaff.foodServers) || 0;
-  //   const welcomeStaff = Number(formData.eventStaff.welcomeStaff) || 0;
-  //   const maintenanceTeam = Number(formData.eventStaff.maintenanceTeam) || 0;
-
-  //   const totalStaff = foodServers + welcomeStaff + maintenanceTeam;
-
-  //   const eventStaffCost = totalStaff * 1500;
-
-  //   setCosts(prev => {
-  //     const updated = { ...prev, eventStaff: eventStaffCost };
-
-  //     updated.total =
-  //       prev.decoration.total +
-  //       prev.foodArrangements.total +
-  //       prev.entertainment.total +
-  //       prev.photography.total +
-  //       prev.venue +
-  //       eventStaffCost;
-
-  //     return updated;
-  //   });
-  // };
-  // useEffect(() => {
-  //   calculateEventStaffCost();
-  // }, [formData.eventStaff]);
 
   useEffect(() => {
     console.log("📌 Total Event Cost:", costs.total);
@@ -749,6 +618,25 @@ export default function Birthday() {
   ];
   const [venues, setVenues] = useState(initialVenues);
 
+  const [search, setSearch] = useState("");
+  const [filterLocation, setFilterLocation] = useState("");
+  const [filterRating, setFilterRating] = useState("");
+  const [filterPrice, setFilterPrice] = useState("");
+  const filteredVenues = venues.filter((v) => {
+    return (
+      v.name.toLowerCase().includes(search.toLowerCase()) &&
+      (filterLocation ? v.location === filterLocation : true) &&
+      (filterRating ? v.stars >= Number(filterRating) : true) &&
+      (filterPrice
+        ? filterPrice === "low"
+          ? v.cost < 50000
+          : filterPrice === "mid"
+            ? v.cost >= 50000 && v.cost <= 150000
+            : v.cost > 150000
+        : true)
+    );
+  });
+
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
     // libraries: ["places"],
@@ -765,141 +653,6 @@ export default function Birthday() {
     return isNaN(n) ? "0.00" : n.toFixed(2);
   };
 
-  // const getMainCourseItems = (mealType, mealTime, cuisine) => {
-  //   if (!mealType || !mealTime || !cuisine) return {};
-
-  //   const menus = {
-  //     "South Indian": {
-  //       Tiffin: {
-  //         "Tiffin Dishes": ["Idli", "Vada", "Dosa", "Pongal", "Upma"],
-  //       },
-  //       Lunch: {
-  //         "Rice Items": ["Sambar Rice", "Curd Rice", "Veg Biryani", "Tomato Rice"],
-  //         "Curries": ["Aloo Fry", "Bendakaya Curry", "Dal", "Sambar"],
-  //         "Flour Items": ["Chapati", "Parota", "Puri"],
-  //       },
-  //       Dinner: {
-  //         "Rice Items": ["Lemon Rice", "Jeera Rice", "Biryani"],
-  //         "Curries": ["Kurma", "Tomato Curry", "Paneer Masala"],
-  //         "Flour Items": ["Chapati", "Naan", "Roti"],
-  //       },
-  //     },
-
-  //     "North Indian": {
-  //       Tiffin: {
-  //         "Tiffens": ["Paratha", "Poha", "Aloo Tikki", "Chole Bhature"],
-  //       },
-  //       Lunch: {
-  //         "Curries": ["Dal Makhani", "Paneer Butter Masala", "Aloo Gobi"],
-  //         "Rice Items": ["Jeera Rice", "Veg Pulao", "Biryani"],
-  //         "Flour Items": ["Naan", "Roti", "Paratha"],
-  //       },
-  //       Dinner: {
-  //         "Curries": ["Rajma Chawal", "Butter Chicken", "Kadai Paneer"],
-  //         "Flour Items": ["Tandoori Roti", "Butter Naan", "Missi Roti"],
-  //       },
-  //     },
-
-  //     Italian: {
-  //       Tiffin: {
-  //         "BreakFast": ["Bread", "Butter", "Honey", "Jam Mixed-Fruite"],
-  //       },
-  //       Lunch: {
-  //         "Pasta": ["Penne Alfredo", "Spaghetti Arrabiata"],
-  //         "Pizza": ["Margherita", "Veg Supreme"],
-  //       },
-  //       Dinner: {
-  //         "Pasta": ["Lasagna", "Fettuccine"],
-  //         "Pizza": ["Pepperoni", "Cheese Burst"],
-  //       },
-  //     },
-
-  //     Chinese: {
-  //       Tiffin: {
-  //         "BreakFast": ["Bread", "Butter", "Honey", "Jam Mixed-Fruite"],
-  //       },
-  //       Lunch: {
-  //         "Rice & Noodles": ["Fried Rice", "Hakka Noodles"],
-  //         "Sides": ["Manchurian", "Chilli Paneer", "Spring Rolls"],
-  //       },
-  //       Dinner: {
-  //         "Rice & Noodles": ["Schezwan Rice", "Garlic Noodles"],
-  //         "Sides": ["Momos", "Crispy Corn", "Honey Chilli Potato"],
-  //       },
-  //     },
-
-  //     Japanese: {
-  //       Tiffin: {
-  //         "Tiffens": ["Paratha", "Poha", "Aloo Tikki", "Chole Bhature"],
-  //       },
-  //       Lunch: {
-  //         "Sushi": ["California Roll", "Nigiri"],
-  //         "Soups": ["Miso Soup"],
-  //       },
-  //       Dinner: {
-  //         "Dishes": ["Ramen", "Tempura", "Teriyaki Chicken"],
-  //       },
-  //     },
-
-  //     French: {
-  //       Tiffin: {
-  //         "Tiffens": ["Paratha", "Poha", "Aloo Tikki", "Chole Bhature"],
-  //       },
-  //       Lunch: {
-  //         "Specials": ["Quiche", "Ratatouille"],
-  //         "Desserts": ["Crème Brûlée"],
-  //       },
-  //       Dinner: {
-  //         "Main Course": ["Coq au Vin", "Boeuf Bourguignon"],
-  //       },
-  //     },
-  //   };
-
-  //   // fallback for unknown cuisine or missing meal time
-  //   return menus[cuisine]?.[mealTime] || {};
-  // };
-
-
-  // // ---------- helper: getFoodItems (you already have similar) ----------
-  // const getFoodItems = (category, mealType, mealTime) => {
-  //   const foodOptions = {
-  //     "Welcome Drinks": {
-  //       default: ["Lassi", "Juice", "Mocktail", "Soft Drinks", "Cold Coffee"],
-  //       Veg: ["Fresh Juice", "Lemon Soda", "Butter Milk", "Rose Milk"],
-  //       "Non-Veg": ["Fruit Punch", "Cold Coffee", "Soft Drinks"],
-  //       Mixed: ["Fruit Punch", "Lemon Soda", "Mocktail"],
-  //     },
-  //     Starters: {
-  //       default: ["Paneer Tikka", "Chicken Wings", "Spring Rolls", "Veg Manchurian", "Fish Fingers"],
-  //       Veg: ["Paneer Tikka", "Veg Manchurian", "Spring Rolls"],
-  //       "Non-Veg": ["Chicken Wings", "Fish Fingers", "Chicken 65"],
-  //       Mixed: ["Paneer Tikka", "Chicken Wings", "Spring Rolls"],
-  //     },
-  //     Snacks: ["Samosa", "Cutlet", "Sandwich", "Pakora", "Popcorn"],
-  //     Desserts: ["Gulab Jamun", "Ice Cream", "Rasmalai", "Cake", "Payasam"],
-  //     "Beverages & Hot Drinks": ["Tea", "Coffee", "Green Tea", "Hot Chocolate"],
-  //     Fruits: ["Apple", "Banana", "Watermelon", "Mango", "Pineapple"],
-  //   };
-
-  //   // if there is an entry keyed by mealType (Veg/Non-Veg/Mixed) use it,
-  //   // else fall back to default or the raw array
-  //   const entry = foodOptions[category];
-  //   if (!entry) return [];
-
-  //   if (Array.isArray(entry)) return entry;
-  //   // entry is object: prefer mealType-specific list if present
-  //   return entry[mealType] || entry.default || [];
-  // };
-
-  // // ---------- build foodSections (declare BEFORE return/JSX) ----------
-  // const foodSections = [
-  //   { title: "🥤 Welcome Drinks", field: "welcomeDrinks", category: "Welcome Drinks" },
-  //   { title: "🍢 Starters", field: "starters", category: "Starters" },
-  //   { title: "🍰 Desserts & Sweets", field: "desserts", category: "Desserts" },
-  //   { title: "🍪 Snacks", field: "snacks", category: "Snacks" },
-  //   { title: "☕ Beverages & Hot Drinks", field: "beverages", category: "Beverages & Hot Drinks" },
-  //   { title: "🍎 Fruits", field: "fruits", category: "Fruits" },
-  // ];
 
   useEffect(() => {
     const filterVenues = async () => {
@@ -954,33 +707,6 @@ export default function Birthday() {
     }
   };
 
-  // const handleCheckboxChange = (parent, field, item, price = 0, multiplyByGuests = false) => {
-  //   const existing = formData[parent]?.[field];
-  //   const currentArray = Array.isArray(existing) ? existing : [];
-
-  //   const newObj = {
-  //     id: item._id,
-  //     name: item.name,
-  //     vendorId: item.vendorId,
-  //     price: price
-  //   };
-
-  //   const isAdding = !currentArray.some(i => i.id === item._id);
-
-  //   const updatedArray = isAdding
-  //     ? [...currentArray, newObj]
-  //     : currentArray.filter(i => i.id !== item._id);
-
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     [parent]: {
-  //       ...prev[parent],
-  //       [field]: updatedArray
-  //     }
-  //   }));
-
-  //   updateCost(parent, field, price, isAdding, multiplyByGuests);
-  // };
 
   const handleCheckboxChange = (parent, field, item, price = 0, multiplyByGuests = false) => {
 
@@ -1093,36 +819,6 @@ export default function Birthday() {
     }
   }, [id]);
 
-  // useEffect(() => {
-  //   const guestCount = Number(formData.timings?.capacity) || 0;
-
-  //   const {
-  //     venue = { total: 0 },
-  //     decoration = { total: 0 },
-  //     food = { total: 0 },
-  //     entertainment = { total: 0 },
-  //     photography = { total: 0 },
-  //     eventStaff = { total: 0 },
-  //     total = 0
-  //   } = costs;
-
-  //   const returnGiftQty = Number(formData.returnGifts?.quantity) || 0;
-  //   const returnGiftBudget = Number(formData.returnGifts?.budget) || 0;
-  //   const returnGiftTotal = returnGiftQty * returnGiftBudget;
-
-  //   const totalBudget = total + returnGiftTotal;
-  //   const advancePayment = totalBudget * 0.7;
-  //   const balancePayment = totalBudget - advancePayment;
-
-  //   setFormData(prev => ({
-  //     ...prev,
-  //     budget: {
-  //       totalBudget,
-  //       advancePayment,
-  //       balancePayment,
-  //     },
-  //   }));
-  // }, [costs, formData.returnGifts, formData.timings.capacity]);
 
 
   const birthdayQuotes = [
@@ -1327,8 +1023,8 @@ export default function Birthday() {
                       });
                     }}
                     className={`flex gap-4 p-4 border rounded-lg cursor-pointer transition ${selectedVenue?.id === v.id
-                        ? "bg-pink-50 border-pink-400"
-                        : "hover:bg-gray-50"
+                      ? "bg-pink-50 border-pink-400"
+                      : "hover:bg-gray-50"
                       }`}
                   >
                     <img src={v.image} alt={v.name} className="w-24 h-24 object-cover rounded-lg" />
