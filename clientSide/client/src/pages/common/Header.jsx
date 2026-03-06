@@ -103,11 +103,11 @@ export default function Header() {
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => navigate("/")}
           >
-            <img src={isHome ? epudulogo : epudutry} alt="sample" className="h-50 w-auto m-1" />
+            <img src={isHome ? epudulogo : epudutry} alt="sample" className="h-25 w-auto" />
             {/* <span className="font-bold text-lg">MyWebsite</span> */}
           </div>
 
-          {/* Desktop Nav */}
+          {/* Desktop Nav */}  
           <nav className="hidden md:flex items-center gap-8">
             <Link to="/" className={`hover:text-blue-400 transition ${isHome ? 'text-white' : 'text-black'}`}>Home</Link>
 
@@ -161,7 +161,7 @@ export default function Header() {
               </Link>
 
               {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-xl z-50">
+                <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-xl z-50" style={{ backgroundColor: "#e7e7f1"}}>
                   <Link
                     to="/profile"
                     className="block px-4 py-2 hover:bg-blue-100 text-black"
@@ -210,9 +210,9 @@ export default function Header() {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
-              <XMarkIcon className="h-7 w-7" />
+              <XMarkIcon className="h-7 w-7" style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}  />
             ) : (
-              <Bars3Icon className="h-7 w-7" />
+              <Bars3Icon className="h-7 w-7" style={{ backgroundColor: "#4f46e5", color: "#ffffff" }} />
             )}
           </button>
         </div>
@@ -220,7 +220,7 @@ export default function Header() {
 
       {/* 2. Mobile Menu Content (Appears only on mobile/small screens) */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed top-[75px] left-0 w-full bg-gray-900/95 backdrop-blur-md z-[9998] pb-4 text-black">
+        <div className="md:hidden fixed top-[75px] left-0 w-full bg-gray-900/95 backdrop-blur-md z-[9998] pb-4 text-black" style={{ backgroundColor: "#bebecb", color: "#0b0b0b" }}>
           <Link to="/" className="block px-4 py-3 hover:bg-blue-600" onClick={closeMobileMenus}>
             Home
           </Link>
@@ -228,6 +228,7 @@ export default function Header() {
           <button
             onClick={() => setIsMobileDropdownOpen(!isMobileDropdownOpen)}
             className="w-full flex justify-between items-center px-4 py-3 hover:bg-blue-600 text-black"
+            style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
           >
             Events
             <ChevronDownIcon className={`h-4 w-4 ${isMobileDropdownOpen ? "rotate-180" : ""}`} />
@@ -267,6 +268,7 @@ export default function Header() {
                 <button
                   onClick={() => { handleLogout(); closeMobileMenus(); }}
                   className="w-full text-left px-4 py-3 text-red-400 hover:bg-red-800/50 text-black"
+                  style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                 >
                   Logout
                 </button>
