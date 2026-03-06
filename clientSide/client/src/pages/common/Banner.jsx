@@ -63,7 +63,7 @@ export default function Banner() {
           <img
             src={`${MEDIA_URL}/banners/${banner.image}`}
             alt="Banner"
-            className="w-full h-full object-cover overflow-hidden"
+            className="w-full h-full object-cover"
           />
 
           <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
