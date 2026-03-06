@@ -1465,6 +1465,7 @@ export default function Birthday() {
                   {/* Download Button */}
                   <button
                     className="mt-4 bg-blue-500 text-white px-6 py-2 rounded-lg"
+                    style={{ backgroundColor: "#2b064e", color: "#ffffff" }}
                     onClick={() => {
                       const card = document.getElementById("invitation-card");
                       if (!card) return;
