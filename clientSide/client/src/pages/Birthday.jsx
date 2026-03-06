@@ -959,91 +959,102 @@ export default function Birthday() {
               <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-pink- mb-8 text-center">
                 📝 venu Details
               </h5>
-              <div className="lg:w-1/2 space-y-4 overflow-y-auto max-h-[500px] border-r pr-4">
+              <div className="flex flex-col lg:flex-row gap-6">
 
-                {/* Search + Filters */}
-                <div className="space-y-3 sticky top-0 bg-white pb-3 z-10">
+                {/* LEFT SIDE - VENUE LIST */}
+                <div className="lg:w-1/2 space-y-4 overflow-y-auto max-h-[500px] border-r pr-4">
 
-                  {/* Search */}
-                  <input
-                    type="text"
-                    placeholder="Search venues..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2"
-                  />
+                  {/* Search + Filters */}
+                  <div className="space-y-3 sticky top-0 bg-white pb-3 z-10">
 
-                  {/* Filters */}
-                  <div className="flex gap-2 flex-wrap">
+                    <input
+                      type="text"
+                      placeholder="Search venues..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="w-full border rounded-lg px-3 py-2"
+                    />
 
-                    <select
-                      onChange={(e) => setFilterLocation(e.target.value)}
-                      className="border rounded-lg px-2 py-2"
-                    >
-                      <option value="">All Locations</option>
-                      <option value="Hyderabad">Hyderabad</option>
-                      <option value="Bangalore">Bangalore</option>
-                    </select>
+                    <div className="flex gap-2 flex-wrap">
 
-                    <select
-                      onChange={(e) => setFilterRating(e.target.value)}
-                      className="border rounded-lg px-2 py-2"
-                    >
-                      <option value="">All Ratings</option>
-                      <option value="3">3★ +</option>
-                      <option value="4">4★ +</option>
-                      <option value="5">5★</option>
-                    </select>
+                      <select
+                        onChange={(e) => setFilterLocation(e.target.value)}
+                        className="border rounded-lg px-2 py-2"
+                      >
+                        <option value="">All Locations</option>
+                        <option value="Hyderabad">Hyderabad</option>
+                        <option value="Bangalore">Bangalore</option>
+                      </select>
 
-                    <select
-                      onChange={(e) => setFilterPrice(e.target.value)}
-                      className="border rounded-lg px-2 py-2"
-                    >
-                      <option value="">All Prices</option>
-                      <option value="low">Below 50k</option>
-                      <option value="mid">50k - 1.5L</option>
-                      <option value="high">Above 1.5L</option>
-                    </select>
+                      <select
+                        onChange={(e) => setFilterRating(e.target.value)}
+                        className="border rounded-lg px-2 py-2"
+                      >
+                        <option value="">All Ratings</option>
+                        <option value="3">3★ +</option>
+                        <option value="4">4★ +</option>
+                        <option value="5">5★</option>
+                      </select>
 
-                  </div>
-                </div>
+                      <select
+                        onChange={(e) => setFilterPrice(e.target.value)}
+                        className="border rounded-lg px-2 py-2"
+                      >
+                        <option value="">All Prices</option>
+                        <option value="low">Below 50k</option>
+                        <option value="mid">50k - 1.5L</option>
+                        <option value="high">Above 1.5L</option>
+                      </select>
 
-                {/* Venue List */}
-                {filteredVenues.map((v) => (
-                  <div
-                    key={v.id}
-                    onClick={() => {
-                      setSelectedVenue(v);
-                      handleCustomChange("venue", {
-                        name: v.name,
-                        address: v.address || "",
-                        city: v.location || "",
-                        cost: v.cost || 0,
-                      });
-                    }}
-                    className={`flex gap-4 p-4 border rounded-lg cursor-pointer transition ${selectedVenue?.id === v.id
-                      ? "bg-pink-50 border-pink-400"
-                      : "hover:bg-gray-50"
-                      }`}
-                  >
-                    <img src={v.image} alt={v.name} className="w-24 h-24 object-cover rounded-lg" />
-
-                    <div className="flex flex-col justify-between">
-                      <h4 className="font-semibold">{v.name}</h4>
-                      <p className="text-sm text-gray-600">
-                        {v.type} | {v.location}
-                      </p>
-
-                      <p className="text-yellow-500 text-sm">
-                        {"★".repeat(v.stars)}
-                        {"☆".repeat(5 - v.stars)}
-                      </p>
-
-                      <p className="font-bold mt-1">₹ {v.cost}</p>
                     </div>
                   </div>
-                ))}
-                <div className="lg:w-1/2 flex flex-col">
+
+                  {/* Venue List */}
+                  {filteredVenues.map((v) => (
+                    <div
+                      key={v.id}
+                      onClick={() => {
+                        setSelectedVenue(v);
+                        handleCustomChange("venue", {
+                          name: v.name,
+                          address: v.address || "",
+                          city: v.location || "",
+                          cost: v.cost || 0,
+                        });
+                      }}
+                      className={`flex gap-4 p-4 border rounded-lg cursor-pointer transition ${selectedVenue?.id === v.id
+                          ? "bg-pink-50 border-pink-400"
+                          : "hover:bg-gray-50"
+                        }`}
+                    >
+                      <img
+                        src={v.image}
+                        alt={v.name}
+                        className="w-24 h-24 object-cover rounded-lg"
+                      />
+
+                      <div className="flex flex-col justify-between">
+                        <h4 className="font-semibold">{v.name}</h4>
+
+                        <p className="text-sm text-gray-600">
+                          {v.type} | {v.location}
+                        </p>
+
+                        <p className="text-yellow-500 text-sm">
+                          {"★".repeat(v.stars)}
+                          {"☆".repeat(5 - v.stars)}
+                        </p>
+
+                        <p className="font-bold mt-1">₹ {v.cost}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+
+                {/* RIGHT SIDE - GOOGLE MAP */}
+                <div className="lg:w-1/2">
+
                   <GoogleMap
                     zoom={13}
                     center={
@@ -1051,8 +1062,13 @@ export default function Birthday() {
                         ? { lat: selectedVenue.lat, lng: selectedVenue.lng }
                         : { lat: 17.3850, lng: 78.4867 }
                     }
-                    mapContainerStyle={{ width: "100%", height: "400px", borderRadius: "12px" }}
+                    mapContainerStyle={{
+                      width: "100%",
+                      height: "500px",
+                      borderRadius: "12px",
+                    }}
                   >
+
                     {venues.map((v) => (
                       <Marker
                         key={v.id}
@@ -1060,17 +1076,22 @@ export default function Birthday() {
                         onClick={() => setSelectedVenue(v)}
                       />
                     ))}
+
                     {selectedVenue && (
                       <InfoWindow
-                        position={{ lat: selectedVenue.lat, lng: selectedVenue.lng }}
+                        position={{
+                          lat: selectedVenue.lat,
+                          lng: selectedVenue.lng,
+                        }}
                         onCloseClick={() => setSelectedVenue(null)}
                       >
                         <div>{selectedVenue.name}</div>
                       </InfoWindow>
                     )}
-                  </GoogleMap>
-                </div>
 
+                  </GoogleMap>
+
+                </div>
 
               </div>
               <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-pink- mb-8 text-center">
