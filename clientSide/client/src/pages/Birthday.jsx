@@ -2865,6 +2865,7 @@ export default function Birthday() {
                   // handleNext();
                 }}
                 className="bg-indigo-900 px-4 py-2 rounded-lg"
+                style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
               >
                 Back
               </button>
@@ -2879,6 +2880,7 @@ export default function Birthday() {
                   // nextStep();
                 }}
                 className="bg-indigo-900 text-white px-4 py-2 rounded-lg"
+                style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
               >
                 Next
               </button>
@@ -3118,6 +3120,7 @@ export default function Birthday() {
                   }
                 }}
                 className="bg-indigo-900 text-white px-4 py-2 rounded-lg"
+                style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
               >
                 💳 Pay Advance via Razorpay
               </button>
