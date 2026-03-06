@@ -820,7 +820,6 @@ export default function Birthday() {
   }, [id]);
 
 
-
   const birthdayQuotes = [
     "A day filled with laughter, love, and sweet memories awaits you.",
     "Come celebrate a special day with joy, cake, and cheerful moments.",
@@ -1044,6 +1043,34 @@ export default function Birthday() {
                     </div>
                   </div>
                 ))}
+                <div className="lg:w-1/2 flex flex-col">
+                  <GoogleMap
+                    zoom={13}
+                    center={
+                      selectedVenue
+                        ? { lat: selectedVenue.lat, lng: selectedVenue.lng }
+                        : { lat: 17.3850, lng: 78.4867 }
+                    }
+                    mapContainerStyle={{ width: "100%", height: "400px", borderRadius: "12px" }}
+                  >
+                    {venues.map((v) => (
+                      <Marker
+                        key={v.id}
+                        position={{ lat: v.lat, lng: v.lng }}
+                        onClick={() => setSelectedVenue(v)}
+                      />
+                    ))}
+                    {selectedVenue && (
+                      <InfoWindow
+                        position={{ lat: selectedVenue.lat, lng: selectedVenue.lng }}
+                        onCloseClick={() => setSelectedVenue(null)}
+                      >
+                        <div>{selectedVenue.name}</div>
+                      </InfoWindow>
+                    )}
+                  </GoogleMap>
+                </div>
+
 
               </div>
               <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-pink- mb-8 text-center">
