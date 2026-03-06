@@ -1,43 +1,35 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import {
-  HomeIcon,
   ChevronDownIcon,
   UserCircleIcon,
-  Bars3Icon, // Added for mobile menu toggle
-  XMarkIcon, // Added for mobile menu close
+  Bars3Icon,
+  XMarkIcon,
 } from "@heroicons/react/24/solid";
-import EventGalaxyPanel from "./EventPlayGround"; // Assuming you import the panel
 import axios from "axios";
-import logo from "../../assets/logo.jpeg";
-// import epuduLogo from "../../assets/epuduLogo.png";
-// import epudulogo from "../../assets/epuduLog.jpeg";
-// import epudulog from "../../assets/epudu-logo.png";
+import EventGalaxyPanel from "./EventPlayGround";
 import epudulogo from "../../../dist/logo-try.png";
 import epudutry from "../../../dist/logo-try-1.png";
 
 export default function Header() {
   const API_URL = import.meta.env.VITE_API_URL;
-  const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
   const { pathname } = useLocation();
-  // Check if the current path is exactly the root path
-  const isHome = pathname === "/";
   const navigate = useNavigate();
 
+  const isHome = pathname === "/";
+
   const [userPhoto, setUserPhoto] = useState("");
+  const [userName, setUserName] = useState("User");
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileDropdownOpen, setIsMobileDropdownOpen] = useState(false);
-
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userName, setUserName] = useState("User");
 
   const profileRef = useRef(null);
   const dropdownRef = useRef(null);
 
-  // --- Authentication Logic (Unchanged) ---
   useEffect(() => {
     const loggedIn = localStorage.getItem("isLoggedIn") === "true";
     setIsLoggedIn(loggedIn);
@@ -48,32 +40,18 @@ export default function Header() {
     }
   }, []);
 
-  // --- Click Outside Handlers (Modified to include dropdown) ---
   useEffect(() => {
     const handler = (e) => {
-      // Close profile menu if click is outside
-      if (profileRef.current && !profileRef.current.contains(e.target)) {
+      if (profileRef.current && !profileRef.current.contains(e.target))
         setIsProfileMenuOpen(false);
-      }
-      // Close desktop dropdown if click is outside
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target))
         setIsDropdownOpen(false);
-      }
     };
+
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/login");
-  };
-
-  // Function to close all mobile menus
-  const closeMobileMenus = () => {
-    setIsMobileMenuOpen(false);
-    setIsMobileDropdownOpen(false);
-  };
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -85,163 +63,154 @@ export default function Header() {
       .get(`${API_URL}/api/client/users/${mobile}`)
       .then((res) => {
         setUserName(res.data.name);
-        setUserPhoto(res.data.photo); // ✅ base64
+        setUserPhoto(res.data.photo);
       })
       .catch(console.error);
   }, []);
 
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
+
+  const closeMobileMenus = () => {
+    setIsMobileMenuOpen(false);
+    setIsMobileDropdownOpen(false);
+  };
+
   return (
-    // The outer container dictates the full height and content
-    <div
-      className={`w-full galaxy-bg text-white z-50  ${isHome ? 'relative min-h-screen overflow-visible' : 'fixed top-0 left-0 shadow-md h-[75px] overflow-visible'}`}
-    >
-      {/* 1. Navigation Bar (Fixed 75px height) */}
-      <header className={`h-[85px] w-full overflow-visible !important z-[9999]  ${isHome ? 'absolute top-0 left-0' : 'relative shadow-md'} `}>
-        <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-4">
+    <div className={`w-full ${isHome ? "relative" : "fixed top-0 bg-white shadow-md"} z-50`}>
+      
+      {/* Header */}
+      <header className="h-[75px] flex items-center">
+        <div className="max-w-7xl mx-auto w-full flex items-center justify-between px-4">
+
           {/* Logo */}
-          <div
-            className="flex items-center gap-2 cursor-pointer"
-            onClick={() => navigate("/")}
-          >
-            <img src={isHome ? epudulogo : epudutry} alt="sample" className="h-25 w-auto" />
-            {/* <span className="font-bold text-lg">MyWebsite</span> */}
+          <div onClick={() => navigate("/")} className="cursor-pointer">
+            <img
+              src={isHome ? epudulogo : epudutry}
+              alt="logo"
+              className="h-[60px] w-auto"
+            />
           </div>
 
-          {/* Desktop Nav */}  
-          <nav className="hidden md:flex items-center gap-8">
-            <Link to="/" className={`hover:text-blue-400 transition ${isHome ? 'text-white' : 'text-black'}`}>Home</Link>
+          {/* Desktop Menu */}
+          <nav className="hidden md:flex items-center gap-8 font-medium">
+            <Link to="/" className={`${isHome ? "text-white" : "text-black"} hover:text-blue-500`}>
+              Home
+            </Link>
 
             <div className="relative" ref={dropdownRef}>
-              <Link
+              <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className={`flex items-center gap-1 hover:text-blue-400 transition ${isHome ? 'text-white' : 'text-black'}`}
+                className={`flex items-center gap-1 ${isHome ? "text-white" : "text-black"} hover:text-blue-500`}
               >
-                Events <ChevronDownIcon className={`h-4 w-4 transform transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : 'rotate-0'}`} />
-              </Link>
+                Events
+                <ChevronDownIcon className={`h-4 w-4 transition ${isDropdownOpen && "rotate-180"}`} />
+              </button>
 
               {isDropdownOpen && (
-                <div className="absolute left-0  top-full mt-2 w-40 bg-white text-black rounded-lg shadow-xl z-[10000] ring-1 ring-black ring-opacity-5 focus:outline-none">
-                  <div className="py-1">
-                    {["birthday", "wedding", "functions"].map((e) => (
-                      <Link
-                        key={e}
-                        to={`/${e}`}
-                        className="block px-4 py-2 hover:bg-blue-100 capitalize"
-                        onClick={() => setIsDropdownOpen(false)}
-                      >
-                        {e}
-                      </Link>
-                    ))}
-                  </div>
+                <div className="absolute top-full mt-2 w-40 bg-white text-black rounded-md shadow-lg">
+                  {["birthday", "wedding", "functions"].map((e) => (
+                    <Link
+                      key={e}
+                      to={`/${e}`}
+                      className="block px-4 py-2 hover:bg-blue-100 capitalize"
+                      onClick={() => setIsDropdownOpen(false)}
+                    >
+                      {e}
+                    </Link>
+                  ))}
                 </div>
               )}
             </div>
 
-            <Link to="/contact" className={`hover:text-blue-400 transition ${isHome ? 'text-white' : 'text-black'}`}>Contact</Link>
+            <Link to="/contact" className={`${isHome ? "text-white" : "text-black"} hover:text-blue-500`}>
+              Contact
+            </Link>
           </nav>
 
-          {/* Profile / Login */}
+          {/* Profile */}
           {isLoggedIn ? (
             <div className="relative hidden md:block" ref={profileRef}>
-              <Link
+              <button
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                 className="flex items-center gap-2"
               >
-                <span className={` ${isHome ? 'text-white' : 'text-black'}`}>{userName}</span>
+                <span className={isHome ? "text-white" : "text-black"}>{userName}</span>
 
                 {userPhoto ? (
-                  <img
-                    src={userPhoto}
-                    alt="Profile"
-                    className="w-8 h-8 rounded-full object-cover border border-blue-500"
-                  />
+                  <img src={userPhoto} className="w-8 h-8 rounded-full object-cover" />
                 ) : (
                   <UserCircleIcon className="h-8 w-8 text-blue-500" />
                 )}
-              </Link>
+              </button>
 
               {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-xl z-50" style={{ backgroundColor: "#e7e7f1"}}>
-                  <Link
-                    to="/profile"
-                    className="block px-4 py-2 hover:bg-blue-100 text-black"
-                    onClick={() => setIsProfileMenuOpen(false)}
-                  >
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg">
+                  <Link to="/profile" className="block px-4 py-2 hover:bg-gray-100">
                     Profile
                   </Link>
-
-                  <Link
-                    to="/eventHistory"
-                    className="block px-4 py-2 hover:bg-blue-100 text-black"
-                    onClick={() => setIsProfileMenuOpen(false)}
-                  >
+                  <Link to="/eventHistory" className="block px-4 py-2 hover:bg-gray-100">
                     Event History
                   </Link>
-                  <Link
-                    to="/custom-services-History"
-                    className="block px-4 py-2 hover:bg-blue-100 text-black"
-                    onClick={() => setIsProfileMenuOpen(false)}
-                  >
-                    Custom Services History
+                  <Link to="/custom-services-History" className="block px-4 py-2 hover:bg-gray-100">
+                    Custom Services
                   </Link>
-
-                  <Link
-                    className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 text-black"
+                  <button
                     onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-red-500 hover:bg-red-50"
                   >
                     Logout
-                  </Link>
+                  </button>
                 </div>
               )}
             </div>
           ) : (
             <Link
               to="/login"
-              className="hidden md:block bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition text-black"
+              className="hidden md:block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
             >
               Login
             </Link>
           )}
 
-
-          {/* Mobile Menu Button */}
+          {/* Mobile Button */}
           <button
-            className="md:hidden p-2"
-            style={{ backgroundColor: "indigo", color: "#ffffff" }} 
+            className="md:hidden"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
-              <XMarkIcon className="h-7 w-7"/>
+              <XMarkIcon className="h-7 w-7" />
             ) : (
-              <Bars3Icon className="h-7 w-7"/>
+              <Bars3Icon className="h-7 w-7" />
             )}
           </button>
         </div>
       </header>
 
-      {/* 2. Mobile Menu Content (Appears only on mobile/small screens) */}
+      {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden fixed top-[75px] left-0 w-full bg-gray-900/95 backdrop-blur-md z-[9998] pb-4 text-black" style={{ backgroundColor: "#bebecb", color: "#0b0b0b" }}>
-          <Link to="/" className="block px-4 py-3 hover:bg-blue-600" onClick={closeMobileMenus}>
+        <div className="md:hidden bg-white shadow-md">
+          <Link to="/" className="block px-4 py-3 border-b" onClick={closeMobileMenus}>
             Home
           </Link>
 
           <button
             onClick={() => setIsMobileDropdownOpen(!isMobileDropdownOpen)}
-            className="w-full flex justify-between items-center px-4 py-3 hover:bg-blue-600 text-black"
-            style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
+            className="w-full flex justify-between px-4 py-3 border-b"
           >
             Events
-            <ChevronDownIcon className={`h-4 w-4 ${isMobileDropdownOpen ? "rotate-180" : ""}`} />
+            <ChevronDownIcon className={`h-4 w-4 ${isMobileDropdownOpen && "rotate-180"}`} />
           </button>
 
           {isMobileDropdownOpen && (
-            <div className="bg-gray-700">
+            <div>
               {["birthday", "wedding", "functions"].map((e) => (
                 <Link
                   key={e}
                   to={`/${e}`}
-                  className="block pl-8 py-2 hover:bg-blue-500 capitalize"
+                  className="block pl-8 py-2"
                   onClick={closeMobileMenus}
                 >
                   {e}
@@ -250,49 +219,13 @@ export default function Header() {
             </div>
           )}
 
-          <Link to="/contact" className="block px-4 py-3 hover:bg-blue-600 text-black" onClick={closeMobileMenus}>
+          <Link to="/contact" className="block px-4 py-3 border-b" onClick={closeMobileMenus}>
             Contact
           </Link>
-
-          <div className="border-t border-white/20 mt-2 pt-2">
-            {isLoggedIn ? (
-              <>
-                <Link to="/eventHistory" className="block px-4 py-3 hover:bg-blue-600 text-black" onClick={closeMobileMenus}>
-                  Events History
-                </Link>
-                <Link to="/custom-services-History" className="block px-4 py-3 hover:bg-blue-600 text-black" onClick={closeMobileMenus}>
-                  Custom services History
-                </Link>
-                <Link to="/profile" className="block px-4 py-3 hover:bg-blue-600 text-black" onClick={closeMobileMenus}>
-                  Profile ({userName})
-                </Link>
-                <button
-                  onClick={() => { handleLogout(); closeMobileMenus(); }}
-                  className="w-full text-left px-4 py-3 text-red-400 hover:bg-red-800/50 text-black"
-                  style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <Link
-                to="/login"
-                className="block mx-4 text-center bg-blue-600 px-4 py-2 rounded-lg mt-2 text-black"
-                onClick={closeMobileMenus}
-              >
-                Login
-              </Link>
-            )}
-          </div>
         </div>
       )}
 
-      {/* 3. Conditional Content (EventGalaxyPanel) */}
-      {isHome && (
-
-        <EventGalaxyPanel />
-
-      )}
+      {isHome && <EventGalaxyPanel />}
     </div>
   );
 }
