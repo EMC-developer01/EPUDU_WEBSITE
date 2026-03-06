@@ -107,29 +107,39 @@ export default function Header() {
             {/* <span className="font-bold text-lg">MyWebsite</span> */}
           </div>
 
-          {/* Desktop Nav */}  
+          {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-8">
-            <Link to="/" className={`hover:text-blue-400 transition ${isHome ? 'text-white' : 'text-black'}`}>Home</Link>
+            <Link to="/" className={`hover:text-blue-400 transition ${isHome ? 'text-white' : 'text-black'}`}>
+              Home
+            </Link>
 
+            {/* Events Dropdown */}
             <div className="relative" ref={dropdownRef}>
-              <Link
+              <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className={`flex items-center gap-1 hover:text-blue-400 transition ${isHome ? 'text-white' : 'text-black'}`}
               >
-                Events <ChevronDownIcon className={`h-4 w-4 transform transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : 'rotate-0'}`} />
-              </Link>
+                Events
+                <ChevronDownIcon
+                  className={`h-4 w-4 transform transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : 'rotate-0'}`}
+                />
+              </button>
 
               {isDropdownOpen && (
-                <div className="absolute left-0  top-full mt-2 w-40 bg-white text-black rounded-lg shadow-xl z-[10000] ring-1 ring-black ring-opacity-5 focus:outline-none">
-                  <div className="py-1">
-                    {["birthday", "wedding", "functions"].map((e) => (
+                <div className="absolute left-0 top-full mt-2 min-w-max bg-white text-black rounded-2xl shadow-xl ring-1 ring-black ring-opacity-5 z-[10000] transition duration-200 origin-top">
+                  <div className="p-4 flex flex-col gap-2">
+                    {["birthday", "wedding", "functions"].map((item) => (
                       <Link
-                        key={e}
-                        to={`/${e}`}
-                        className="block px-4 py-2 hover:bg-blue-100 capitalize"
+                        key={item}
+                        to={`/${item}`}
+                        className="flex items-center gap-2 p-3 rounded-lg hover:bg-gray-100 transition"
                         onClick={() => setIsDropdownOpen(false)}
                       >
-                        {e}
+                        <div className="flex-none w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">
+                          {/* Replace with your SVG if needed */}
+                          🎉
+                        </div>
+                        <span className="capitalize font-medium">{item}</span>
                       </Link>
                     ))}
                   </div>
@@ -137,7 +147,9 @@ export default function Header() {
               )}
             </div>
 
-            <Link to="/contact" className={`hover:text-blue-400 transition ${isHome ? 'text-white' : 'text-black'}`}>Contact</Link>
+            <Link to="/contact" className={`hover:text-blue-400 transition ${isHome ? 'text-white' : 'text-black'}`}>
+              Contact
+            </Link>
           </nav>
 
           {/* Profile / Login */}
@@ -161,7 +173,7 @@ export default function Header() {
               </Link>
 
               {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-xl z-50" style={{ backgroundColor: "#e7e7f1"}}>
+                <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-xl z-50" style={{ backgroundColor: "#e7e7f1" }}>
                   <Link
                     to="/profile"
                     className="block px-4 py-2 hover:bg-blue-100 text-black"
@@ -207,13 +219,13 @@ export default function Header() {
           {/* Mobile Menu Button */}
           <button
             className="md:hidden p-2"
-            style={{ backgroundColor: "indigo", color: "#ffffff" }} 
+            style={{ backgroundColor: "indigo", color: "#ffffff" }}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
-              <XMarkIcon className="h-7 w-7"/>
+              <XMarkIcon className="h-7 w-7" />
             ) : (
-              <Bars3Icon className="h-7 w-7"/>
+              <Bars3Icon className="h-7 w-7" />
             )}
           </button>
         </div>
