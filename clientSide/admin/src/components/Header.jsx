@@ -42,6 +42,8 @@ export default function Header() {
                 <button
                     onClick={() => navigate("/dashboard")}
                     className="hover:text-yellow-400 transition"
+                    style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
+                    
                 >
                     Dashboard
                 </button>
@@ -50,6 +52,7 @@ export default function Header() {
                     <button
                         onClick={() => setUsersDropdownOpen(!usersDropdownOpen)}
                         className="hover:text-yellow-400 transition"
+                        style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                     >
                         Users
                     </button>
@@ -79,12 +82,14 @@ export default function Header() {
                 <button
                     onClick={() => navigate("/events")}
                     className="hover:text-yellow-400 transition"
+                    style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                 >
                     Events
                 </button>
                 <button
                     onClick={handleLogout}
                     className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded-md text-sm font-medium transition"
+                    style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                 >
                     Logout
                 </button>

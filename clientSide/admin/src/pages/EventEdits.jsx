@@ -1578,8 +1578,8 @@ export default function EventEdits() {
                     </div>
                     {/* ACTIONS */}
                     <div className="flex gap-4 pt-6">
-                        <Button onClick={handleUpdate}>Update Event</Button>
-                        <Button variant="outline" onClick={() => navigate("/events")}>
+                        <Button onClick={handleUpdate} style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}>Update Event</Button>
+                        <Button variant="outline" onClick={() => navigate("/events")} style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}>
                             Cancel
                         </Button>
                     </div>

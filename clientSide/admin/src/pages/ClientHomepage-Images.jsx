@@ -217,7 +217,9 @@ export default function ClientHomepageImages() {
                                     <option value="false">Inactive</option>
                                 </select>
 
-                                <Button className="w-full">
+                                <Button
+                                    className="w-full"
+                                    style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}>
                                     {editingId ? "Update Image" : "Add Image"}
                                 </Button>
                             </form>
@@ -331,6 +333,7 @@ export default function ClientHomepageImages() {
                                                             onClick={() =>
                                                                 handleEdit(item)
                                                             }
+                                                            style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                                         >
                                                             <Edit size={14} />
                                                         </Button>
@@ -342,6 +345,7 @@ export default function ClientHomepageImages() {
                                                                     ? "destructive"
                                                                     : "default"
                                                             }
+                                                            style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                                             onClick={() =>
                                                                 toggleStatus(
                                                                     item._id,

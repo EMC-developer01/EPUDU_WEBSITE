@@ -259,6 +259,7 @@ export default function VendorOrderList() {
                         </select>
 
                         <Button
+                            style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                             onClick={() => {
                                 // clear filters
                                 setFilters({
@@ -341,6 +342,7 @@ export default function VendorOrderList() {
                                             <Button
                                                 className="bg-blue-600 text-white"
                                                 onClick={() => setEditOrder({ ...o })}
+                                                style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                             >
                                                 <Edit size={14} className="inline-block mr-1" />
                                                 Edit
@@ -367,6 +369,7 @@ export default function VendorOrderList() {
                                 disabled={page === 1}
                                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                                 className="px-3 py-2 bg-gray-200"
+                                style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                             >
                                 Previous
                             </Button>
@@ -375,6 +378,7 @@ export default function VendorOrderList() {
                                 disabled={page >= totalPages}
                                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                                 className="px-3 py-2 bg-gray-200"
+                                style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                             >
                                 Next
                             </Button>
@@ -395,6 +399,7 @@ export default function VendorOrderList() {
                                         className="text-gray-600"
                                         onClick={() => setEditOrder(null)}
                                         aria-label="Close"
+                                        style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                     >
                                         ✕
                                     </button>
@@ -475,8 +480,8 @@ export default function VendorOrderList() {
                                 </div>
 
                                 <div className="mt-4 flex justify-end gap-3">
-                                    <Button onClick={() => setEditOrder(null)}>Cancel</Button>
-                                    <Button className="bg-blue-600 text-white" onClick={handleModalSave}>
+                                    <Button style={{ backgroundColor: "#4f46e5", color: "#ffffff" }} onClick={() => setEditOrder(null)}>Cancel</Button>
+                                    <Button style={{ backgroundColor: "#4f46e5", color: "#ffffff" }} className="bg-blue-600 text-white" onClick={handleModalSave}>
                                         Save changes
                                     </Button>
                                 </div>

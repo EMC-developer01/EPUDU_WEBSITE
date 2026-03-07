@@ -163,7 +163,7 @@ function ClientHomepageVideo() {
                   <option value="false">Inactive</option>
                 </select>
 
-                <Button className="w-full">
+                <Button className="w-full" style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}>
                   {editingId ? "Update Video" : "Add Video"}
                 </Button>
               </form>
@@ -224,8 +224,8 @@ function ClientHomepageVideo() {
                         <TableCell>
                           <span
                             className={`px-3 py-1 rounded-full text-xs ${item.isActive
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-700"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
                               }`}
                           >
                             {item.isActive ? "Active" : "Inactive"}
@@ -238,6 +238,7 @@ function ClientHomepageVideo() {
                               size="sm"
                               variant="outline"
                               onClick={() => handleEdit(item)}
+                              style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                             >
                               <Edit size={14} />
                             </Button>
@@ -248,6 +249,7 @@ function ClientHomepageVideo() {
                               onClick={() =>
                                 toggleStatus(item._id, item.isActive)
                               }
+                              style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                             >
                               <Power size={14} />
                             </Button>

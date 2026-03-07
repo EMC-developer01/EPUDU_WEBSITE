@@ -318,6 +318,7 @@ export default function Events() {
                                                         variant="outline"
                                                         className="flex items-center gap-1"
                                                         onClick={() => handleEdit(ev)}
+                                                        style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                                     >
                                                         <Edit size={14} /> Edit
                                                     </Button>
@@ -327,6 +328,7 @@ export default function Events() {
                                                         variant="destructive"
                                                         className="flex items-center gap-1"
                                                         onClick={() => handleDelete(ev._id)}
+                                                        style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                                     >
                                                         <Trash2 size={14} /> Delete
                                                     </Button>

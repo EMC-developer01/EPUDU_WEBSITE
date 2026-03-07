@@ -138,7 +138,7 @@ export default function ClientInvitationCards() {
                                     <option value="false">Inactive</option>
                                 </select>
 
-                                <Button className="w-full">{editingId ? "Update Card" : "Add Card"}</Button>
+                                <Button className="w-full" style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}>{editingId ? "Update Card" : "Add Card"}</Button>
                             </form>
                         </div>
 
@@ -188,8 +188,8 @@ export default function ClientInvitationCards() {
                                             <TableCell className="max-w-xs truncate">{item.description || "-"}</TableCell>
                                             <TableCell><span className={`px-3 py-1 rounded-full text-xs ${item.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>{item.isActive ? "Active" : "Inactive"}</span></TableCell>
                                             <TableCell className="text-center flex justify-center gap-2">
-                                                <Button size="sm" variant="outline" onClick={() => handleEdit(item)}><Edit size={14} /></Button>
-                                                <Button size="sm" variant={item.isActive ? "destructive" : "default"} onClick={() => toggleStatus(item._id, item.isActive)}><Power size={14} /></Button>
+                                                <Button size="sm" style={{ backgroundColor: "#4f46e5", color: "#ffffff" }} variant="outline" onClick={() => handleEdit(item)}><Edit size={14} /></Button>
+                                                <Button size="sm" style={{ backgroundColor: "#4f46e5", color: "#ffffff" }} variant={item.isActive ? "destructive" : "default"} onClick={() => toggleStatus(item._id, item.isActive)}><Power size={14} /></Button>
                                             </TableCell>
                                         </TableRow>
                                     )) : (

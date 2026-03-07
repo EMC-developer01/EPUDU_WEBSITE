@@ -168,7 +168,9 @@ export default function ClientBanner() {
                                     <option value="false">Inactive</option>
                                 </select>
 
-                                <Button className="w-full">
+                                <Button
+                                    className="w-full"
+                                    style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}>
                                     {editingId ? "Update Banner" : "Add Banner"}
                                 </Button>
                             </form>
@@ -221,6 +223,7 @@ export default function ClientBanner() {
                                                             size="sm"
                                                             variant="outline"
                                                             onClick={() => handleEdit(item)}
+                                                            style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                                         >
                                                             <Edit size={14} />
                                                         </Button>
@@ -231,6 +234,7 @@ export default function ClientBanner() {
                                                             onClick={() =>
                                                                 toggleStatus(item._id, item.isActive)
                                                             }
+                                                            style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                                         >
                                                             <Power size={14} />
                                                         </Button>

@@ -79,6 +79,7 @@ export default function Login() {
 
                     <button
                         type="submit"
+                        style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                         className="w-full py-3 sm:py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-lg sm:text-xl transition-all duration-300 shadow-lg hover:shadow-blue-500/40"
                     >
                         Login

@@ -91,6 +91,7 @@ export default function VendorUsers() {
                                 setEditingVendor(null);
                                 setFormData({ name: "", mobile: "", mail: "" });
                             }}
+                            style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                             className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
                         >
                             <UserPlus size={18} /> Add Vendor
@@ -137,6 +138,7 @@ export default function VendorUsers() {
                                 <Button
                                     onClick={handleSave}
                                     className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+                                    style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                 >
                                     <Save size={16} /> {editingVendor ? "Update" : "Save"}
                                 </Button>
@@ -146,6 +148,7 @@ export default function VendorUsers() {
                                         onClick={handleCancel}
                                         variant="outline"
                                         className="border-gray-300 flex items-center gap-2"
+                                        style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                     >
                                         <X size={16} /> Cancel
                                     </Button>
@@ -188,6 +191,7 @@ export default function VendorUsers() {
                                                         variant="outline"
                                                         className="text-gray-700 flex items-center gap-1"
                                                         onClick={() => handleEdit(vendor)}
+                                                        style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                                     >
                                                         <Edit size={14} /> Edit
                                                     </Button>
@@ -197,6 +201,7 @@ export default function VendorUsers() {
                                                         variant="destructive"
                                                         className="flex items-center gap-1"
                                                         onClick={() => handleDelete(vendor._id)}
+                                                        style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                                     >
                                                         <Trash2 size={14} /> Delete
                                                     </Button>

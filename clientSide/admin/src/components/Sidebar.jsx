@@ -41,7 +41,10 @@ export default function Sidebar() {
                 >
                     Admin Panel
                 </h2>
-                <button onClick={() => setIsOpen(!isOpen)} className="p-1">
+                <button
+                    onClick={() => setIsOpen(!isOpen)} className="p-1"
+                    style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
+                >
                     <Menu size={22} />
                 </button>
             </div>
@@ -53,6 +56,7 @@ export default function Sidebar() {
                         key={item.name}
                         onClick={() => navigate(item.path)}
                         className="flex items-center gap-3 px-5 py-2 hover:bg-gray-800 text-left transition-all"
+                        style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                     >
                         {item.icon}
                         {isOpen && <span>{item.name}</span>}
@@ -65,6 +69,7 @@ export default function Sidebar() {
                 <button
                     onClick={handleLogout}
                     className="flex items-center gap-3 hover:text-red-400 transition"
+                    style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                 >
                     <LogOut size={20} />
                     {isOpen && <span>Logout</span>}

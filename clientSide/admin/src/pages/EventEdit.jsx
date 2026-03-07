@@ -2215,6 +2215,7 @@ const EventEdits = () => {
                                     prevStep();
                                     // handleNext();
                                 }}
+                                style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                 className="bg-indigo-900 px-4 py-2 rounded-lg"
                             >
                                 Back
@@ -2229,6 +2230,7 @@ const EventEdits = () => {
                                     handleNext();
                                     // nextStep();
                                 }}
+                                style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                 className="bg-indigo-900 text-white px-4 py-2 rounded-lg"
                             >
                                 Next
@@ -2237,6 +2239,7 @@ const EventEdits = () => {
 
                         {step === 6 && (
                             <button
+                                style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                 onClick={async () => {
                                     try {
                                         const total = Math.round(Number(formData.budget.totalBudget) * 100) / 100;

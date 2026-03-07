@@ -20,7 +20,7 @@ const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
 
 const API = `${API_URL}/api/admin/client-homepage-services`;
-const IMAGE_BASE =`${MEDIA_URL}/uploads/homepageservices`;
+const IMAGE_BASE = `${MEDIA_URL}/uploads/homepageservices`;
 
 function ClientHomepageServices() {
     const [services, setServices] = useState([]);
@@ -208,7 +208,7 @@ function ClientHomepageServices() {
                                     <option value="false">Inactive</option>
                                 </select>
 
-                                <Button className="w-full">
+                                <Button className="w-full" style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}>
                                     {editingId ? "Update Service" : "Add Service"}
                                 </Button>
                             </form>
@@ -285,6 +285,7 @@ function ClientHomepageServices() {
                                                             size="sm"
                                                             variant="outline"
                                                             onClick={() => handleEdit(item)}
+                                                            style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                                         >
                                                             <Edit size={14} />
                                                         </Button>
@@ -295,6 +296,7 @@ function ClientHomepageServices() {
                                                             onClick={() =>
                                                                 toggleStatus(item._id, item.isActive)
                                                             }
+                                                            style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                                         >
                                                             <Power size={14} />
                                                         </Button>

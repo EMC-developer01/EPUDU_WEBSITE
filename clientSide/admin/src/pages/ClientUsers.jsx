@@ -92,6 +92,7 @@ export default function ClientUsers() {
                                 setEditingUser(null);
                                 setFormData({ name: "", mobile: "" });
                             }}
+                            style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                             className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
                         >
                             <UserPlus size={18} /> Add User
@@ -138,6 +139,7 @@ export default function ClientUsers() {
                                 <Button
                                     onClick={handleSave}
                                     className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+                                    style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                 >
                                     <Save size={16} /> {editingUser ? "Update" : "Save"}
                                 </Button>
@@ -146,6 +148,7 @@ export default function ClientUsers() {
                                         onClick={handleCancel}
                                         variant="outline"
                                         className="border-gray-300 flex items-center gap-2"
+                                        style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                     >
                                         <X size={16} /> Cancel
                                     </Button>
@@ -187,6 +190,7 @@ export default function ClientUsers() {
                                                         variant="outline"
                                                         className="text-gray-700 flex items-center gap-1"
                                                         onClick={() => handleEdit(user)}
+                                                        style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                                     >
                                                         <Edit size={14} /> Edit
                                                     </Button>
@@ -195,6 +199,7 @@ export default function ClientUsers() {
                                                         variant="destructive"
                                                         className="flex items-center gap-1"
                                                         onClick={() => handleDelete(user._id)}
+                                                        style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                                     >
                                                         <Trash2 size={14} /> Delete
                                                     </Button>

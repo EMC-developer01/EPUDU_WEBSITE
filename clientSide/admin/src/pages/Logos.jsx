@@ -150,7 +150,7 @@ export default function Logos() {
                                     <option value="false">Inactive</option>
                                 </select>
 
-                                <Button className="w-full">
+                                <Button className="w-full" style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}>
                                     {editingId ? "Update Logo" : "Add Logo"}
                                 </Button>
                             </form>
@@ -199,7 +199,7 @@ export default function Logos() {
 
                                                 <TableCell className="text-center">
                                                     <div className="flex justify-center gap-2">
-                                                        <Button size="sm" variant="outline" onClick={() => handleEdit(item)}>
+                                                        <Button size="sm" style={{ backgroundColor: "#4f46e5", color: "#ffffff" }} variant="outline" onClick={() => handleEdit(item)}>
                                                             <Edit size={14} />
                                                         </Button>
 
@@ -207,6 +207,7 @@ export default function Logos() {
                                                             size="sm"
                                                             variant={item.isActive ? "destructive" : "default"}
                                                             onClick={() => toggleStatus(item._id, item.isActive)}
+                                                            style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                                         >
                                                             <Power size={14} />
                                                         </Button>
