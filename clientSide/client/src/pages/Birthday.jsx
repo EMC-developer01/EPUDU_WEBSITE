@@ -1094,7 +1094,7 @@ export default function Birthday() {
                 </div>
 
               </div>
-              <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-pink- mb-8 text-center">
+              <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-pink- mb-8 text-center pt-5">
                 📝 Invitation Card
               </h5>
               <div className="flex flex-col lg:flex-row gap-6  py-8 mb-4">
