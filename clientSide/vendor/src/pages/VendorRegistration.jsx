@@ -10,7 +10,7 @@ export default function VendorRegistration() {
 
     const [vendorSignature, setVendorSignature] = useState(null);
     const [vendorSignaturePreview, setVendorSignaturePreview] = useState(null);
-    API_URL = import.meta.env.VITE_API_URL;
+    let API_URL = import.meta.env.VITE_API_URL;
     const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
 
