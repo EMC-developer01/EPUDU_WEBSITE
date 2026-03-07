@@ -402,6 +402,7 @@ export default function VendorAddItem() {
                         <button
                             type="button"
                             onClick={editingId ? handleUpdate : handleSubmit}
+                            style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                             className="w-full bg-blue-600 text-white p-3 rounded"
                         >
                             {editingId ? "Update Item" : "Add Item"}
@@ -411,6 +412,7 @@ export default function VendorAddItem() {
                             <button
                                 type="button"
                                 onClick={resetForm}
+                                style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                 className="w-full bg-gray-500 text-white p-3 rounded"
                             >
                                 Cancel Edit
@@ -485,6 +487,7 @@ export default function VendorAddItem() {
                             <button
                                 className="bg-red-600 text-white px-4 py-1 rounded"
                                 onClick={deleteSelected}
+                                style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                             >
                                 Delete Selected
                             </button>
@@ -565,12 +568,14 @@ export default function VendorAddItem() {
                                                 <button
                                                     className="bg-yellow-500 text-white px-2 py-1 rounded"
                                                     onClick={() => startEditing(item)}
+                                                    style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                                 >
                                                     Edit
                                                 </button>
                                                 <button
                                                     className="bg-red-600 text-white px-2 py-1 rounded"
                                                     onClick={() => handleDelete(item._id)}
+                                                    style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                                 >
                                                     Delete
                                                 </button>

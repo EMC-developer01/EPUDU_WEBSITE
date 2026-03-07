@@ -268,6 +268,7 @@ const VendorOrdersList = () => {
                                             {["Completed", "CancelledByVendor", "CancelledByClient"].includes(o.status) ? (
                                                 <button
                                                     className="px-3 py-1 bg-gray-400 text-white rounded-lg cursor-not-allowed"
+                                                    style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                                     disabled
                                                 >
                                                     Done
@@ -275,6 +276,7 @@ const VendorOrdersList = () => {
                                             ) : (
                                                 <button
                                                     className="px-3 py-1 bg-black text-white rounded-lg"
+                                                    style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                                     onClick={() => {
                                                         setEditOrder(o);
                                                         setNewStatus(o.status);
@@ -325,6 +327,7 @@ const VendorOrdersList = () => {
                                 {["Completed", "CancelledByVendor", "CancelledByClient"].includes(o.status) ? (
                                     <button
                                         className="mt-2 px-3 py-1 bg-gray-400 text-white rounded-lg cursor-not-allowed"
+                                        style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                         disabled
                                     >
                                         Done
@@ -332,6 +335,7 @@ const VendorOrdersList = () => {
                                 ) : (
                                     <button
                                         className="mt-2 px-3 py-1 bg-black text-white rounded-lg"
+                                        style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                         onClick={() => {
                                             setEditOrder(o);
                                             setNewStatus(o.status);
@@ -368,6 +372,7 @@ const VendorOrdersList = () => {
                         <div className="flex justify-end gap-2 mt-4">
                             <button
                                 className="px-3 py-1 bg-gray-300 rounded"
+                                style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                 onClick={() => setEditOrder(null)}
                             >
                                 Cancel
@@ -375,6 +380,7 @@ const VendorOrdersList = () => {
 
                             <button
                                 className="px-3 py-1 bg-blue-600 text-white rounded"
+                                style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                 onClick={updateStatus}
                             >
                                 Update

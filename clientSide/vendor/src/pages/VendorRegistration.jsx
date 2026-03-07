@@ -176,6 +176,7 @@ export default function VendorRegistration() {
                             text-white py-2 rounded-lg text-lg 
                             font-medium transition
                         "
+                        style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                     >
                         Complete Registration
                     </button>

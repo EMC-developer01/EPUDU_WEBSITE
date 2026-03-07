@@ -142,6 +142,7 @@ const VendorProfile = () => {
                                 <button
                                     onClick={handleSave}
                                     className="flex-1 bg-green-500 text-white py-3 rounded-lg"
+                                    style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                 >
                                     Save
                                 </button>
@@ -152,6 +153,7 @@ const VendorProfile = () => {
                                         setFormData(vendor);
                                     }}
                                     className="flex-1 bg-gray-400 text-white py-3 rounded-lg"
+                                    style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                                 >
                                     Cancel
                                 </button>
@@ -160,6 +162,7 @@ const VendorProfile = () => {
                             <button
                                 onClick={() => setEditMode(true)}
                                 className="w-full bg-blue-500 text-white py-3 rounded-lg"
+                                style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                             >
                                 Edit Profile
                             </button>
@@ -168,6 +171,7 @@ const VendorProfile = () => {
                         <button
                             onClick={handleLogout}
                             className="w-full bg-red-500 text-white py-3 rounded-lg"
+                            style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                         >
                             Logout
                         </button>

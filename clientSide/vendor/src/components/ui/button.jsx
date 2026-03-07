@@ -26,6 +26,7 @@ export function Button({
         <button
             type={type}
             className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}
+            style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
             {...props}
         >
             {children}
