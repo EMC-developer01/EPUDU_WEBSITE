@@ -30,6 +30,7 @@ export default function Header() {
                 <button
                     className="md:hidden text-white text-3xl"
                     onClick={() => setMenuOpen(!menuOpen)}
+                    style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                 >
                     ☰
                 </button>
