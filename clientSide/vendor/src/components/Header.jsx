@@ -49,6 +49,7 @@ export default function Header() {
                     <button
                         onClick={handleLogout}
                         className="bg-red-500 hover:bg-red-600 px-3 py-1 rounded-md text-white"
+                        style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                     >
                         Logout
                     </button>
@@ -67,6 +68,7 @@ export default function Header() {
                     <button
                         onClick={handleLogout}
                         className="mt-3 w-full bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md text-white text-left"
+                        style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
                     >
                         Logout
                     </button>
