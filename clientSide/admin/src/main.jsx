@@ -18,6 +18,7 @@ import VendorPaymentStatus from "./pages/Vendor-PaymentStatus";
 import EventEdits from "./pages/EventEdits";
 import ClientHomepageServices from "./pages/ClientHomepageServices";
 import ClientHomepageVideo from "./pages/ClientHomepageVideo";
+import VendorItems from "./pages/vendor-ItemList";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -121,7 +122,7 @@ createRoot(document.getElementById("root")).render(
           path="/vendor-items-list"
           element={
             <ProtectedRoute>
-              <ClientBanner />
+              < VendorItems />
             </ProtectedRoute>
           }
         />
