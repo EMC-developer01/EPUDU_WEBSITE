@@ -23,7 +23,7 @@ export default function Header() {
 
                 {/* Logo */}
                 <Link to="/dashboard" className="text-xl font-bold tracking-wide">
-                    <img src={logo} alt="EPUDU" className="w-auto" />
+                    <img src={logo} alt="EPUDU" className="h-20 w-auto" />
                 </Link>
 
                 {/* Mobile Toggle */}
