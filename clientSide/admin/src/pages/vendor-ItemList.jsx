@@ -43,7 +43,7 @@ function VendorItems() {
 
     /* FETCH ITEMS */
     const fetchItems = async () => {
-        const res = await axios.get(`${API}/getitems?vendorId=${vendor?._id}`);
+        const res = await axios.get(`${API}/getAllVendorItems`);
         setItems(res.data.items);
     };
 

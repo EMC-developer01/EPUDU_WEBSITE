@@ -149,3 +149,24 @@ export const deleteVendorItem = async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 };
+
+// GET ALL ITEMS (ADMIN)
+export const getAllVendorItems = async (req, res) => {
+    try {
+
+        const items = await VendorItem.find()
+            .sort({ createdAt: -1 });
+
+        res.json({
+            success: true,
+            count: items.length,
+            items
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            error: err.message
+        });
+    }
+};

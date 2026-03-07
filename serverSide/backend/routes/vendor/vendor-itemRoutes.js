@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import { addVendorItem, deleteVendorItem, getVendorItems, updateVendorItem } from "../../controllers/vendor/vendor-itemController.js";
+import { addVendorItem, deleteVendorItem, getAllVendorItems, getVendorItems, updateVendorItem } from "../../controllers/vendor/vendor-itemController.js";
 
 const router = express.Router();
 
@@ -12,9 +12,9 @@ const router = express.Router();
 //     }
 // });
 
-const upload = multer({ 
+const upload = multer({
     storage: multer.memoryStorage(),
- });
+});
 
 // ADD ITEM
 router.post("/additem", upload.single("image"), addVendorItem);
@@ -28,4 +28,6 @@ router.put("/update/:id", upload.single("image"), updateVendorItem);
 // DELETE ITEM
 router.delete("/delete/:id", deleteVendorItem);
 
+// ADMIN - GET ALL ITEMS
+router.get("/all", getAllVendorItems);
 export default router;
