@@ -16,6 +16,7 @@ export default function Sidebar() {
         { name: "Client Banner-Img's", icon: <Image size={20} />, path: "/Client-banner-Img" },
         { name: "Client invitation-Img's", icon: <Image size={20} />, path: "/Client-invitation-Img" },
         { name: "Vendor Users", icon: <Users size={20} />, path: "/vendor-users" },
+        { name: "Vendor Items List", icon: <Users size={20} />, path: "/vendor-items-list" },
         { name: "Vendor Payments", icon: <Coins size={20} />, path: "/vendor-payments" },
         { name: "Events", icon: <Calendar size={20} />, path: "/events" },
         { name: "Vendor Orders", icon: <ListCheck size={20} />, path: "/vendor-Orders" },

@@ -118,6 +118,14 @@ createRoot(document.getElementById("root")).render(
           }
         />
         <Route
+          path="/vendor-items-list"
+          element={
+            <ProtectedRoute>
+              <ClientBanner />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/Client-invitation-Img"
           element={
             <ProtectedRoute>
