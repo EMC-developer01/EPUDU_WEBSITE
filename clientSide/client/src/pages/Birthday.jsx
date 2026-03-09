@@ -1390,9 +1390,9 @@ export default function Birthday() {
 
           {/* === Step 4: Decoration & Theme Setup === */}
           {step === 2 && (
-            <div className="p-6 border-2 border-pink-300 rounded-2xl shadow-lg">
-              <h3 className="text-2xl font-bold text-pink-600 text-center mb-6">
-                🎀  Decoration & Theme Preferences 🎀
+            <div className="p-6 border-2 border-black-300 bg-white rounded-2xl shadow-lg">
+              <h3 className="text-2xl font-bold text-black text-center mb-6">
+                  Decoration & Theme Preferences 
               </h3>
 
               {/* Theme */}
