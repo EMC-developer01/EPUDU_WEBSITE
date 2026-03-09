@@ -657,7 +657,7 @@ export default function Birthday() {
       "Electronic City"
     ]
   };
-  const [venues, setVenues] = useState(initialVenues);
+  const venues = initialVenues;
 
 
 
@@ -728,27 +728,27 @@ export default function Birthday() {
   };
 
 
-  useEffect(() => {
-    const filterVenues = async () => {
-      let center = { lat: 17.3850, lng: 78.4867 };
-      if (searchQuery) {
-        const geoResult = await geocodeAddress(searchQuery);
-        if (geoResult) center = geoResult;
-      }
+  // useEffect(() => {
+  //   const filterVenues = async () => {
+  //     let center = { lat: 17.3850, lng: 78.4867 };
+  //     if (searchQuery) {
+  //       const geoResult = await geocodeAddress(searchQuery);
+  //       if (geoResult) center = geoResult;
+  //     }
 
-      const filtered = initialVenues.filter((v) => {
-        const matchesType = filterType ? v.type === filterType : true;
-        const matchesStars = filterStars ? v.stars >= filterStars : true;
-        const distance = getDistanceKm(center.lat, center.lng, v.lat, v.lng);
-        return matchesType && matchesStars && distance <= Number(radius);
-      });
+  //     const filtered = initialVenues.filter((v) => {
+  //       const matchesType = filterType ? v.type === filterType : true;
+  //       const matchesStars = filterStars ? v.stars >= filterStars : true;
+  //       const distance = getDistanceKm(center.lat, center.lng, v.lat, v.lng);
+  //       return matchesType && matchesStars && distance <= Number(radius);
+  //     });
 
-      setVenues(filtered);
-      setSelectedVenue(filtered[0] || null);
-    };
+  //     setVenues(filtered);
+  //     setSelectedVenue(filtered[0] || null);
+  //   };
 
-    filterVenues();
-  }, [searchQuery, filterType, radius, filterStars]);
+  //   filterVenues();
+  // }, [searchQuery, filterType, radius, filterStars]);
 
   if (loadError) return <div className="text-center text-red-500 mt-10">❌ Failed to load Google Maps</div>;
 
