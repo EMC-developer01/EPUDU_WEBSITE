@@ -103,7 +103,7 @@ export default function Header() {
             {/* EVENTS DROPDOWN */}
             <div className="relative">
               <Link
-                to={"#"}
+                to={"."}
                 onClick={(e) => {
                   e.preventDefault();  // ← ADD THIS
                   setIsDropdownOpen(!isDropdownOpen)
@@ -142,7 +142,7 @@ export default function Header() {
             {isLoggedIn ? (
               <div className="relative" ref={profileRef}>
                 <Link
-                  to={"#"}
+                  to={"."}
                   onClick={(e) => {
                     e.preventDefault();  // ← ADD THIS
                     setIsProfileOpen(!isProfileOpen)
