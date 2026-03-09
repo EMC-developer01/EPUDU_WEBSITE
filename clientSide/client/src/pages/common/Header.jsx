@@ -205,7 +205,7 @@ export default function Header() {
 
         {/* MOBILE MENU */}
         {isMobileMenu && (
-          <div className="lg:hidden bg-white px-6 pb-6">
+          <div className="lg:hidden bg-black px-6 pb-6">
 
             <Link to="/" className="block py-2">
               Home
