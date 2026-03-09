@@ -14,7 +14,7 @@ import EventGalaxyPanel from "./EventPlayGround";
 export default function Header() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const isHome = pathname === "/";
+  const isHome = pathname === "/client";
 
   const API_URL = import.meta.env.VITE_API_URL;
 

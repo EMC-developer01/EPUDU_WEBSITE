@@ -41,7 +41,7 @@ export default function Contact() {
             <Header />
             <Banner />
 
-            <section className="w-full px-4 sm:px-6 lg:px-12 py-12 mt-[75p00x]">
+            <section className="w-full px-4 sm:px-6 lg:px-12 py-12 mt-[75px]">
                 <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
                     {/* LEFT CONTENT */}
                     <div className="text-center lg:text-left space-y-4">
