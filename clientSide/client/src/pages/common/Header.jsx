@@ -205,7 +205,7 @@ export default function Header() {
 
         {/* MOBILE MENU */}
         {isMobileMenu && (
-          <div className="lg:hidden bg-black px-6 pb-6">
+          <div className="lg:hidden bg-black text-white px-6 pb-6">
 
             <Link to="/" className="block py-2">
               Home
@@ -237,7 +237,7 @@ export default function Header() {
               Contact
             </Link>
 
-            <div className="border-t border-gray-300 mt-4 pt-4">
+            <div className="border-t border-white mt-4 pt-4">
 
               {isLoggedIn ? (
                 <>
