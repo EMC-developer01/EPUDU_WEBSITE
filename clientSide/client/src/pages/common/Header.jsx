@@ -63,7 +63,7 @@ export default function Header() {
       className={`w-full ${isHome ? "relative min-h-screen" : "fixed top-0"} z-50`}
     >
       {/* HEADER */}
-      <header className="bg-gray-900">
+      <header className="bg-white">
         <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
 
           {/* LOGO */}
@@ -79,6 +79,7 @@ export default function Header() {
           <div className="flex lg:hidden">
             <button
               onClick={() => setIsMobileMenu(!isMobileMenu)}
+              style={{ backgroundColor: "indigo", color: "#ffffff" }}
               className="p-2 text-gray-400"
             >
               {isMobileMenu ? (
@@ -92,19 +93,19 @@ export default function Header() {
           {/* DESKTOP MENU */}
           <div className="hidden lg:flex lg:gap-x-12">
 
-            <Link to="/" className="text-sm font-semibold text-white">
+            <Link to="/" className="text-sm font-semibol">
               Home
             </Link>
 
             {/* EVENTS DROPDOWN */}
             <div className="relative">
-              <button
+              <Link
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-x-1 text-sm font-semibold text-white"
+                className="flex items-center gap-x-1 text-sm font-semibold "
               >
                 Events
                 <ChevronDownIcon className="h-4 w-4" />
-              </button>
+              </Link>
 
               {isDropdownOpen && (
                 <div className="absolute mt-3 w-40 bg-white text-black rounded-lg shadow-lg">
@@ -122,7 +123,7 @@ export default function Header() {
               )}
             </div>
 
-            <Link to="/contact" className="text-sm font-semibold text-white">
+            <Link to="/contact" className="text-sm font-semibold ">
               Contact
             </Link>
 
@@ -133,7 +134,7 @@ export default function Header() {
 
             {isLoggedIn ? (
               <div className="relative" ref={profileRef}>
-                <button
+                <Link
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="flex items-center gap-2 text-white"
                 >
@@ -147,7 +148,7 @@ export default function Header() {
                   ) : (
                     <UserCircleIcon className="h-8 w-8" />
                   )}
-                </button>
+                </Link>
 
                 {isProfileOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg">
@@ -184,7 +185,7 @@ export default function Header() {
                 )}
               </div>
             ) : (
-              <Link to="/login" className="text-sm font-semibold text-white">
+              <Link to="/login" className="text-sm font-semibold">
                 Login →
               </Link>
             )}
@@ -193,15 +194,15 @@ export default function Header() {
 
         {/* MOBILE MENU */}
         {isMobileMenu && (
-          <div className="lg:hidden bg-gray-900 px-6 pb-6">
+          <div className="lg:hidden bg-white px-6 pb-6">
 
-            <Link to="/" className="block py-2 text-white">
+            <Link to="/" className="block py-2">
               Home
             </Link>
 
             <button
               onClick={() => setIsMobileDropdown(!isMobileDropdown)}
-              className="flex items-center justify-between w-full py-2 text-white"
+              className="flex items-center justify-between w-full py-2 "
             >
               Events
               <ChevronDownIcon className="h-4 w-4" />
@@ -221,7 +222,7 @@ export default function Header() {
               </div>
             )}
 
-            <Link to="/contact" className="block py-2 text-white">
+            <Link to="/contact" className="block py-2">
               Contact
             </Link>
 
@@ -229,7 +230,7 @@ export default function Header() {
 
               {isLoggedIn ? (
                 <>
-                  <Link to="/profile" className="block py-2 text-white">
+                  <Link to="/profile" className="block py-2 ">
                     Profile
                   </Link>
 
@@ -241,7 +242,7 @@ export default function Header() {
                   </button>
                 </>
               ) : (
-                <Link to="/login" className="block py-2 text-white">
+                <Link to="/login" className="block py-2 ">
                   Login
                 </Link>
               )}
