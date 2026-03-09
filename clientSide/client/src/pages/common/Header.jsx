@@ -73,7 +73,7 @@ export default function Header() {
           <div className="flex lg:flex-1 cursor-pointer" onClick={() => navigate("/")}>
             <img
               src={isHome ? epudulogo : epudutry}
-              className="h-20 w-auto"
+              className="h-10 w-auto"
               alt="logo"
             />
           </div>
