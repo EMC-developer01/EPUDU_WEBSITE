@@ -1041,11 +1041,12 @@ export default function Birthday() {
               <div className="flex flex-col lg:flex-row gap-6">
 
                 {/* LEFT SIDE - VENUE LIST */}
-                <div className="lg:w-1/2 space-y-4 overflow-y-auto max-h-[500px] border-r pr-4">
+                <div className="lg:w-1/2 max-h-[500px] overflow-y-auto border-r pr-4 space-y-4">
 
-                  {/* Search + Filters */}
-                  <div className="space-y-3 sticky top-0 bg-white pb-3 z-10">
+                  {/* SEARCH + FILTERS */}
+                  <div className="sticky top-0 bg-white pb-3 z-10 space-y-3">
 
+                    {/* SEARCH */}
                     <input
                       type="text"
                       placeholder="Search venues..."
@@ -1054,20 +1055,26 @@ export default function Birthday() {
                       className="w-full border rounded-lg px-3 py-2"
                     />
 
-                    <div className="flex gap-2 flex-wrap">
+                    {/* FILTERS */}
+                    <div className="flex flex-wrap gap-2">
 
+                      {/* CITY */}
                       <select
+                        value={filterLocation}
                         onChange={(e) => {
                           setFilterLocation(e.target.value);
                           setFilterArea("");
                         }}
                         className="border rounded-lg px-2 py-2"
                       >
-                        <option value="">All Locations</option>
+                        <option value="">All Cities</option>
                         <option value="Hyderabad">Hyderabad</option>
                         <option value="Bangalore">Bangalore</option>
                       </select>
+
+                      {/* AREA */}
                       <select
+                        value={filterArea}
                         onChange={(e) => setFilterArea(e.target.value)}
                         className="border rounded-lg px-2 py-2"
                       >
@@ -1081,7 +1088,9 @@ export default function Birthday() {
                           ))}
                       </select>
 
+                      {/* RATING */}
                       <select
+                        value={filterRating}
                         onChange={(e) => setFilterRating(e.target.value)}
                         className="border rounded-lg px-2 py-2"
                       >
@@ -1091,59 +1100,74 @@ export default function Birthday() {
                         <option value="5">5★</option>
                       </select>
 
+                      {/* PRICE */}
                       <select
+                        value={filterPrice}
                         onChange={(e) => setFilterPrice(e.target.value)}
                         className="border rounded-lg px-2 py-2"
                       >
                         <option value="">All Prices</option>
-                        <option value="low">Below 50k</option>
-                        <option value="mid">50k - 1.5L</option>
-                        <option value="high">Above 1.5L</option>
+                        <option value="low">Below ₹50k</option>
+                        <option value="mid">₹50k - ₹1.5L</option>
+                        <option value="high">Above ₹1.5L</option>
                       </select>
 
                     </div>
                   </div>
 
-                  {/* Venue List */}
-                  {filteredVenues.map((v) => (
+                  {/* VENUE LIST */}
+                  {filteredVenues.length === 0 && (
+                    <p className="text-gray-500 text-sm">No venues found.</p>
+                  )}
+
+                  {filteredVenues.map((venue) => (
                     <div
-                      key={v.id}
+                      key={venue.id}
                       onClick={() => {
-                        setSelectedVenue(v);
+                        setSelectedVenue(venue);
+
                         handleCustomChange("venue", {
-                          name: v.name,
-                          address: v.address || "",
-                          city: v.location || "",
-                          cost: v.cost || 0,
+                          name: venue.name,
+                          address: venue.address || "",
+                          city: venue.location || "",
+                          cost: venue.cost || 0,
                         });
                       }}
-                      className={`flex gap-4 p-4 border rounded-lg cursor-pointer transition ${selectedVenue?.id === v.id
-                        ? "bg-pink-50 border-pink-400"
-                        : "hover:bg-gray-50"
+                      className={`flex gap-4 p-4 border rounded-lg cursor-pointer transition 
+        ${selectedVenue?.id === venue.id
+                          ? "bg-pink-50 border-pink-400"
+                          : "hover:bg-gray-50"
                         }`}
                     >
+
+                      {/* IMAGE */}
                       <img
-                        src={v.image}
-                        alt={v.name}
+                        src={venue.image}
+                        alt={venue.name}
                         className="w-24 h-24 object-cover rounded-lg"
                       />
 
+                      {/* INFO */}
                       <div className="flex flex-col justify-between">
-                        <h4 className="font-semibold">{v.name}</h4>
+
+                        <h4 className="font-semibold">{venue.name}</h4>
 
                         <p className="text-sm text-gray-600">
-                          {v.type} | {v.area}, {v.location}
+                          {venue.type} | {venue.area}, {venue.location}
                         </p>
 
                         <p className="text-yellow-500 text-sm">
-                          {"★".repeat(v.stars)}
-                          {"☆".repeat(5 - v.stars)}
+                          {"★".repeat(venue.stars)}
+                          {"☆".repeat(5 - venue.stars)}
                         </p>
 
-                        <p className="font-bold mt-1">₹ {v.cost}</p>
+                        <p className="font-bold mt-1">₹ {venue.cost.toLocaleString()}</p>
+
                       </div>
+
                     </div>
                   ))}
+
                 </div>
 
 
@@ -1155,7 +1179,7 @@ export default function Birthday() {
                     center={
                       selectedVenue
                         ? { lat: selectedVenue.lat, lng: selectedVenue.lng }
-                        : { lat: 17.3850, lng: 78.4867 }
+                        : { lat: 17.385, lng: 78.4867 }
                     }
                     mapContainerStyle={{
                       width: "100%",
@@ -1164,14 +1188,16 @@ export default function Birthday() {
                     }}
                   >
 
-                    {filteredVenues.map((v) => (
+                    {/* MAP MARKERS */}
+                    {filteredVenues.map((venue) => (
                       <Marker
-                        key={v.id}
-                        position={{ lat: v.lat, lng: v.lng }}
-                        onClick={() => setSelectedVenue(v)}
+                        key={venue.id}
+                        position={{ lat: venue.lat, lng: venue.lng }}
+                        onClick={() => setSelectedVenue(venue)}
                       />
                     ))}
 
+                    {/* INFO WINDOW */}
                     {selectedVenue && (
                       <InfoWindow
                         position={{
@@ -1180,7 +1206,9 @@ export default function Birthday() {
                         }}
                         onCloseClick={() => setSelectedVenue(null)}
                       >
-                        <div>{selectedVenue.name}</div>
+                        <div className="font-semibold">
+                          {selectedVenue.name}
+                        </div>
                       </InfoWindow>
                     )}
 
