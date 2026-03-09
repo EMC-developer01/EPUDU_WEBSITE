@@ -138,7 +138,7 @@ export default function Header() {
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="flex items-center gap-2"
                 >
-                  <span>{userName}</span>
+                  <span className="text-black">{userName}</span>
 
                   {userPhoto ? (
                     <img
