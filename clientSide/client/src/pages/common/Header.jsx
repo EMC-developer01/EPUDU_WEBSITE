@@ -73,7 +73,7 @@ export default function Header() {
           <div className="flex lg:flex-1 cursor-pointer" onClick={() => navigate("/")}>
             <img
               src={isHome ? epudulogo : epudutry}
-              className="h-10 w-auto"
+              className="h-20 w-auto"
               alt="logo"
             />
           </div>
@@ -141,7 +141,7 @@ export default function Header() {
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="flex items-center gap-2"
                 >
-                  <span className="text-black">{userName}</span>
+                  <span className={`${isHome?`text-white`:`text-black`}`}>{userName}</span>
 
                   {userPhoto ? (
                     <img
