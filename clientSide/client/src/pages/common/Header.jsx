@@ -60,10 +60,13 @@ export default function Header() {
 
   return (
     <div
-      className={`w-full ${isHome ? "relative min-h-screen" : "fixed top-0"} z-50`}
+      className={`w-full galaxy-bg z-50 ${isHome ? "relative min-h-screen text-white" : "fixed top-0 left-0 shadow-md h-[75px]"} z-50`}
     >
       {/* HEADER */}
-      <header className="bg-white">
+      <header
+        className={`w-full z-[9999] ${isHome ? "absolute top-0 left-0" : "relative shadow-md"
+          }`}
+      >
         <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
 
           {/* LOGO */}
