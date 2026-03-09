@@ -103,6 +103,7 @@ export default function Header() {
             {/* EVENTS DROPDOWN */}
             <div className="relative">
               <Link
+                to={"#"}
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="flex items-center gap-x-1 text-sm font-semibold "
               >
@@ -138,10 +139,11 @@ export default function Header() {
             {isLoggedIn ? (
               <div className="relative" ref={profileRef}>
                 <Link
+                  to={"#"}
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="flex items-center gap-2"
                 >
-                  <span className={`${isHome?`text-white`:`text-black`}`}>{userName}</span>
+                  <span className={`${isHome ? `text-white` : `text-black`}`}>{userName}</span>
 
                   {userPhoto ? (
                     <img
