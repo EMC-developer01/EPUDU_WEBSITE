@@ -102,13 +102,17 @@ export default function Header() {
 
             {/* EVENTS DROPDOWN */}
             <div className="relative">
-              <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-x-1 text-sm font-semibold "
+              <Link
+                to={"#"}
+                onClick={(e) => {
+                  e.preventDefault();  // ← ADD THIS
+                  setIsDropdownOpen(!isDropdownOpen)
+                }}
+                className="flex items-center gap-x-1 text-sm font-semibold"
               >
                 Events
                 <ChevronDownIcon className="h-4 w-4" />
-              </button>
+              </Link>
 
               {isDropdownOpen && (
                 <div className="absolute mt-3 w-40 bg-white text-black rounded-lg shadow-lg">
@@ -139,7 +143,10 @@ export default function Header() {
               <div className="relative" ref={profileRef}>
                 <Link
                   to={"#"}
-                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  onClick={(e) => {
+                    e.preventDefault();  // ← ADD THIS
+                    setIsProfileOpen(!isProfileOpen)
+                  }}
                   className="flex items-center gap-2"
                 >
                   <span className={`${isHome ? `text-white` : `text-black`}`}>{userName}</span>
@@ -217,7 +224,7 @@ export default function Header() {
                 {["birthday", "wedding", "functions"].map((e) => (
                   <Link
                     key={e}
-                    to={`${e}`}
+                    to={`/${e}`}
                     className="block py-2 capitalize"
                   >
                     {e}
