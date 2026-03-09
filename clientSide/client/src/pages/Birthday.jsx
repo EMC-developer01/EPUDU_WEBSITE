@@ -639,8 +639,6 @@ export default function Birthday() {
       address: "Miyapur Main Road"
     }
   ];
-  const [venues, setVenues] = useState(initialVenues);
-
   const cityAreas = {
     Hyderabad: [
       "Madhapur",
@@ -659,12 +657,16 @@ export default function Birthday() {
       "Electronic City"
     ]
   };
+  const [venues, setVenues] = useState(initialVenues);
+
+
 
   const [search, setSearch] = useState("");
   const [filterLocation, setFilterLocation] = useState("");
   const [filterRating, setFilterRating] = useState("");
   const [filterPrice, setFilterPrice] = useState("");
   const [filterArea, setFilterArea] = useState("");
+
   // const filteredVenues = venues.filter((v) => {
   //   return (
   //     v.name.toLowerCase().includes(search.toLowerCase()) &&
@@ -682,30 +684,23 @@ export default function Birthday() {
 
   const filteredVenues = venues.filter((v) => {
 
-    const matchesSearch = search
-      ? v.name.toLowerCase().includes(search.toLowerCase())
-      : true;
+    const matchesSearch =
+      !search || v.name.toLowerCase().includes(search.toLowerCase());
 
-    const matchesLocation = filterLocation
-      ? v.location === filterLocation
-      : true;
+    const matchesLocation =
+      !filterLocation || v.location === filterLocation;
 
-    const matchesArea = filterArea
-      ? v.area === filterArea
-      : true;
+    const matchesArea =
+      !filterArea || v.area === filterArea;
 
-    const matchesRating = filterRating
-      ? v.stars >= Number(filterRating)
-      : true;
+    const matchesRating =
+      !filterRating || v.stars >= Number(filterRating);
 
     const matchesPrice =
-      filterPrice === "low"
-        ? v.cost < 50000
-        : filterPrice === "mid"
-          ? v.cost >= 50000 && v.cost <= 150000
-          : filterPrice === "high"
-            ? v.cost > 150000
-            : true;
+      !filterPrice ||
+      (filterPrice === "low" && v.cost < 50000) ||
+      (filterPrice === "mid" && v.cost >= 50000 && v.cost <= 150000) ||
+      (filterPrice === "high" && v.cost > 150000);
 
     return (
       matchesSearch &&
