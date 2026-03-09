@@ -93,7 +93,7 @@ export default function Header() {
           {/* DESKTOP MENU */}
           <div className="hidden lg:flex lg:gap-x-12">
 
-            <Link to="/" className="text-sm font-semibol">
+            <Link to="/" className="flex items-center gap-x-1 text-sm font-semibold">
               Home
             </Link>
 
@@ -136,7 +136,7 @@ export default function Header() {
               <div className="relative" ref={profileRef}>
                 <Link
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center gap-2 text-white"
+                  className="flex items-center gap-2"
                 >
                   <span>{userName}</span>
 
@@ -202,7 +202,7 @@ export default function Header() {
 
             <button
               onClick={() => setIsMobileDropdown(!isMobileDropdown)}
-              className="flex items-center justify-between w-full py-2 "
+              className="flex items-center justify-between w-full py-2"
             >
               Events
               <ChevronDownIcon className="h-4 w-4" />
@@ -214,7 +214,7 @@ export default function Header() {
                   <Link
                     key={e}
                     to={`/${e}`}
-                    className="block py-2 text-gray-300 capitalize"
+                    className="block py-2 capitalize"
                   >
                     {e}
                   </Link>
@@ -226,23 +226,31 @@ export default function Header() {
               Contact
             </Link>
 
-            <div className="border-t border-gray-700 mt-4 pt-4">
+            <div className="border-t border-gray-300 mt-4 pt-4">
 
               {isLoggedIn ? (
                 <>
-                  <Link to="/profile" className="block py-2 ">
+                  <Link to="/profile" className="block py-2">
                     Profile
+                  </Link>
+
+                  <Link to="/eventHistory" className="block py-2">
+                    Event History
+                  </Link>
+
+                  <Link to="/custom-services-History" className="block py-2">
+                    Custom Services
                   </Link>
 
                   <button
                     onClick={handleLogout}
-                    className="block py-2 text-red-400"
+                    className="block py-2 text-red-500"
                   >
                     Logout
                   </button>
                 </>
               ) : (
-                <Link to="/login" className="block py-2 ">
+                <Link to="/login" className="block py-2">
                   Login
                 </Link>
               )}
