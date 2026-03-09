@@ -97,6 +97,7 @@ export default function Contact() {
                         <button
                             disabled={loading}
                             className="w-full bg-blue-600 text-white py-3 rounded-lg text-sm sm:text-base hover:bg-blue-700 transition"
+                            style={{ backgroundColor: "#030303", color: "#ffffff" }}
                         >
                             {loading ? "Sending..." : "Send Message"}
                         </button>

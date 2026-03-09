@@ -279,6 +279,7 @@ const FunActivities = () => {
                         <button
                             onClick={startPayment}
                             className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition"
+                            style={{ backgroundColor: "#030303", color: "#ffffff" }}
                         >
                             💳 Pay with Razorpay
                         </button>

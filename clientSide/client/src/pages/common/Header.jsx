@@ -82,7 +82,7 @@ export default function Header() {
           <div className="flex lg:hidden">
             <button
               onClick={() => setIsMobileMenu(!isMobileMenu)}
-              style={{ backgroundColor: "indigo", color: "#ffffff" }}
+              style={{ backgroundColor: "black", color: "#ffffff" }}
               className="p-2 text-gray-400"
             >
               {isMobileMenu ? (
@@ -188,6 +188,7 @@ export default function Header() {
                     <button
                       onClick={handleLogout}
                       className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
+                      style={{ backgroundColor: "#030303", color: "#ffffff" }}
                     >
                       Logout
                     </button>
@@ -214,6 +215,7 @@ export default function Header() {
             <button
               onClick={() => setIsMobileDropdown(!isMobileDropdown)}
               className="flex items-center justify-between w-full py-2"
+              style={{ backgroundColor: "#030303", color: "#ffffff" }}
             >
               Events
               <ChevronDownIcon className="h-4 w-4" />
@@ -256,6 +258,7 @@ export default function Header() {
                   <button
                     onClick={handleLogout}
                     className="block py-2 text-red-500"
+                    style={{ backgroundColor: "#030303", color: "#ffffff" }}
                   >
                     Logout
                   </button>

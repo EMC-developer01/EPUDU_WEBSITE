@@ -96,6 +96,7 @@ export default function ChangePassword() {
             type="submit"
             className={`w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition ${loading ? "opacity-70 cursor-not-allowed" : ""
               }`}
+            style={{ backgroundColor: "#030303", color: "#ffffff" }}
             disabled={loading}
           >
             {loading ? "Changing..." : "Change Password"}

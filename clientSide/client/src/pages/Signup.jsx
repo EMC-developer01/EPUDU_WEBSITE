@@ -32,6 +32,7 @@ const Signup = ({ onClose }) => {
         <button
           onClick={onClose}
           className="absolute top-2 right-3 text-gray-700 hover:text-gray-900 text-xl"
+          style={{ backgroundColor: "#030303", color: "#ffffff" }}
         >
           ✕
         </button>
@@ -59,6 +60,7 @@ const Signup = ({ onClose }) => {
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+            style={{ backgroundColor: "#030303", color: "#ffffff" }}
           >
             Create Account
           </button>

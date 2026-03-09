@@ -161,6 +161,7 @@ export default function CustomServicesHistory() {
                                         <button
                                             onClick={() => handlePayment(service)}
                                             className="mt-4 w-full bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600"
+                                            style={{ backgroundColor: "#030303", color: "#ffffff" }}
                                         >
                                             💳 Pay Now
                                         </button>

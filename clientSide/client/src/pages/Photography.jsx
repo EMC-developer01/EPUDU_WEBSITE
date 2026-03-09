@@ -290,6 +290,7 @@ const Photography = () => {
                         <button
                             onClick={startPayment}
                             className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700"
+                            style={{ backgroundColor: "#030303", color: "#ffffff" }}
                         >
                             💳 Pay & Book Photography
                         </button>

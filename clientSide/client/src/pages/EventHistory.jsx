@@ -168,10 +168,10 @@ export default function EventHistory() {
 
                   <p
                     className={`text-sm font-medium mt-2 ${event.paymentStatus === "Full Paid"
-                        ? "text-green-600"
-                        : event.paymentStatus === "Advance Paid"
-                          ? "text-yellow-600"
-                          : "text-red-600"
+                      ? "text-green-600"
+                      : event.paymentStatus === "Advance Paid"
+                        ? "text-yellow-600"
+                        : "text-red-600"
                       }`}
                   >
                     💵 {event.paymentStatus || "Pending"}
@@ -179,8 +179,8 @@ export default function EventHistory() {
 
                   <p
                     className={`text-sm font-medium ${event.bookingStatus === "Booked"
-                        ? "text-green-600"
-                        : "text-gray-600"
+                      ? "text-green-600"
+                      : "text-gray-600"
                       }`}
                   >
                     📘 {event.bookingStatus || "Pending"}
@@ -194,11 +194,13 @@ export default function EventHistory() {
                             navigate(`/birthday/edit/${event._id}`)
                           }
                           className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+                          style={{ backgroundColor: "#030303", color: "#ffffff" }}
                         >
                           ✏️ Edit
                         </button>
 
                         <button
+                          style={{ backgroundColor: "#030303", color: "#ffffff" }}
                           onClick={async () => {
                             if (
                               window.confirm(
@@ -223,6 +225,7 @@ export default function EventHistory() {
                       <button
                         onClick={() => handlePayment(event)}
                         className="bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600"
+                        style={{ backgroundColor: "#030303", color: "#ffffff" }}
                       >
                         💳 Pay Remaining
                       </button>

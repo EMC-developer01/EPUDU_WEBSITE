@@ -157,6 +157,7 @@ const Profile = () => {
                 <button
                   onClick={handleSave}
                   className="flex-1 bg-green-500 text-white py-3 rounded-lg"
+                  style={{ backgroundColor: "#030303", color: "#ffffff" }}
                 >
                   Save
                 </button>
@@ -167,6 +168,7 @@ const Profile = () => {
                     setFormData(user);
                   }}
                   className="flex-1 bg-gray-400 text-white py-3 rounded-lg"
+                  style={{ backgroundColor: "#030303", color: "#ffffff" }}
                 >
                   Cancel
                 </button>
@@ -175,6 +177,7 @@ const Profile = () => {
               <button
                 onClick={() => setEditMode(true)}
                 className="w-full bg-blue-500 text-white py-3 rounded-lg"
+                style={{ backgroundColor: "#030303", color: "#ffffff" }}
               >
                 Edit Profile
               </button>
@@ -183,6 +186,7 @@ const Profile = () => {
             <button
               onClick={handleLogout}
               className="w-full bg-red-500 text-white py-3 rounded-lg"
+              style={{ backgroundColor: "#030303", color: "#ffffff" }}
             >
               Logout
             </button>

@@ -161,9 +161,9 @@ export default function Functions() {
                         <button
                           key={date}
                           onClick={() => isAvailable && setSelectedDate(date)}
-                          className={`p-2 rounded-md text-white ${
-                            isSelected ? 'bg-yellow-400' : isAvailable ? 'bg-green-500' : 'bg-gray-400'
-                          }`}
+                          className={`p-2 rounded-md text-white ${isSelected ? 'bg-yellow-400' : isAvailable ? 'bg-green-500' : 'bg-gray-400'
+                            }`}
+                          style={{ backgroundColor: "#030303", color: "#ffffff" }}
                         >
                           {date.split('-')[2]}
                         </button>
@@ -181,13 +181,13 @@ export default function Functions() {
                             <button
                               key={time}
                               onClick={() => status === "available" && setSelectedTime(time)}
-                              className={`p-2 rounded-md text-white ${
-                                isSelected ? 'bg-yellow-400' : status === "available"
-                                  ? 'bg-green-500'
-                                  : status === "booked"
+                              className={`p-2 rounded-md text-white ${isSelected ? 'bg-yellow-400' : status === "available"
+                                ? 'bg-green-500'
+                                : status === "booked"
                                   ? 'bg-red-500'
                                   : 'bg-gray-400'
-                              }`}
+                                }`}
+                              style={{ backgroundColor: "#030303", color: "#ffffff" }}
                             >
                               {time}
                             </button>
@@ -280,13 +280,13 @@ export default function Functions() {
           {/* Buttons */}
           <div className="flex justify-between mt-6">
             {step > 1 && (
-              <button onClick={prevStep} className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400">Back</button>
+              <button onClick={prevStep} className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400" style={{ backgroundColor: "#030303", color: "#ffffff" }}>Back</button>
             )}
             {step < 6 && (
-              <button onClick={nextStep} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Next</button>
+              <button onClick={nextStep} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700" style={{ backgroundColor: "#030303", color: "#ffffff" }}>Next</button>
             )}
             {step === 6 && (
-              <button onClick={handleSubmit} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+              <button onClick={handleSubmit} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700" style={{ backgroundColor: "#030303", color: "#ffffff" }}>
                 Proceed to Payment
               </button>
             )}
