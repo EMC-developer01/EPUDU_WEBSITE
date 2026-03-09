@@ -612,28 +612,107 @@ export default function Birthday() {
   const [selectedVenue, setSelectedVenue] = useState(null);
 
   const initialVenues = [
-    { id: 1, name: "Grand Indoor Hall", type: "Indoor", lat: 17.3870, lng: 78.4867, stars: 3, image: "/placeholder.jpg", location: "Hyderabad", cost: 20000 },
-    { id: 2, name: "City Party Hall", type: "Party Hall", lat: 17.3890, lng: 78.4820, stars: 4, image: "/placeholder.jpg", location: "Hyderabad", cost: 30000 },
-    { id: 3, name: "Green Park Lawn", type: "Outdoor", lat: 17.3830, lng: 78.4880, stars: 5, image: "/placeholder.jpg", location: "Hyderabad", cost: 25000 },
+    {
+      id: 1,
+      name: "Grand Palace",
+      location: "Hyderabad",
+      area: "Madhapur",
+      type: "Banquet",
+      stars: 4,
+      cost: 80000,
+      lat: 17.4483,
+      lng: 78.3915,
+      image: "/venues/venue1.jpg",
+      address: "Hitech City Rd, Madhapur"
+    },
+    {
+      id: 2,
+      name: "Royal Garden",
+      location: "Hyderabad",
+      area: "Miyapur",
+      type: "Outdoor",
+      stars: 5,
+      cost: 120000,
+      lat: 17.4933,
+      lng: 78.3915,
+      image: "/venues/venue2.jpg",
+      address: "Miyapur Main Road"
+    }
   ];
   const [venues, setVenues] = useState(initialVenues);
+
+  const cityAreas = {
+    Hyderabad: [
+      "Madhapur",
+      "Hitech City",
+      "Gachibowli",
+      "Kondapur",
+      "Miyapur",
+      "Secunderabad",
+      "Banjara Hills",
+      "Jubilee Hills"
+    ],
+    Bangalore: [
+      "Whitefield",
+      "Indiranagar",
+      "BTM",
+      "Electronic City"
+    ]
+  };
 
   const [search, setSearch] = useState("");
   const [filterLocation, setFilterLocation] = useState("");
   const [filterRating, setFilterRating] = useState("");
   const [filterPrice, setFilterPrice] = useState("");
+  const [filterArea, setFilterArea] = useState("");
+  // const filteredVenues = venues.filter((v) => {
+  //   return (
+  //     v.name.toLowerCase().includes(search.toLowerCase()) &&
+  //     (filterLocation ? v.location === filterLocation : true) &&
+  //     (filterRating ? v.stars >= Number(filterRating) : true) &&
+  //     (filterPrice
+  //       ? filterPrice === "low"
+  //         ? v.cost < 50000
+  //         : filterPrice === "mid"
+  //           ? v.cost >= 50000 && v.cost <= 150000
+  //           : v.cost > 150000
+  //       : true)
+  //   );
+  // });
+
   const filteredVenues = venues.filter((v) => {
+
+    const matchesSearch = search
+      ? v.name.toLowerCase().includes(search.toLowerCase())
+      : true;
+
+    const matchesLocation = filterLocation
+      ? v.location === filterLocation
+      : true;
+
+    const matchesArea = filterArea
+      ? v.area === filterArea
+      : true;
+
+    const matchesRating = filterRating
+      ? v.stars >= Number(filterRating)
+      : true;
+
+    const matchesPrice =
+      filterPrice === "low"
+        ? v.cost < 50000
+        : filterPrice === "mid"
+          ? v.cost >= 50000 && v.cost <= 150000
+          : filterPrice === "high"
+            ? v.cost > 150000
+            : true;
+
     return (
-      v.name.toLowerCase().includes(search.toLowerCase()) &&
-      (filterLocation ? v.location === filterLocation : true) &&
-      (filterRating ? v.stars >= Number(filterRating) : true) &&
-      (filterPrice
-        ? filterPrice === "low"
-          ? v.cost < 50000
-          : filterPrice === "mid"
-            ? v.cost >= 50000 && v.cost <= 150000
-            : v.cost > 150000
-        : true)
+      matchesSearch &&
+      matchesLocation &&
+      matchesArea &&
+      matchesRating &&
+      matchesPrice
     );
   });
 
@@ -978,12 +1057,28 @@ export default function Birthday() {
                     <div className="flex gap-2 flex-wrap">
 
                       <select
-                        onChange={(e) => setFilterLocation(e.target.value)}
+                        onChange={(e) => {
+                          setFilterLocation(e.target.value);
+                          setFilterArea("");
+                        }}
                         className="border rounded-lg px-2 py-2"
                       >
                         <option value="">All Locations</option>
                         <option value="Hyderabad">Hyderabad</option>
                         <option value="Bangalore">Bangalore</option>
+                      </select>
+                      <select
+                        onChange={(e) => setFilterArea(e.target.value)}
+                        className="border rounded-lg px-2 py-2"
+                      >
+                        <option value="">All Areas</option>
+
+                        {filterLocation &&
+                          cityAreas[filterLocation]?.map((area) => (
+                            <option key={area} value={area}>
+                              {area}
+                            </option>
+                          ))}
                       </select>
 
                       <select
@@ -1023,8 +1118,8 @@ export default function Birthday() {
                         });
                       }}
                       className={`flex gap-4 p-4 border rounded-lg cursor-pointer transition ${selectedVenue?.id === v.id
-                          ? "bg-pink-50 border-pink-400"
-                          : "hover:bg-gray-50"
+                        ? "bg-pink-50 border-pink-400"
+                        : "hover:bg-gray-50"
                         }`}
                     >
                       <img
@@ -1037,7 +1132,7 @@ export default function Birthday() {
                         <h4 className="font-semibold">{v.name}</h4>
 
                         <p className="text-sm text-gray-600">
-                          {v.type} | {v.location}
+                          {v.type} | {v.area}, {v.location}
                         </p>
 
                         <p className="text-yellow-500 text-sm">
@@ -1069,7 +1164,7 @@ export default function Birthday() {
                     }}
                   >
 
-                    {venues.map((v) => (
+                    {filteredVenues.map((v) => (
                       <Marker
                         key={v.id}
                         position={{ lat: v.lat, lng: v.lng }}
