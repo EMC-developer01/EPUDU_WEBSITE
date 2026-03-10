@@ -909,7 +909,7 @@ export default function Birthday() {
     <>
       <Header />
       <Banner />
-      <section id='birthdaybooking' className="min-h-screen w-screen overflow-x-hidden bg-black py-12 px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-32">
+      <section id='birthdaybooking' className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-r from-black-100 to-white-100 py-12 px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-32">
         <div className="w-full max-w-[2560px] mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8 lg:p-10 xl:p-12 2xl:p-16">
 
           <h2 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-black- mb-8 text-center">
