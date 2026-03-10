@@ -1275,7 +1275,7 @@ export default function Birthday() {
                         key={card._id}
                         src={`${MEDIA_URL}/${card.image}`}
                         alt={card.cardName}
-                        onClick={() => { setSelectedCard(card); console.log(setSelectedCard) }}
+                        onClick={() => { setSelectedCard(card); console.log(selectedCard) }}
                         className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-4 transition
         ${selectedCard?._id === card._id
                             ? "border-blue-500"
