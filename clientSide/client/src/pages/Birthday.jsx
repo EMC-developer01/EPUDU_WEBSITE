@@ -19,7 +19,7 @@ import "swiper/css/pagination";
 import toast from 'react-hot-toast';
 import { H3Icon } from '@heroicons/react/24/solid';
 import api from './common/api';
-import logo from "../../dist/logo-try.png";
+import logo from "../../dist/logo-try-1.png";
 
 
 // --- Helpers ---
