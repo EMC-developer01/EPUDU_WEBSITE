@@ -127,7 +127,7 @@ export default function Home() {
                 onClick={() => {
                   localStorage.removeItem("birthdayId"); // optional: also clear old event if needed
                 }}
-                className="inline-block bg-black-900 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
+                className="inline-block bg-black text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
               >
                 Book Your Event
               </Link>
@@ -151,7 +151,7 @@ export default function Home() {
               </p>
               <Link
                 to="/wedding"
-                className="inline-block bg-black-900 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
+                className="inline-block bg-black text-white px-5 py-2 rounded-lg hover:bg-black-700 transition"
               >
                 Book Your Event
               </Link>
@@ -176,7 +176,7 @@ export default function Home() {
               </p>
               <Link
                 to="/functions"
-                className="inline-block bg-black-900 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
+                className="inline-block bg-black text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
               >
                 Book Your Event
               </Link>
