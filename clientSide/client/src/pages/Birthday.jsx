@@ -1295,7 +1295,7 @@ export default function Birthday() {
                         : "linear-gradient(to bottom right, #ffffff, #fff9c4)"
                     }}
                   >
-                    
+
                     {/* Logo */}
                     <img
                       src={logo}
@@ -1386,7 +1386,7 @@ export default function Birthday() {
 
           {/* === Step 4: Decoration & Theme Setup === */}
           {step === 2 && (
-            <div className="p-6 border-2 border-black-300 bg-white rounded-2xl shadow-lg">
+            <div className="p-6 border-2 border-black bg-white rounded-2xl shadow-lg">
               <h3 className="text-2xl font-bold text-black text-center mb-6">
                 Decoration & Theme Preferences
               </h3>
@@ -1703,7 +1703,7 @@ export default function Birthday() {
           )}
 
           {step === 3 && (
-            <div className="w-full space-y-10 pb-20 px-2 md:px-4">
+            <div className="w-full border-2 border-black bg-white space-y-10 pb-20 px-2 md:px-4">
               {/* Step Title */}
               <h3 className="text-2xl font-bold text-black-600 text-center mb-6">
                 🍽️ Food Arrangements
@@ -1954,7 +1954,7 @@ export default function Birthday() {
 
           {/* === Step 6: Entertainment & Activities === */}
           {step === 4 && (
-            <div className="p-6 border-2 border-purple-300 rounded-2xl bg-gradient-to-r from-purple-50 to-blue-50 shadow-lg w-full">
+            <div className="p-6 border-2 border-black- bg-white rounded-2xl shadow-lg w-full">
               <h3 className="text-2xl font-bold text-black-600 text-center mb-6">
                 🎉 Entertainment & Activities
               </h3>
@@ -2096,8 +2096,8 @@ export default function Birthday() {
 
           {/* === Step 7: Photography & Videography === */}
           {step === 5 && (
-            <div>
-              <div className="my-2 p-6 border-2 border-green-300 rounded-2xl bg-gradient-to-r from-green-50 to-yellow-50 shadow-lg w-full">
+            <div className='w-full border-2 border-black-300 bg-white space-y-10 pb-20 px-2 md:px-4'>
+              <div className="my-2 p-6  bg-white shadow-lg w-full">
                 <h3 className="text-2xl font-bold text-black-600 text-center mb-6">
                   📸 Photography & Videography
                 </h3>
@@ -2289,7 +2289,7 @@ export default function Birthday() {
                   </div>
                 </div>
               </div>
-              <div className="my-2 p-6 border-2 border-purple-300 rounded-2xl bg-gradient-to-r from-purple-50 to-yellow-50 shadow-lg">
+              <div className="my-2 p-6 bg-white shadow-lg">
                 <h3 className="text-2xl font-bold text-black-700 text-center mb-6">
                   Return Gifts
                 </h3>
@@ -2405,7 +2405,7 @@ export default function Birthday() {
                   ></textarea>
                 </div>
               </div>
-              <div className="my-2 p-6 border-2 border-green-300 rounded-2xl bg-gradient-to-r from-green-50 to-yellow-50 shadow-lg">
+              <div className="my-2 p-6 bg-white shadow-lg">
                 <h3 className="text-2xl font-bold text-black-700 text-center mb-6">
                   👥 Event Staff / Management Team
                 </h3>
