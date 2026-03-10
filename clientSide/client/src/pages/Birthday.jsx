@@ -1295,7 +1295,7 @@ export default function Birthday() {
                         : "linear-gradient(to bottom right, #ffffff, #fff9c4)"
                     }}
                   >
-
+                    
                     {/* Logo */}
                     <img
                       src={logo}
