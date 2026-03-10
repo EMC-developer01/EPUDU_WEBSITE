@@ -1298,6 +1298,8 @@ export default function Birthday() {
                       backgroundRepeat: "no-repeat",
                     }}
                   >
+                    <p>{`${MEDIA_URL}/${selectedCard?.image}`}</p>
+                    <p>{`${MEDIA_URL}/${encodeURI(selectedCard.image)}`}</p>
 
                     {/* Logo */}
                     <img
