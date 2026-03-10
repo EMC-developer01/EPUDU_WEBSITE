@@ -1290,16 +1290,11 @@ export default function Birthday() {
                     id="invitation-card"
                     className="p-6 border-2 border-gray-300 rounded-2xl shadow-lg w-full max-w-md relative text-black"
                     style={{
-                      backgroundImage: selectedCard
-                        ? `url(${MEDIA_URL}/${encodeURI(selectedCard.image)})`
-                        : "linear-gradient(to bottom right, #ffffff, #fff9c4)",
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                      backgroundRepeat: "no-repeat",
+                      background: selectedCard
+                        ? `url("${MEDIA_URL}/${encodeURI(selectedCard.image)}") center/cover no-repeat`
+                        : "linear-gradient(to bottom right, #ffffff, #fff9c4)"
                     }}
                   >
-                    <p>{`${MEDIA_URL}/${selectedCard?.image}`}</p>
-                    <p>{`${MEDIA_URL}/${encodeURI(selectedCard.image)}`}</p>
 
                     {/* Logo */}
                     <img
