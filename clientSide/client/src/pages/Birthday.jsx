@@ -1291,7 +1291,7 @@ export default function Birthday() {
                     className="p-6 border-2 border-gray-300 rounded-2xl shadow-lg w-full max-w-md relative text-black"
                     style={{
                       backgroundImage: selectedCard
-                        ? `url(${MEDIA_URL}/${selectedCard.image})`
+                        ? `url(${MEDIA_URL}/${encodeURI(selectedCard.image)})`
                         : "linear-gradient(to bottom right, #ffffff, #fff9c4)",
                       backgroundSize: "cover",
                       backgroundPosition: "center",
