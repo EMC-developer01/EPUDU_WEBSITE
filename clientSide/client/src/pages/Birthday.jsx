@@ -19,6 +19,7 @@ import "swiper/css/pagination";
 import toast from 'react-hot-toast';
 import { H3Icon } from '@heroicons/react/24/solid';
 import api from './common/api';
+import logo from "../../dist/logo-try.png";
 
 
 // --- Helpers ---
@@ -1297,7 +1298,7 @@ export default function Birthday() {
 
                     {/* Logo */}
                     <img
-                      src="/logo/epudu-logo.png"
+                      src={logo}
                       alt="Epudu Logo"
                       className="absolute top-4 left-4 w-14 h-14 object-contain"
                     />
