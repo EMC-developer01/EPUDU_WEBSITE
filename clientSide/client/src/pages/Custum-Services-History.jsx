@@ -111,7 +111,7 @@ export default function CustomServicesHistory() {
                     {loading ? (
                         <p className="text-center">Loading service history...</p>
                     ) : services.length === 0 ? (
-                        <p className="text-center text-gray-600">
+                        <p className="text-center text-black-600">
                             No service history found.
                         </p>
                     ) : (
@@ -151,7 +151,7 @@ export default function CustomServicesHistory() {
                                             .map((item, idx) => (
                                                 <div key={idx} className="flex justify-between border-b py-1">
                                                     <span>📝 {item.name}</span>
-                                                    <span className="text-gray-600">🏷️ {item.category}</span>
+                                                    <span className="text-black-600">🏷️ {item.category}</span>
                                                 </div>
                                             ))}
                                     </div>

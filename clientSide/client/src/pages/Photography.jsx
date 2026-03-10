@@ -218,7 +218,7 @@ const Photography = () => {
                         {/* 📸 PHOTOGRAPHY BLOCK */}
                         <div className="my-2 p-6 border-2 border-green-300 rounded-2xl bg-gradient-to-r from-green-50 to-yellow-50 shadow-lg w-full">
 
-                            <h3 className="text-2xl font-bold text-green-600 text-center mb-6">
+                            <h3 className="text-2xl font-bold text-black-600 text-center mb-6">
                                 📸 Photography & Videography
                             </h3>
 
@@ -289,7 +289,7 @@ const Photography = () => {
 
                         <button
                             onClick={startPayment}
-                            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700"
+                            className="w-full bg-black-600 text-white py-3 rounded-lg hover:bg-green-700"
                             style={{ backgroundColor: "#030303", color: "#ffffff" }}
                         >
                             💳 Pay & Book Photography

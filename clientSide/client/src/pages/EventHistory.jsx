@@ -136,7 +136,7 @@ export default function EventHistory() {
           )}
 
           {events.length === 0 ? (
-            <p className="text-center text-gray-600">
+            <p className="text-center text-black-600">
               No events found. Start planning your first event!
             </p>
           ) : (
@@ -146,7 +146,7 @@ export default function EventHistory() {
                   key={event._id}
                   className="border rounded-xl shadow-sm p-5 bg-white hover:shadow-md transition"
                 >
-                  <h2 className="text-xl font-semibold text-purple-700 mb-2">
+                  <h2 className="text-xl font-semibold text-black-700 mb-2">
                     {event.celebrantName || "Unnamed Event"}
                   </h2>
 

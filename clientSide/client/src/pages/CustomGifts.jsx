@@ -149,12 +149,12 @@ const CustomGifts = () => {
                             🎁 Custom Return Gifts
                         </h2>
 
-                        <p className="text-gray-600 text-sm sm:text-base">
+                        <p className="text-black-600 text-sm sm:text-base">
                             Choose your gift type, quantity, and budget.
                             Pay securely and let EPUDU handle the rest.
                         </p>
 
-                        <div className="text-gray-700 space-y-2 text-sm sm:text-base">
+                        <div className="text-black-700 space-y-2 text-sm sm:text-base">
                             <p><b>Delivery:</b> Across India</p>
                             <p><b>Customization:</b> Available</p>
                             <p><b>Support:</b> 24/7 Assistance</p>

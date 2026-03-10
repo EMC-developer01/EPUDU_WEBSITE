@@ -175,12 +175,12 @@ const FunActivities = () => {
                             🎉 Fun Activities & Entertainment
                         </h2>
 
-                        <p className="text-gray-600 text-sm sm:text-base">
+                        <p className="text-black-600 text-sm sm:text-base">
                             Choose entertainment, anchors, games & activities.
                             Pay securely and let EPUDU handle the fun.
                         </p>
 
-                        <div className="text-gray-700 space-y-2 text-sm sm:text-base">
+                        <div className="text-black-700 space-y-2 text-sm sm:text-base">
                             <p><b>Performers:</b> Verified professionals</p>
                             <p><b>Customization:</b> Available</p>
                             <p><b>Support:</b> 24/7 Assistance</p>
@@ -205,7 +205,7 @@ const FunActivities = () => {
                         {/* ENTERTAINMENT */}
                         <div className="p-5 border-2 border-purple-300 rounded-2xl bg-gradient-to-r from-purple-50 to-blue-50">
 
-                            <h3 className="text-xl font-bold text-purple-600 mb-4 text-center">
+                            <h3 className="text-xl font-bold text-black-600 mb-4 text-center">
                                 🎭 Entertainment Selection
                             </h3>
 
@@ -246,7 +246,7 @@ const FunActivities = () => {
 
                                 return (
                                     <div key={key} className="mb-6">
-                                        <h4 className="text-purple-600 font-semibold mb-3">🎯 {sub}</h4>
+                                        <h4 className="text-black-600 font-semibold mb-3">🎯 {sub}</h4>
 
                                         <Swiper modules={[A11y]} slidesPerView={3} spaceBetween={10}>
                                             {items.map(item => {

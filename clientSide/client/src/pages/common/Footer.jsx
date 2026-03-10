@@ -3,6 +3,7 @@
 import { HomeIcon } from "@heroicons/react/24/solid";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useRef, useMemo } from "react";
+import { Link } from "react-router-dom";
 import * as THREE from "three";
 
 function Stars({ count = 2000 }) {
@@ -86,24 +87,24 @@ export default function Footer() {
         <div>
           <h3 className="text-sm font-semibold mb-3">Quick Links</h3>
           <ul className="space-y-2 text-sm text-gray-300">
-            <li><a href="#home" className="hover:text-blue-400">Home</a></li>
-            <li><a href="#events" className="hover:text-blue-400">Events</a></li>
-            <li><a href="#contact" className="hover:text-blue-400">Contact</a></li>
+            <li><Link to="/" className="hover:text-black-400">Home</Link></li>
+            <li><Link to="/" className="hover:text-black-400">Events</Link></li>
+            <li><Link to="/contact" className="hover:text-black-400">Contact</Link></li>
           </ul>
         </div>
 
         {/* Contact Us */}
         <div>
           <h3 className="text-sm font-semibold mb-3">Contact Us</h3>
-          <div className="space-y-2 text-sm text-gray-300">
+          <div className="space-y-2 text-sm text-black-300">
             <p>
-              📞 <a href="tel:9030406896" className="hover:text-blue-400">
+              📞 <a href="tel:9030406896" className="hover:text-black-400">
                 9030406896
               </a>
             </p>
             <p>
-              ✉️ <a href="mailto:hr@epudu.com" className="hover:text-blue-400">
-                hr@epudu.com
+              ✉️ <a href="mailto:connect@epudu.com" className="hover:text-black-400">
+                connect@epudu.com
               </a>
             </p>
           </div>
@@ -115,15 +116,15 @@ export default function Footer() {
 
           <div className="flex gap-4 mt-4">
             <a href="https://www.facebook.com/profile.php?id=61585491871963" target="_blank">
-              <FacebookIcon className="h-6 w-6 text-white hover:text-blue-400" />
+              <FacebookIcon className="h-6 w-6 text-white hover:text-black-400" />
             </a>
 
             <a href="https://www.instagram.com/epudu_events/" target="_blank">
-              <InstagramIcon className="h-6 w-6 text-white hover:text-pink-400" />
+              <InstagramIcon className="h-6 w-6 text-white hover:text-black-400" />
             </a>
 
             <a href="https://www.linkedin.com/company/yourcompany" target="_blank">
-              <LinkedInIcon className="h-6 w-6 text-white hover:text-blue-500" />
+              <LinkedInIcon className="h-6 w-6 text-white hover:text-black-500" />
             </a>
           </div>
         </div>

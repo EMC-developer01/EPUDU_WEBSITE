@@ -16,17 +16,17 @@ const ForgetPassword = ({ onClose, onSwitchToLogin }) => {
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-2 right-3 text-gray-700 hover:text-gray-900 text-xl"
+          className="absolute top-2 right-3 text-black-700 hover:text-black-900 text-xl"
           style={{ backgroundColor: "#030303", color: "#ffffff" }}
         >
           ✕
         </button>
 
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+        <h2 className="text-2xl font-bold text-center text-black-800 mb-6">
           Forgot Password
         </h2>
 
-        <p className="text-sm text-gray-600 mb-4 text-center">
+        <p className="text-sm text-black-600 mb-4 text-center">
           Enter your registered email and we’ll send you a reset link.
         </p>
 

@@ -911,14 +911,14 @@ export default function Birthday() {
       <section id='birthdaybooking' className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-r from-pink-100 to-blue-100 py-12 px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-32">
         <div className="w-full max-w-[2560px] mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8 lg:p-10 xl:p-12 2xl:p-16">
 
-          <h2 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-pink- mb-8 text-center">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-black- mb-8 text-center">
             🎂 Birthday Event Booking
           </h2>
 
           {step === 1 && isLoaded && (
             <div className=' py-4 px-4 border-2 border-gray-400'>
               <div className="w-full space-y-6 px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-24 mx-auto py-8 mb-4 ">
-                <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-pink- mb-8 text-center">
+                <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-black- mb-8 text-center">
                   📝 Person Details
                 </h5>
                 {/* Responsive Grid */}
@@ -1030,7 +1030,7 @@ export default function Birthday() {
 
                 </div>
               </div>
-              <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-pink- mb-8 text-center">
+              <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-black- mb-8 text-center">
                 📝 venue Details
               </h5>
               <div className="flex flex-col lg:flex-row gap-6">
@@ -1112,7 +1112,7 @@ export default function Birthday() {
 
                   {/* VENUE LIST */}
                   {filteredVenues.length === 0 && (
-                    <p className="text-gray-500 text-sm">No venues found.</p>
+                    <p className="text-black-500 text-sm">No venues found.</p>
                   )}
 
                   {filteredVenues.map((venue) => (
@@ -1147,7 +1147,7 @@ export default function Birthday() {
 
                         <h4 className="font-semibold">{venue.name}</h4>
 
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-black-600">
                           {venue.type} | {venue.area}, {venue.location}
                         </p>
 
@@ -1212,7 +1212,7 @@ export default function Birthday() {
                 </div>
 
               </div>
-              <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-pink- mb-8 text-center pt-5">
+              <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-black- mb-8 text-center pt-5">
                 📝 Invitation Card
               </h5>
               <div className="flex flex-col lg:flex-row gap-6  py-8 mb-4">
@@ -1284,7 +1284,7 @@ export default function Birthday() {
                   {selectedVenue && (
                     <div
                       id="invitation-card"
-                      className="p-6 border-2 border-pink-300 rounded-2xl shadow-lg w-full max-w-md relative text-gray-800"
+                      className="p-6 border-2 border-pink-300 rounded-2xl shadow-lg w-full max-w-md relative text-black-800"
                       style={{
                         backgroundImage: selectedCard
                           ? `url("${MEDIA_URL}/${selectedCard.image}")`
@@ -1303,11 +1303,11 @@ export default function Birthday() {
 
                       {/* Invitation Content */}
                       <div className="mt-12 text-center p-4 rounded-xl">
-                        <h3 className="text-3xl font-bold text-pink-600 mb-2">
+                        <h3 className="text-3xl font-bold text-black-600 mb-2">
                           You’re Invited!
                         </h3>
 
-                        <p className="italic text-gray-700 mb-3">
+                        <p className="italic text-black-700 mb-3">
                           {
                             birthdayQuotes[
                             Math.floor(Math.random() * birthdayQuotes.length)
@@ -1339,13 +1339,13 @@ export default function Birthday() {
                           {selectedVenue.name}, {selectedVenue.location}
                         </p>
 
-                        <p className="text-sm italic text-gray-600">
+                        <p className="text-sm italic text-black-600">
                           We look forward to celebrating with you!
                         </p>
                       </div>
 
                       {/* Contact Info */}
-                      <div className="flex gap-4 justify-end text-xs text-gray-700">
+                      <div className="flex gap-4 justify-end text-xs text-black-700">
                         <p>
                           Contact: <span className="font-semibold"> +919030406896</span>
                         </p>
@@ -1410,7 +1410,7 @@ export default function Birthday() {
 
               {/* Stage Design – Auto Slider with Arrows */}
               <div className="mb-6 w-full">
-                <h3 className="font-semibold text-lg mb-4 text-pink-600">
+                <h3 className="font-semibold text-lg mb-4 text-black-600">
                   Stage Design Options
                 </h3>
 
@@ -1463,7 +1463,7 @@ export default function Birthday() {
 
               {/* Entrance Decoration – Auto Slider */}
               <div className="mb-6 w-full">
-                <h3 className="font-semibold text-lg mb-4 text-pink-600">
+                <h3 className="font-semibold text-lg mb-4 text-black-600">
                   Entrance Decoration Options
                 </h3>
 
@@ -1513,7 +1513,7 @@ export default function Birthday() {
 
               {/* Photo Booth / Selfie Corner – Slider with Dots */}
               <div className="mb-6 w-full">
-                <h3 className="font-semibold text-lg mb-4 text-pink-600">
+                <h3 className="font-semibold text-lg mb-4 text-black-600">
                   Photo Booth / Selfie Corner
                 </h3>
 
@@ -1558,7 +1558,7 @@ export default function Birthday() {
 
 
               <div className="mb-6 w-full">
-                <h3 className="font-semibold text-lg mb-4 text-pink-600">
+                <h3 className="font-semibold text-lg mb-4 text-black-600">
                   Table / Ceiling / Seating Decor
                 </h3>
 
@@ -1609,7 +1609,7 @@ export default function Birthday() {
 
               {/* ⭐ Cake Table Setup Section */}
               <div className="mb-6 w-full">
-                <h3 className="font-semibold text-lg mb-4 text-pink-600">
+                <h3 className="font-semibold text-lg mb-4 text-black-600">
                   Cake Table Setup
                 </h3>
 
@@ -1644,7 +1644,7 @@ export default function Birthday() {
                           />
 
                           {isSelected && (
-                            <div className="absolute top-2 right-2 bg-pink-600 text-white rounded-full p-1 text-xs">
+                            <div className="absolute top-2 right-2 bg-black-600 text-white rounded-full p-1 text-xs">
                               ✔
                             </div>
                           )}
@@ -1658,7 +1658,7 @@ export default function Birthday() {
 
               {/* Lighting */}
               <div className="mb-6 w-full">
-                <h3 className="font-semibold text-lg mb-4 text-pink-600">
+                <h3 className="font-semibold text-lg mb-4 text-black-600">
                   Lightings
                 </h3>
 
@@ -1709,8 +1709,8 @@ export default function Birthday() {
           {step === 3 && (
             <div className="w-full space-y-10 pb-20 px-2 md:px-4">
               {/* Step Title */}
-              <h3 className="text-2xl font-bold text-pink-600 text-center mb-6">
-                🍽️ Food Arrangements 🍽️
+              <h3 className="text-2xl font-bold text-black-600 text-center mb-6">
+                🍽️ Food Arrangements 
               </h3>
 
               {/* SEARCH + FILTERS */}
@@ -1764,7 +1764,7 @@ export default function Birthday() {
 
                 return (
                   <div key={`${section.field}-${secIdx}`} className="mb-10 w-full">
-                    <h4 className="text-xl font-semibold mb-3 text-blue-600">{section.title}</h4>
+                    <h4 className="text-xl font-semibold mb-3 text-black-600">{section.title}</h4>
 
                     {/* MAIN COURSE - grouped by foodModel */}
                     {section.title === "Main Course" ? (
@@ -1776,7 +1776,7 @@ export default function Birthday() {
                         }, {})
                       ).map(([model, items], modelIdx) => (
                         <div key={`${model}-${modelIdx}`} className="mb-6 w-full">
-                          <h5 className="text-lg font-medium mb-2 text-pink-600">{model}</h5>
+                          <h5 className="text-lg font-medium mb-2 text-black-600">{model}</h5>
 
                           <div className="mb-6">
                             <Swiper
@@ -1894,7 +1894,7 @@ export default function Birthday() {
                               : "border-transparent"
                               }`}
                           />
-                          <div className="w-40 h-40 flex items-center justify-center bg-gray-100 rounded-2xl text-gray-700 font-semibold shadow">
+                          <div className="w-40 h-40 flex items-center justify-center bg-gray-100 rounded-2xl text-black-700 font-semibold shadow">
                             Other
                           </div>
                         </div>
@@ -1906,7 +1906,7 @@ export default function Birthday() {
 
               {/* Seating Arrangements */}
               <div className="mb-6 w-full">
-                <h3 className="font-semibold text-lg mb-4 text-green-600">Seating Arrangements</h3>
+                <h3 className="font-semibold text-lg mb-4 text-black-600">Seating Arrangements</h3>
                 <div className="overflow-x-auto w-full">
                   <Swiper
                     modules={[A11y]}
@@ -1959,13 +1959,13 @@ export default function Birthday() {
           {/* === Step 6: Entertainment & Activities === */}
           {step === 4 && (
             <div className="p-6 border-2 border-purple-300 rounded-2xl bg-gradient-to-r from-purple-50 to-blue-50 shadow-lg w-full">
-              <h3 className="text-2xl font-bold text-purple-600 text-center mb-6">
+              <h3 className="text-2xl font-bold text-black-600 text-center mb-6">
                 🎉 Entertainment & Activities
               </h3>
 
               {/* Emcee / Anchor */}
               <div className="mb-6">
-                <h4 className="text-lg font-semibold mb-2 text-gray-700">🎤 Emcee / Anchor Required?</h4>
+                <h4 className="text-lg font-semibold mb-2 text-black-700">🎤 Emcee / Anchor Required?</h4>
                 <div className="flex gap-6">
                   {["Yes", "No"].map((option) => (
                     <label key={option} className="flex items-center gap-2">
@@ -2037,7 +2037,7 @@ export default function Birthday() {
 
                   return (
                     <div key={stateKey + "-" + idx} className="mb-6 w-full">
-                      <h4 className="text-lg font-semibold mb-3 text-purple-600">🎯 {subcategoryRaw}</h4>
+                      <h4 className="text-lg font-semibold mb-3 text-black-600">🎯 {subcategoryRaw}</h4>
 
                       {/* Swiper slider for this subcategory */}
                       <Swiper
@@ -2078,7 +2078,7 @@ export default function Birthday() {
                                 </div>
 
                                 {isSelected && (
-                                  <div className="absolute top-2 right-2 bg-purple-600 text-white rounded-full p-1 text-xs">
+                                  <div className="absolute top-2 right-2 bg-black-600 text-white rounded-full p-1 text-xs">
                                     ✔
                                   </div>
                                 )}
@@ -2102,13 +2102,13 @@ export default function Birthday() {
           {step === 5 && (
             <div>
               <div className="my-2 p-6 border-2 border-green-300 rounded-2xl bg-gradient-to-r from-green-50 to-yellow-50 shadow-lg w-full">
-                <h3 className="text-2xl font-bold text-green-600 text-center mb-6">
+                <h3 className="text-2xl font-bold text-black-600 text-center mb-6">
                   📸 Photography & Videography
                 </h3>
 
                 {/* Team Requirement */}
                 <div className="mb-6">
-                  <h4 className="text-lg font-semibold mb-2 text-gray-700">👥 Team Requirement</h4>
+                  <h4 className="text-lg font-semibold mb-2 text-black-700">👥 Team Requirement</h4>
 
                   <div className="flex flex-wrap gap-6">
                     {["Required", "Client's Own Team"].map((option) => (
@@ -2155,7 +2155,7 @@ export default function Birthday() {
                 {/* Photography Team Items (Swiper) */}
                 {formData.photography.photoTeam === "Required" && photographyItems?.length > 0 && (
                   <div className="mb-6">
-                    <h4 className="text-lg font-semibold mb-3 text-green-700">
+                    <h4 className="text-lg font-semibold mb-3 text-black-700">
                       🎥 Photography/Videography Packages
                     </h4>
 
@@ -2199,7 +2199,7 @@ export default function Birthday() {
                               </div>
 
                               {isSelected && (
-                                <div className="absolute top-2 right-2 bg-green-600 text-white rounded-full p-1 text-xs">
+                                <div className="absolute top-2 right-2 bg-black-600 text-white rounded-full p-1 text-xs">
                                   ✔
                                 </div>
                               )}
@@ -2245,7 +2245,7 @@ export default function Birthday() {
 
                 {/* Instant Photo Options */}
                 <div>
-                  <h4 className="text-lg font-semibold mb-2 text-gray-700">📷 Instant Photo Options</h4>
+                  <h4 className="text-lg font-semibold mb-2 text-black-700">📷 Instant Photo Options</h4>
 
                   <div className="flex flex-col md:flex-row md:items-center md:gap-6 gap-3">
                     {["Yes", "No", "Other"].map((option) => (
@@ -2294,13 +2294,13 @@ export default function Birthday() {
                 </div>
               </div>
               <div className="my-2 p-6 border-2 border-purple-300 rounded-2xl bg-gradient-to-r from-purple-50 to-yellow-50 shadow-lg">
-                <h3 className="text-2xl font-bold text-purple-700 text-center mb-6">
+                <h3 className="text-2xl font-bold text-black-700 text-center mb-6">
                   Return Gifts
                 </h3>
 
                 {/* Quantity */}
                 <div className="mb-6">
-                  <label className="block font-semibold mb-2 text-gray-700">📦 Number of Gifts</label>
+                  <label className="block font-semibold mb-2 text-black-700">📦 Number of Gifts</label>
                   <input
                     type="number"
                     name="returnGifts.quantity"
@@ -2330,7 +2330,7 @@ export default function Birthday() {
 
                 {/* Cost per Gift */}
                 <div className="mb-6">
-                  <label className="block font-semibold mb-2 text-gray-700">💰 Cost Per Gift</label>
+                  <label className="block font-semibold mb-2 text-black-700">💰 Cost Per Gift</label>
                   <input
                     type="number"
                     name="returnGifts.budget"
@@ -2358,7 +2358,7 @@ export default function Birthday() {
 
                 {/* Gift Type Selection */}
                 <div className="mb-6">
-                  <label className="block font-semibold mb-2 text-gray-700">🎁 Gift Type</label>
+                  <label className="block font-semibold mb-2 text-black-700">🎁 Gift Type</label>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     {["Toys", "Sweets", "Customized Gift Hampers", "Other"].map((type) => (
@@ -2398,7 +2398,7 @@ export default function Birthday() {
 
                 {/* Notes */}
                 <div className="mb-6">
-                  <label className="block font-semibold mb-2 text-gray-700">📝 Notes / Instructions</label>
+                  <label className="block font-semibold mb-2 text-black-700">📝 Notes / Instructions</label>
                   <textarea
                     name="returnGifts.notes"
                     value={formData.returnGifts.notes}
@@ -2410,13 +2410,13 @@ export default function Birthday() {
                 </div>
               </div>
               <div className="my-2 p-6 border-2 border-green-300 rounded-2xl bg-gradient-to-r from-green-50 to-yellow-50 shadow-lg">
-                <h3 className="text-2xl font-bold text-green-700 text-center mb-6">
+                <h3 className="text-2xl font-bold text-black-700 text-center mb-6">
                   👥 Event Staff / Management Team
                 </h3>
 
                 {/* Food & Reception Team */}
                 <div className="mb-6">
-                  <h4 className="text-lg font-semibold mb-3 text-gray-800">🍽 Food & Reception Team</h4>
+                  <h4 className="text-lg font-semibold mb-3 text-black-800">🍽 Food & Reception Team</h4>
                   {/* {["foodServers", "welcomeStaff"].map((role) => (
                   <div className="mb-4" key={role}>
                     <label className="block font-medium mb-1 text-gray-700">
@@ -2447,7 +2447,7 @@ export default function Birthday() {
                   </div>
                 ))} */}
                   <div className="mb-6">
-                    <label className="block font-semibold mb-2 text-gray-700">Number of Food Servers</label>
+                    <label className="block font-semibold mb-2 text-black-700">Number of Food Servers</label>
                     <input
                       type="number"
                       name="eventStaff.foodServers"
@@ -2475,7 +2475,7 @@ export default function Birthday() {
                   </div>
 
                   <div className="mb-6">
-                    <label className="block font-semibold mb-2 text-gray-700">Welcome / Reception Staff</label>
+                    <label className="block font-semibold mb-2 text-black-700">Welcome / Reception Staff</label>
                     <input
                       type="number"
                       name="eventStaff.welcomeStaff"
@@ -2499,7 +2499,7 @@ export default function Birthday() {
                     />
                   </div>
                   <div className="mb-6">
-                    <label className="block font-semibold mb-2 text-gray-700">Maintenance Team Members</label>
+                    <label className="block font-semibold mb-2 text-black-700">Maintenance Team Members</label>
                     <input
                       type="number"
                       name="eventStaff.maintenanceTeam"
@@ -2525,7 +2525,7 @@ export default function Birthday() {
 
                   {/* Other Roles */}
                   <div className="mb-6">
-                    <label className="block font-semibold mb-2 text-gray-700">Other Roles (If any)</label>
+                    <label className="block font-semibold mb-2 text-black-700">Other Roles (If any)</label>
                     <input
                       type="text"
                       name="eventStaff.otherRoles"
@@ -2538,7 +2538,7 @@ export default function Birthday() {
 
                   {/* Notes */}
                   <div>
-                    <label className="block font-semibold mb-2 text-gray-700">Special Notes / Instructions</label>
+                    <label className="block font-semibold mb-2 text-black-700">Special Notes / Instructions</label>
                     <textarea
                       name="eventStaff.staffNotes"
                       value={formData.eventStaff.staffNotes}
@@ -2551,90 +2551,22 @@ export default function Birthday() {
 
                 </div>
 
-                {/* Maintenance & Handling Team */}
-                {/* <div className="mb-6">
-                <h4 className="text-lg font-semibold mb-3 text-gray-800">🛠 Maintenance & Handling Team</h4>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-medium mb-1 text-gray-700">Maintenance Team Members</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={formData.eventStaff.maintenanceTeam || 0}
-                      onChange={(e) => {
-                        const num = Number(e.target.value) || 0;
-                        setFormData((prev) => {
-                          const updatedEventStaff = { ...prev.eventStaff, maintenanceTeam: num };
-                          const totalStaff =
-                            (updatedEventStaff.foodServers || 0) +
-                            (updatedEventStaff.welcomeStaff || 0) +
-                            (updatedEventStaff.maintenanceTeam || 0);
-                          return {
-                            ...prev,
-                            eventStaff: updatedEventStaff,
-                            costs: { ...prev.costs, eventStaffCost: totalStaff * 1500 },
-                          };
-                        });
-                      }}
-                      className="border p-2 rounded w-full"
-                      placeholder="Enter number of maintenance staff"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-medium mb-1 text-gray-700">Other Roles (if any)</label>
-                    <input
-                      type="text"
-                      value={formData.eventStaff.otherRoles || ""}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          eventStaff: { ...prev.eventStaff, otherRoles: e.target.value },
-                        }))
-                      }
-                      className="border p-2 rounded w-full"
-                      placeholder="Specify other roles (e.g., cleaning, helpers)"
-                    />
-                  </div>
-                </div>
-              </div> */}
-
-                {/* Notes */}
-                {/* <div className="mb-6">
-                <label className="block font-semibold mb-2 text-gray-700">📝 Special Notes / Instructions</label>
-                <textarea
-                  value={formData.eventStaff.staffNotes || ""}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      eventStaff: { ...prev.eventStaff, staffNotes: e.target.value },
-                    }))
-                  }
-                  className="border p-2 rounded w-full"
-                  placeholder="Mention additional instructions or preferences"
-                  rows={3}
-                />
-              </div> */}
-
-                {/* Total Staff Cost */}
-                {/* <div className="mt-6 p-4 bg-white rounded-xl shadow text-center font-semibold text-green-700 border border-green-200">
-                Total Staff Cost: ₹{formData.costs?.eventStaffCost || 0}
-              </div> */}
+                
               </div>
             </div>
           )}
 
           {step === 6 && (
-            <div className="p-6 border-2 border-pink-300 rounded-2xl bg-gradient-to-r from-pink-50 to-yellow-50 shadow-lg">
+            <div className="p-6 border-2 border-black-300 rounded-2xl shadow-lg">
 
-              <h3 className="text-2xl font-bold text-pink-600 text-center mb-6">
+              <h3 className="text-2xl font-bold text-black-600 text-center mb-6">
                 💰 Budget & Payment Details
               </h3>
 
               <div className="space-y-4">
 
                 <div>
-                  <label className="block font-semibold mb-2 text-gray-700">
+                  <label className="block font-semibold mb-2 text-black-700">
                     Original Event Cost
                   </label>
                   <input
@@ -2648,7 +2580,7 @@ export default function Birthday() {
                 <div className="space-y-4 mb-6">
 
                   <div>
-                    <label className="block font-semibold mb-1 text-gray-700">GST</label>
+                    <label className="block font-semibold mb-1 text-black-700">GST</label>
                     <input
                       type="number"
                       value={safeFixed(formData.budget?.gstAmount)}
@@ -2658,7 +2590,7 @@ export default function Birthday() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold mb-1 text-gray-700">CGST </label>
+                    <label className="block font-semibold mb-1 text-black-700">CGST </label>
                     <input
                       type="number"
                       value={safeFixed(formData.budget?.cgstAmount)}
@@ -2667,21 +2599,11 @@ export default function Birthday() {
                     />
                   </div>
 
-                  {/* <div>
-                    <label className="block font-semibold mb-1 text-gray-700">Service Charges </label>
-                    <input
-                      type="number"
-                      value={safeFixed(formData.budget?.serviceChargeAmount)}
-                      readOnly
-                      className="border p-2 rounded w-full bg-gray-100 cursor-not-allowed"
-                    />
-                  </div> */}
-
                 </div>
 
                 {/* Total Budget */}
                 <div>
-                  <label className="block font-semibold mb-2 text-gray-700">
+                  <label className="block font-semibold mb-2 text-black-700">
                     Total Budget / Package Preference
                   </label>
 
@@ -2698,7 +2620,7 @@ export default function Birthday() {
                 <div className="grid md:grid-cols-2 gap-4">
 
                   <div>
-                    <label className="block font-semibold mb-2 text-gray-700">
+                    <label className="block font-semibold mb-2 text-black-700">
                       Advance Payment (70%)
                     </label>
                     <input
@@ -2710,7 +2632,7 @@ export default function Birthday() {
                   </div>
 
                   <div>
-                    <label className="block font-semibold mb-2 text-gray-700">
+                    <label className="block font-semibold mb-2 text-black-700">
                       Balance Payment (30%)
                     </label>
                     <input
@@ -2723,14 +2645,14 @@ export default function Birthday() {
 
                 </div>
 
-                <p className="text-pink-700 font-medium mt-3">
+                <p className="text-black-700 font-medium mt-3">
                   ⚠️ Advance payment is required to confirm your booking slot.
                 </p>
               </div>
 
               {/* Billing Info */}
               <div className="mt-8">
-                <h4 className="text-lg font-semibold mb-2 text-gray-700">🧾 Billing Information</h4>
+                <h4 className="text-lg font-semibold mb-2 text-black-700">🧾 Billing Information</h4>
 
                 <input
                   type="text"

@@ -54,8 +54,8 @@ export default function Contact() {
                             Fill out the form and we’ll get back to you shortly.
                         </p>
 
-                        <div className="text-gray-700 space-y-2 text-sm sm:text-base">
-                            <p><b>Email:</b> info@epudu.com</p>
+                        <div className="text-black-700 space-y-2 text-sm sm:text-base">
+                            <p><b>Email:</b> connect@epudu.com</p>
                             <p><b>contact:</b> 9030406896</p>
                             <p><b>Support:</b> Available 24/7</p>
                         </div>

@@ -196,7 +196,7 @@ const Decoration = () => {
                     {/* LEFT */}
                     <div className="space-y-4">
                         <h2 className="text-3xl font-bold">🎀 Decoration & Theme Preferences</h2>
-                        <p className="text-gray-600">
+                        <p className="text-black-600">
                             Choose stage, entrance, lighting & themed decorations.
                         </p>
                     </div>
@@ -223,7 +223,7 @@ const Decoration = () => {
 
                             return (
                                 <div key={key}>
-                                    <h4 className="font-semibold text-pink-600 mb-3">
+                                    <h4 className="font-semibold text-black-600 mb-3">
                                         🎯 {sub}
                                     </h4>
 

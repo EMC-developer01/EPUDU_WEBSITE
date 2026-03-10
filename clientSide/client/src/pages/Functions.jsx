@@ -82,7 +82,7 @@ export default function Functions() {
 
       <section className="min-h-screen bg-gradient-to-r from-blue-100 to-purple-100 py-12 px-6">
         <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-8">
-          <h2 className="text-3xl font-bold text-purple-600 mb-6 text-center">🎈 Function Booking Wizard</h2>
+          <h2 className="text-3xl font-bold text-black-600 mb-6 text-center">🎈 Function Booking Wizard</h2>
 
           {/* Step 1 - Personal Details */}
           {step === 1 && (
@@ -266,14 +266,14 @@ export default function Functions() {
 
           {/* Step 6 - Summary */}
           {step === 6 && (
-            <div className="space-y-3 text-gray-700">
+            <div className="space-y-3 text-black-700">
               <p><strong>Function:</strong> {formData.functionType}</p>
               <p><strong>Venue:</strong> {formData.venueSub} — ₹{cost.venue}</p>
               <p><strong>Food:</strong> {formData.foodType} — ₹{cost.food}</p>
               <p><strong>Decoration:</strong> {formData.decoration} — ₹{cost.decoration}</p>
               <p><strong>Extras:</strong> {formData.extras.join(', ') || 'None'} — ₹{cost.extras}</p>
               <hr className="border-gray-300" />
-              <p className="text-xl font-bold text-purple-600">Total Cost: ₹{cost.total}</p>
+              <p className="text-xl font-bold text-black-600">Total Cost: ₹{cost.total}</p>
             </div>
           )}
 

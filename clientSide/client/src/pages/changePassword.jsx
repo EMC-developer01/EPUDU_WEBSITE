@@ -63,7 +63,7 @@ export default function ChangePassword() {
   return (
     <div className="min-h-screen flex justify-center items-center bg-gray-100">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
+        <h2 className="text-2xl font-bold text-center mb-6 text-black-800">
           Change Password
         </h2>
 
@@ -104,7 +104,7 @@ export default function ChangePassword() {
         </form>
 
         <p
-          className="text-center text-blue-600 mt-4 cursor-pointer hover:underline"
+          className="text-center text-black-600 mt-4 cursor-pointer hover:underline"
           onClick={() => navigate("/profile")}
         >
           ← Back to Profile

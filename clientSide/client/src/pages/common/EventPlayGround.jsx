@@ -275,7 +275,7 @@ export default function EventGalaxyPanel() {
                     {/* CTA BUTTON */}
                     <motion.button
                         onClick={handleExplore}
-                        className="mt-10 px-10 py-3 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold shadow-lg hover:scale-105 transition"
+                        className="mt-10 px-10 py-3 rounded-full bg-black-to-r from-black-400 to-black-500 text-white font-bold shadow-lg hover:scale-105 transition"
                     >
                         Explore Events
                     </motion.button>

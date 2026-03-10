@@ -78,7 +78,7 @@ export default function Wedding() {
 
       <section className="min-h-screen bg-gradient-to-r from-rose-100 to-pink-100 py-12 px-6">
         <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-8">
-          <h2 className="text-3xl font-bold text-pink-600 mb-6 text-center">💒 Wedding Booking Wizard</h2>
+          <h2 className="text-3xl font-bold text-black-600 mb-6 text-center">💒 Wedding Booking Wizard</h2>
 
           {/* Step 1 - Personal Details */}
           {step === 1 && (
@@ -269,20 +269,20 @@ export default function Wedding() {
               <p><strong>Decoration:</strong> {formData.decoration || 'Not Selected'} — ₹{cost.decoration}</p>
               <p><strong>Transport:</strong> {formData.transport || 'Not Selected'} — ₹{cost.transport}</p>
               <hr className="border-gray-300" />
-              <p className="text-xl font-bold text-pink-600">Total Cost: ₹{cost.total}</p>
+              <p className="text-xl font-bold text-black-600">Total Cost: ₹{cost.total}</p>
             </div>
           )}
 
           {/* Buttons */}
           <div className="flex justify-between mt-6">
             {step > 1 && (
-              <button onClick={prevStep} className="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400" style={{ backgroundColor: "#030303", color: "#ffffff" }}>Back</button>
+              <button onClick={prevStep} className="bg-black-300 px-4 py-2 rounded-lg hover:bg-gray-400" style={{ backgroundColor: "#030303", color: "#ffffff" }}>Back</button>
             )}
             {step < 6 && (
-              <button onClick={nextStep} className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700" style={{ backgroundColor: "#030303", color: "#ffffff" }}>Next</button>
+              <button onClick={nextStep} className="bg-black-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700" style={{ backgroundColor: "#030303", color: "#ffffff" }}>Next</button>
             )}
             {step === 6 && (
-              <button onClick={handleSubmit} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700" style={{ backgroundColor: "#030303", color: "#ffffff" }}>
+              <button onClick={handleSubmit} className="bg-black-600 text-white px-4 py-2 rounded-lg hover:bg-green-700" style={{ backgroundColor: "#030303", color: "#ffffff" }}>
                 Proceed to Payment
               </button>
             )}

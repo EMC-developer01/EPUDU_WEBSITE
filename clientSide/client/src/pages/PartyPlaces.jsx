@@ -167,7 +167,7 @@ const PartyPlaces = () => {
                     {/* LEFT INFO */}
                     <div className="space-y-4">
                         <h2 className="text-3xl font-bold">🎉 Book Party Venues</h2>
-                        <p className="text-gray-600">
+                        <p className="text-black-600">
                             Choose a venue, confirm details, and pay securely.
                         </p>
                     </div>
@@ -208,7 +208,7 @@ const PartyPlaces = () => {
                                         }`}
                                 >
                                     <h4 className="font-semibold">{v.name}</h4>
-                                    <p className="text-sm text-gray-600">{v.location}</p>
+                                    <p className="text-sm text-black-600">{v.location}</p>
                                     <p className="font-bold">₹ {v.cost}</p>
                                 </div>
                             ))}
@@ -222,7 +222,7 @@ const PartyPlaces = () => {
                         {/* PAY */}
                         <button
                             onClick={startPayment}
-                            className="w-full bg-violet-600 text-white py-3 rounded-lg hover:bg-violet-700"
+                            className="w-full bg-black-600 text-white py-3 rounded-lg hover:bg-violet-700"
                             style={{ backgroundColor: "#030303", color: "#ffffff" }}
                         >
                             💳 Pay & Book Venue

@@ -233,8 +233,8 @@ const Catering = () => {
             <section className="px-3 md:px-6 py-10">
                 <div className="space-y-10 pb-20">
 
-                    <h3 className="text-2xl font-bold text-pink-600 text-center">
-                        🍽️ Food Arrangements 🍽️
+                    <h3 className="text-2xl font-bold text-black-600 text-center">
+                        🍽️ Food Arrangements 
                     </h3>
 
                     {/* SEARCH + FILTERS */}
@@ -274,7 +274,7 @@ const Catering = () => {
 
                         return (
                             <div key={section.field}>
-                                <h4 className="text-xl font-semibold text-blue-600 mb-3">
+                                <h4 className="text-xl font-semibold text-black-600 mb-3">
                                     {section.title}
                                 </h4>
 
@@ -288,7 +288,7 @@ const Catering = () => {
                                         }, {})
                                     ).map(([model, foods]) => (
                                         <div key={model} className="mb-6">
-                                            <h5 className="text-lg font-medium text-pink-600 mb-2">{model}</h5>
+                                            <h5 className="text-lg font-medium text-black-600 mb-2">{model}</h5>
                                             <Swiper modules={[A11y]} slidesPerView={2} spaceBetween={8} breakpoints={{ 640: { slidesPerView: 3 }, 1024: { slidesPerView: 4 } }}>
                                                 {foods.map(item => {
                                                     const price = item.price * 1.5;
@@ -330,7 +330,7 @@ const Catering = () => {
 
                     {/* SEATING */}
                     <div>
-                        <h3 className="text-lg font-semibold text-green-600 mb-3">Seating Arrangements</h3>
+                        <h3 className="text-lg font-semibold text-black-600 mb-3">Seating Arrangements</h3>
                         <Swiper modules={[A11y]} slidesPerView={2} spaceBetween={8} breakpoints={{ 640: { slidesPerView: 3 }, 1024: { slidesPerView: 4 } }}>
                             {seatingItems.map(item => {
                                 const price = item.price * 1.5;

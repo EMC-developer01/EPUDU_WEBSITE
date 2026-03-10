@@ -28,7 +28,7 @@ export default function ItemCard({ image, name, price }) {
                 </h3>
 
                 {/* Price */}
-                <p className="text-xs font-bold text-pink-600 mt-1">
+                <p className="text-xs font-bold text-black-600 mt-1">
                     ₹ {finalPrice}
                 </p>
 

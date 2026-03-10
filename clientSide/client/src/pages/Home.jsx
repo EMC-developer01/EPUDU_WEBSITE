@@ -104,11 +104,11 @@ export default function Home() {
         className="relative w-screen py-28 px-8 text-center overflow-hidden
   bg-white-500"
       >
-        <h2 className="text-6xl font-semibold text-pink-500 mb-12 tracking-wide">Our Events</h2>
+        <h2 className="text-6xl font-semibold text-black-500 mb-12 tracking-wide">Our Events</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
           {/* Birthday Events */}
-          <div className="bg-pink-200 backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
+          <div className="bg-white-200 backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
             <img
               key={bIndex}
               src={`${IMAGE_BASE}/${birthdayImg[bIndex]?.image}`}
@@ -118,8 +118,8 @@ export default function Home() {
 
 
             <div className="p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Birthday Events</h3>
-              <p className="text-gray-600 text-sm mb-6">
+              <h3 className="text-xl font-semibold text-black-900 mb-3">Birthday Events</h3>
+              <p className="text-black-600 text-sm mb-6">
                 Celebrate your special day with unforgettable decorations and vibrant moments.
               </p>
               <Link
@@ -127,7 +127,7 @@ export default function Home() {
                 onClick={() => {
                   localStorage.removeItem("birthdayId"); // optional: also clear old event if needed
                 }}
-                className="inline-block bg-indigo-900 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
+                className="inline-block bg-black-900 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
               >
                 Book Your Event
               </Link>
@@ -135,7 +135,7 @@ export default function Home() {
           </div>
 
           {/* Wedding Events */}
-          <div className="bg-pink-200 backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
+          <div className="bg-white-200 backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
             <img
               key={wIndex}
               src={`${IMAGE_BASE}/${weddingImg[wIndex]?.image}`}
@@ -145,13 +145,13 @@ export default function Home() {
 
 
             <div className="p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Wedding Events</h3>
-              <p className="text-gray-600 text-sm mb-6">
+              <h3 className="text-xl font-semibold text-black-900 mb-3">Wedding Events</h3>
+              <p className="text-black-600 text-sm mb-6">
                 Make your big day magical with elegant setups and creative planning.
               </p>
               <Link
                 to="/wedding"
-                className="inline-block bg-indigo-900 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
+                className="inline-block bg-black-900 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
               >
                 Book Your Event
               </Link>
@@ -159,7 +159,7 @@ export default function Home() {
           </div>
 
           {/* Other Functions */}
-          <div className="bg-pink-200 backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
+          <div className="bg-White-200 backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
             <img
               key={fIndex}
               src={`${IMAGE_BASE}/${functionsImg[fIndex]?.image}`}
@@ -170,13 +170,13 @@ export default function Home() {
 
 
             <div className="p-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Other Functions</h3>
-              <p className="text-gray-600 text-sm mb-6">
+              <h3 className="text-xl font-semibold text-black-900 mb-3">Other Functions</h3>
+              <p className="text-black-600 text-sm mb-6">
                 From corporate parties to cultural gatherings — we bring creativity to every event.
               </p>
               <Link
                 to="/functions"
-                className="inline-block bg-indigo-900 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
+                className="inline-block bg-black-900 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 transition"
               >
                 Book Your Event
               </Link>
@@ -189,7 +189,7 @@ export default function Home() {
         id="services"
         className="relative w-screen py-28 px-8 text-center overflow-hidden bg-white"
       >
-        <h2 className="text-6xl font-semibold text-pink-500 mb-12 tracking-wide">
+        <h2 className="text-6xl font-semibold text-black-500 mb-12 tracking-wide">
           Our Services
         </h2>
 
@@ -197,7 +197,7 @@ export default function Home() {
           {services.map((service, i) => (
             <div
               key={service._id}
-              className="bg-pink-200 backdrop-blur-lg rounded-2xl shadow-2xl
+              className="bg-black-200 backdrop-blur-lg rounded-2xl shadow-2xl
                hover:scale-[1.03] transition"
             >
               <img
@@ -207,17 +207,17 @@ export default function Home() {
               />
 
               <div className="p-6">
-                <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                <h3 className="text-xl font-semibold text-black-900 mb-3">
                   {service.title}
                 </h3>
 
-                <p className="text-gray-600 text-sm mb-6">
+                <p className="text-black-600 text-sm mb-6">
                   {service.desc}
                 </p>
 
                 <Link
                   to={service.link}
-                  className="inline-block bg-indigo-900 text-white px-5 py-2
+                  className="inline-block bg-black-900 text-white px-5 py-2
                  rounded-lg hover:bg-indigo-700 transition"
                 >
                   {service.btn}
