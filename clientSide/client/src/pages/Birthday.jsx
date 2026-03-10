@@ -1220,7 +1220,7 @@ export default function Birthday() {
                 <div className="lg:w-1/2 space-y-6">
 
                   {/* Date & Time */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-2">
                       <label className="font-medium">Event Date</label>
                       <DatePicker
@@ -1246,7 +1246,7 @@ export default function Birthday() {
                         className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
                       />
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Number of Guests */}
                   <div className="flex flex-col gap-2">
@@ -1269,120 +1269,114 @@ export default function Birthday() {
 
                   {/* Background Selection */}
                   <div className="flex gap-3 flex-wrap justify-center">
-                    {cards.map(card => (
+                    {cards.map((card) => (
                       <img
                         key={card._id}
                         src={`${MEDIA_URL}/${card.image}`}
                         alt={card.cardName}
-                        className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-4 ${selectedCard?._id === card._id ? "border-blue-500" : "border-transparent"}`}
+                        className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-4 
+        ${selectedCard?._id === card._id ? "border-blue-500" : "border-transparent"}`}
                         onClick={() => setSelectedCard(card)}
                       />
                     ))}
                   </div>
 
                   {/* Invitation Card Preview */}
-                  {selectedVenue && (
-                    <div
-                      id="invitation-card"
-                      className="p-6 border-2 border-pink-300 rounded-2xl shadow-lg w-full max-w-md relative text-black-800"
-                      style={{
-                        backgroundImage: selectedCard
-                          ? `url("${MEDIA_URL}/${selectedCard.image}")`
-                          : "linear-gradient(to bottom right, #fff, #fff9c4)",
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                        backgroundRepeat: "no-repeat",
-                      }}
-                    >
-                      {/* Company Logo */}
-                      <img
-                        src="/logo/epudu-logo.png"
-                        alt="Epudu Logo"
-                        className="absolute top-4 left-4 w-14 h-14 object-contain"
-                      />
+                  <div
+                    id="invitation-card"
+                    className="p-6 border-2 border-gray-300 rounded-2xl shadow-lg w-full max-w-md relative text-black"
+                    style={{
+                      backgroundImage: selectedCard
+                        ? `url(${MEDIA_URL}/${selectedCard.image})`
+                        : "linear-gradient(to bottom right, #ffffff, #fff9c4)",
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                    }}
+                  >
 
-                      {/* Invitation Content */}
-                      <div className="mt-12 text-center p-4 rounded-xl">
-                        <h3 className="text-3xl font-bold text-black-600 mb-2">
-                          You’re Invited!
-                        </h3>
+                    {/* Logo */}
+                    <img
+                      src="/logo/epudu-logo.png"
+                      alt="Epudu Logo"
+                      className="absolute top-4 left-4 w-14 h-14 object-contain"
+                    />
 
-                        <p className="italic text-black-700 mb-3">
-                          {
-                            birthdayQuotes[
-                            Math.floor(Math.random() * birthdayQuotes.length)
-                            ]
-                          }
-                        </p>
+                    {/* Content */}
+                    <div className="mt-12 text-center p-4 rounded-xl bg-white/70 backdrop-blur-sm">
 
-                        <p className="text-xl font-semibold mb-2">
-                          🎂 {formData.celebrantName || "________"}’s Birthday 🎂
-                        </p>
+                      <h3 className="text-3xl font-bold mb-2">
+                        You’re Invited!
+                      </h3>
 
-                        <p className="mb-1">
-                          <span className="font-semibold">Theme:</span>{" "}
-                          {formData.themePreference || "________"}
-                        </p>
+                      <p className="italic mb-3">
+                        {birthdayQuotes[
+                          Math.floor(Math.random() * birthdayQuotes.length)
+                        ]}
+                      </p>
 
-                        <p className="mb-1">
-                          <span className="font-semibold">Date:</span>{" "}
-                          {formData.eventDate || "________"}
-                        </p>
+                      <p className="text-xl font-semibold mb-2">
+                        🎂 {formData.celebrantName || "Your Name"}’s Birthday 🎂
+                      </p>
 
-                        <p className="mb-1">
-                          <span className="font-semibold">Time:</span>{" "}
-                          {formData.timings?.time || "________"}
-                        </p>
+                      <p>
+                        <span className="font-semibold">Theme:</span>{" "}
+                        {formData.themePreference || "Birthday Theme"}
+                      </p>
 
-                        <p className="mb-4">
-                          <span className="font-semibold">Venue:</span>{" "}
-                          {selectedVenue.name}, {selectedVenue.location}
-                        </p>
+                      <p>
+                        <span className="font-semibold">Date:</span>{" "}
+                        {formData.eventDate || "Select Date"}
+                      </p>
 
-                        <p className="text-sm italic text-black-600">
-                          We look forward to celebrating with you!
-                        </p>
-                      </div>
+                      <p>
+                        <span className="font-semibold">Time:</span>{" "}
+                        {formData.timings?.time || "Select Time"}
+                      </p>
 
-                      {/* Contact Info */}
-                      <div className="flex gap-4 justify-end text-xs text-black-700">
-                        <p>
-                          Contact: <span className="font-semibold"> +919030406896</span>
-                        </p>
-                        <p>
-                          Email: <span className="font-semibold">hr@epudu.com</span>
-                        </p>
-                        <p>
-                          Insta: <span className="font-semibold">@epudu_events</span>
-                        </p>
-                      </div>
+                      <p className="mb-3">
+                        <span className="font-semibold">Venue:</span>{" "}
+                        {selectedVenue
+                          ? `${selectedVenue.name}, ${selectedVenue.location}`
+                          : "Select Venue"}
+                      </p>
+
+                      <p className="text-sm italic text-gray-600">
+                        We look forward to celebrating with you!
+                      </p>
 
                     </div>
-                  )}
+
+                    {/* Footer */}
+                    <div className="flex gap-3 justify-end text-xs text-gray-700 mt-3">
+                      <p>📞 +91 9030406896</p>
+                      <p>✉ hr@epudu.com</p>
+                      <p>📷 @epudu_events</p>
+                    </div>
+
+                  </div>
 
                   {/* Download Button */}
                   <button
-                    className="mt-4 bg-blue-500 text-white px-6 py-2 rounded-lg"
-                    style={{ backgroundColor: "#070707", color: "#ffffff" }}
+                    className="mt-4 bg-black text-white px-6 py-2 rounded-lg"
                     onClick={() => {
                       const card = document.getElementById("invitation-card");
                       if (!card) return;
 
-                      htmlToImage.toPng(card, {
-                        cacheBust: true,
-                        backgroundColor: null, // ensure transparency handled
-                      })
+                      htmlToImage
+                        .toPng(card, { cacheBust: true })
                         .then((dataUrl) => {
                           const link = document.createElement("a");
                           link.download = `${formData.celebrantName || "invitation"}.png`;
                           link.href = dataUrl;
                           link.click();
                         })
-                        .catch((err) => console.error("Invitation image error:", err));
+                        .catch((err) => console.error("Download error:", err));
                     }}
                   >
                     Download Invitation
                   </button>
+
                 </div>
               </div>
             </div>
@@ -1392,7 +1386,7 @@ export default function Birthday() {
           {step === 2 && (
             <div className="p-6 border-2 border-black-300 bg-white rounded-2xl shadow-lg">
               <h3 className="text-2xl font-bold text-black text-center mb-6">
-                  Decoration & Theme Preferences 
+                Decoration & Theme Preferences
               </h3>
 
               {/* Theme */}
@@ -1710,7 +1704,7 @@ export default function Birthday() {
             <div className="w-full space-y-10 pb-20 px-2 md:px-4">
               {/* Step Title */}
               <h3 className="text-2xl font-bold text-black-600 text-center mb-6">
-                🍽️ Food Arrangements 
+                🍽️ Food Arrangements
               </h3>
 
               {/* SEARCH + FILTERS */}
@@ -2551,7 +2545,7 @@ export default function Birthday() {
 
                 </div>
 
-                
+
               </div>
             </div>
           )}
