@@ -2097,7 +2097,7 @@ export default function Birthday() {
           {/* === Step 7: Photography & Videography === */}
           {step === 5 && (
             <div className='w-full border-2 border-black-300 bg-white space-y-10 pb-20 px-2 md:px-4'>
-              <div className="my-2 p-6  bg-white shadow-lg w-full">
+              <div className="my-2 p-6  w-full">
                 <h3 className="text-2xl font-bold text-black-600 text-center mb-6">
                   📸 Photography & Videography
                 </h3>
@@ -2289,7 +2289,7 @@ export default function Birthday() {
                   </div>
                 </div>
               </div>
-              <div className="my-2 p-6 bg-white shadow-lg">
+              <div className="my-2 p-6">
                 <h3 className="text-2xl font-bold text-black-700 text-center mb-6">
                   Return Gifts
                 </h3>
@@ -2405,7 +2405,7 @@ export default function Birthday() {
                   ></textarea>
                 </div>
               </div>
-              <div className="my-2 p-6 bg-white shadow-lg">
+              <div className="my-2 p-6 ">
                 <h3 className="text-2xl font-bold text-black-700 text-center mb-6">
                   👥 Event Staff / Management Team
                 </h3>
