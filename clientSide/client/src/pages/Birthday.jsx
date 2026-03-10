@@ -1268,21 +1268,24 @@ export default function Birthday() {
                 {/* Invitation Card Preview & Download */}
                 <div className="lg:w-1/2 flex flex-col items-center space-y-4">
 
-                  {/* Background Selection */}
+                  {/* Card Background Selector */}
                   <div className="flex gap-3 flex-wrap justify-center">
                     {cards.map((card) => (
                       <img
                         key={card._id}
                         src={`${MEDIA_URL}/${card.image}`}
                         alt={card.cardName}
-                        className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-4 
-        ${selectedCard?._id === card._id ? "border-blue-500" : "border-transparent"}`}
                         onClick={() => setSelectedCard(card)}
+                        className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-4 transition
+        ${selectedCard?._id === card._id
+                            ? "border-blue-500"
+                            : "border-transparent hover:border-gray-300"
+                          }`}
                       />
                     ))}
                   </div>
 
-                  {/* Invitation Card Preview */}
+                  {/* Invitation Card */}
                   <div
                     id="invitation-card"
                     className="p-6 border-2 border-gray-300 rounded-2xl shadow-lg w-full max-w-md relative text-black"
@@ -1300,14 +1303,14 @@ export default function Birthday() {
                     <img
                       src={logo}
                       alt="Epudu Logo"
-                      className="absolute top-4 left-4 w-14 h-14 object-contain"
+                      className="absolute top-4 left-4 w-14 h-14 object-contain drop-shadow-md"
                     />
 
-                    {/* Content */}
+                    {/* Invitation Content */}
                     <div className="mt-12 text-center p-4 rounded-xl bg-white/70 backdrop-blur-sm">
 
                       <h3 className="text-3xl font-bold mb-2">
-                        You’re Invited!
+                        You're Invited!
                       </h3>
 
                       <p className="italic mb-3">
@@ -1349,7 +1352,7 @@ export default function Birthday() {
                     </div>
 
                     {/* Footer */}
-                    <div className="flex gap-3 justify-end text-xs text-gray-700 mt-3">
+                    <div className="flex flex-wrap gap-3 justify-end text-xs text-gray-700 mt-4">
                       <p>📞 +91 9030406896</p>
                       <p>✉ hr@epudu.com</p>
                       <p>📷 @epudu_events</p>
@@ -1374,6 +1377,7 @@ export default function Birthday() {
                         })
                         .catch((err) => console.error("Download error:", err));
                     }}
+                    style={{ backgroundColor: "black", color: "white" }}
                   >
                     Download Invitation
                   </button>
