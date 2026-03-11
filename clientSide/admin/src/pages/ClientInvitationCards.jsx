@@ -182,7 +182,7 @@ export default function ClientInvitationCards() {
                                     {filteredCards.length ? filteredCards.map((item, index) => (
                                         <TableRow key={item._id}>
                                             <TableCell>{index + 1}</TableCell>
-                                            <TableCell><img src={`${IMAGE_BASE}${item.image}`} className="w-16 h-16 rounded-lg object-cover" /></TableCell>
+                                            <TableCell><img src={`${IMAGE_BASE}${encodeURI(item.image)}`} className="w-16 h-16 rounded-lg object-cover" /></TableCell>
                                             <TableCell>{item.cardName}</TableCell>
                                             <TableCell>{item.eventName}</TableCell>
                                             <TableCell className="max-w-xs truncate">{item.description || "-"}</TableCell>
