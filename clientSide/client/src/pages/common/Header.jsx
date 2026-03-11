@@ -68,7 +68,6 @@ export default function Header() {
           }`}
       >
         <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
-
           {/* LOGO */}
           <div className="flex lg:flex-1 cursor-pointer" onClick={() => navigate("/")}>
             <img
@@ -95,11 +94,9 @@ export default function Header() {
 
           {/* DESKTOP MENU */}
           <div className="hidden lg:flex lg:gap-x-12">
-
             <Link to="/" className="flex items-center gap-x-1 text-sm font-semibold">
               Home
             </Link>
-
             {/* EVENTS DROPDOWN */}
             <div className="relative">
               <Link
@@ -129,11 +126,9 @@ export default function Header() {
                 </div>
               )}
             </div>
-
             <Link to="/contact" className="text-sm font-semibold ">
               Contact
             </Link>
-
           </div>
 
           {/* PROFILE / LOGIN */}
@@ -163,28 +158,24 @@ export default function Header() {
 
                 {isProfileOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg">
-
                     <Link
                       to="/profile"
                       className="block px-4 py-2 hover:bg-gray-100"
                     >
                       Profile
                     </Link>
-
                     <Link
                       to="/eventHistory"
                       className="block px-4 py-2 hover:bg-gray-100"
                     >
                       Event History
                     </Link>
-
                     <Link
                       to="/custom-services-History"
                       className="block px-4 py-2 hover:bg-gray-100"
                     >
                       Custom Services
                     </Link>
-
                     <button
                       onClick={handleLogout}
                       className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
@@ -192,7 +183,6 @@ export default function Header() {
                     >
                       Logout
                     </button>
-
                   </div>
                 )}
               </div>
@@ -207,11 +197,9 @@ export default function Header() {
         {/* MOBILE MENU */}
         {isMobileMenu && (
           <div className="lg:hidden bg-black text-white px-6 pb-6">
-
             <Link to="/" className="block py-2">
               Home
             </Link>
-
             <button
               onClick={() => setIsMobileDropdown(!isMobileDropdown)}
               className="flex items-center justify-between w-full py-2"
@@ -220,7 +208,6 @@ export default function Header() {
               Events
               <ChevronDownIcon className="h-4 w-4" />
             </button>
-
             {isMobileDropdown && (
               <div className="pl-4">
                 {["birthday", "wedding", "functions"].map((e) => (
@@ -234,13 +221,10 @@ export default function Header() {
                 ))}
               </div>
             )}
-
             <Link to="/contact" className="block py-2">
               Contact
             </Link>
-
             <div className="border-t border-white mt-4 pt-4">
-
               {isLoggedIn ? (
                 <>
                   <Link to="/profile" className="block py-2">
@@ -268,13 +252,10 @@ export default function Header() {
                   Login
                 </Link>
               )}
-
             </div>
-
           </div>
         )}
       </header>
-
       {/* HOME PAGE PANEL */}
       {isHome && <EventGalaxyPanel />}
     </div>

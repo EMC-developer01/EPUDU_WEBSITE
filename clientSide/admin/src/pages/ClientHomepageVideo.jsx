@@ -214,7 +214,7 @@ function ClientHomepageVideo() {
 
                         <TableCell>
                           <video
-                            src={`${VIDEO_BASE}/${item.video}`}
+                            src={`${VIDEO_BASE}/${encodeURI(item.video)}`}
                             className="w-16 h-12 rounded-lg object-cover"
                           />
                         </TableCell>
