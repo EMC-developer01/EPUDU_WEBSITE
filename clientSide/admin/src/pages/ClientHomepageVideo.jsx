@@ -214,7 +214,7 @@ function ClientHomepageVideo() {
 
                         <TableCell>
                           <video autoPlay muted loop playsInline className="w-16 h-12 rounded-lg object-cover">
-                            <source src="https://backend.epudu.com/uploads/homepageVideos/1770184166584-homepageVideo.mp4" type="video/mp4" />
+                            <source src={`${VIDEO_BASE}/${encodeURI(item.video)}`} type="video/mp4" />
                           </video>
                         </TableCell>
 
