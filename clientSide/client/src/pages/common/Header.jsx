@@ -105,7 +105,7 @@ export default function Header() {
               <Link
                 to={"."}
                 onClick={(e) => {
-                  e.preventDefault();  // ← ADD THIS
+                  // e.preventDefault();  // ← ADD THIS
                   setIsDropdownOpen(!isDropdownOpen)
                 }}
                 className="flex items-center gap-x-1 text-sm font-semibold"
@@ -144,7 +144,7 @@ export default function Header() {
                 <Link
                   to={"."}
                   onClick={(e) => {
-                    e.preventDefault();  // ← ADD THIS
+                    // e.preventDefault();  // ← ADD THIS
                     setIsProfileOpen(!isProfileOpen)
                   }}
                   className="flex items-center gap-2"
