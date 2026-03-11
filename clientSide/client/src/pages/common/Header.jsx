@@ -108,6 +108,7 @@ export default function Header() {
                   // e.preventDefault();  // ← ADD THIS
                   setIsDropdownOpen(!isDropdownOpen)
                 }}
+                style={{ backgroundColor: "white", border: "none", color: "black" }}
                 className="flex items-center gap-x-1 text-sm font-semibold"
               >
                 Events
@@ -148,6 +149,8 @@ export default function Header() {
                     setIsProfileOpen(!isProfileOpen)
                   }}
                   className="flex items-center gap-2"
+
+                  style={{ backgroundColor: "white", border: "none", color: "black" }}
                 >
                   <span className={`${isHome ? `text-white` : `text-black`}`}>{userName}</span>
 
