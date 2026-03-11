@@ -102,8 +102,8 @@ export default function Header() {
 
             {/* EVENTS DROPDOWN */}
             <div className="relative">
-              <Link
-                to={"."}
+              <button
+                // to={"."}
                 onClick={(e) => {
                   // e.preventDefault();  // ← ADD THIS
                   setIsDropdownOpen(!isDropdownOpen)
@@ -112,7 +112,7 @@ export default function Header() {
               >
                 Events
                 <ChevronDownIcon className="h-4 w-4" />
-              </Link>
+              </button>
 
               {isDropdownOpen && (
                 <div className="absolute mt-3 w-40 bg-white text-black rounded-lg shadow-lg">
@@ -141,8 +141,8 @@ export default function Header() {
 
             {isLoggedIn ? (
               <div className="relative" ref={profileRef}>
-                <Link
-                  to={"."}
+                <button
+                  // to={"."}
                   onClick={(e) => {
                     // e.preventDefault();  // ← ADD THIS
                     setIsProfileOpen(!isProfileOpen)
@@ -159,7 +159,7 @@ export default function Header() {
                   ) : (
                     <UserCircleIcon className="h-8 w-8" />
                   )}
-                </Link>
+                </button>
 
                 {isProfileOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg">
