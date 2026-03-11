@@ -102,13 +102,13 @@ export default function Home() {
       <section
         id="events"
         className="relative w-screen py-28 px-8 text-center overflow-hidden
-  bg-white-500"
+  bg-white"
       >
         <h2 className="text-6xl font-semibold text-black-500 mb-12 tracking-wide">Our Events</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
           {/* Birthday Events */}
-          <div className="bg-white-200 backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
+          <div className="bg-whit backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
             <img
               key={bIndex}
               src={`${IMAGE_BASE}/${birthdayImg[bIndex]?.image}`}
@@ -227,11 +227,6 @@ export default function Home() {
         </div>
       </section>
 
-
-
-
-
-
       <Banner />
 
       <Footer />
@@ -264,4 +259,4 @@ export default function Home() {
 
     </>
   );
-}
+} 
