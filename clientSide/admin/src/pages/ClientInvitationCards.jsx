@@ -21,7 +21,7 @@ const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
 
 const API = `${API_URL}/api/admin/client-invitation`;
-const IMAGE_BASE = `${MEDIA_URL}/uploads`;
+const IMAGE_BASE = `${MEDIA_URL}/uploads/`;
 
 export default function ClientInvitationCards() {
     const [cards, setCards] = useState([]);
