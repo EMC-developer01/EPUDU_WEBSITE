@@ -102,18 +102,17 @@ export default function Header() {
 
             {/* EVENTS DROPDOWN */}
             <div className="relative">
-              <button
-                // to={"."}
+              <Link
+                to={"."}
                 onClick={(e) => {
-                  // e.preventDefault();  // ← ADD THIS
+                  e.preventDefault();  // ← ADD THIS
                   setIsDropdownOpen(!isDropdownOpen)
                 }}
-                style={{ backgroundColor: "white", border: "none", color: "black" }}
                 className="flex items-center gap-x-1 text-sm font-semibold"
               >
                 Events
                 <ChevronDownIcon className="h-4 w-4" />
-              </button>
+              </Link>
 
               {isDropdownOpen && (
                 <div className="absolute mt-3 w-40 bg-white text-black rounded-lg shadow-lg">
@@ -142,15 +141,13 @@ export default function Header() {
 
             {isLoggedIn ? (
               <div className="relative" ref={profileRef}>
-                <button
-                  // to={"."}
+                <Link
+                  to={"."}
                   onClick={(e) => {
-                    // e.preventDefault();  // ← ADD THIS
+                    e.preventDefault();  // ← ADD THIS
                     setIsProfileOpen(!isProfileOpen)
                   }}
                   className="flex items-center gap-2"
-
-                  style={{ backgroundColor: "white", border: "none", color: "black" }}
                 >
                   <span className={`${isHome ? `text-white` : `text-black`}`}>{userName}</span>
 
@@ -162,7 +159,7 @@ export default function Header() {
                   ) : (
                     <UserCircleIcon className="h-8 w-8" />
                   )}
-                </button>
+                </Link>
 
                 {isProfileOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg">
