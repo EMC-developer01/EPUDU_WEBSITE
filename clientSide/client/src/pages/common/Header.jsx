@@ -10,6 +10,7 @@ import axios from "axios";
 import epudulogo from "../../../dist/logo-try.png";
 import epudutry from "../../../dist/logo-try-1.png";
 import EventGalaxyPanel from "./EventPlayGround";
+import { Popover, PopoverTrigger, PopoverContent } from "../components/ui/popover.jsx";
 
 export default function Header() {
   const { pathname } = useLocation();
@@ -60,11 +61,11 @@ export default function Header() {
 
   return (
     <div
-      className={`w-full galaxy-bg z-50 ${isHome ? "relative min-h-screen text-white" : "fixed top-0 left-0 shadow-md h-[75px]"} z-50`}
+      className={`w-full galaxy-bg  ${isHome ? "relative min-h-screen text-white" : "fixed top-0 left-0 shadow-md h-[75px]"} z-[9999]`}
     >
       {/* HEADER */}
       <header
-        className={`w-full z-[10000] ${isHome ? "absolute top-0 left-0" : "relative shadow-md"
+        className={`w-full z-[9999] ${isHome ? "absolute top-0 left-0" : "relative shadow-md"
           }`}
       >
         <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
@@ -112,7 +113,7 @@ export default function Header() {
               </Link>
 
               {isDropdownOpen && (
-                <div className="absolute mt-3 w-40 bg-white text-black rounded-lg shadow-lg">
+                <div className="absolute mt-3 w-40 bg-white text-black rounded-lg shadow-lg z-[10000]">
                   {["birthday", "wedding", "functions"].map((e) => (
                     <Link
                       key={e}
@@ -157,7 +158,7 @@ export default function Header() {
                 </Link>
 
                 {isProfileOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg">
+                  <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg z-[10000]">
                     <Link
                       to="/profile"
                       className="block px-4 py-2 hover:bg-gray-100"
