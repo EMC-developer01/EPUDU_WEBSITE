@@ -43,7 +43,7 @@ function VendorItems() {
 
     /* FETCH ITEMS */
     const fetchItems = async () => {
-        const res = await axios.get(`${API}/getAllVendorItems`);
+        const res = await axios.get(`${API}/all`);
         setItems(res.data.items);
     };
 
