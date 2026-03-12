@@ -14,6 +14,13 @@ const Login = ({ onClose }) => {
     let navigate = useNavigate();
     let API_URL = import.meta.env.VITE_API_URL;
     const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
+    const locations = [
+        "Madhapur", "Hitech City", "Gachibowli", "Kondapur", "Jubilee Hills",
+        "Banjara Hills", "Ameerpet", "Kukatpally", "Begumpet", "Secunderabad",
+        "Somajiguda", "Mehdipatnam", "Dilsukhnagar", "LB Nagar", "Uppal",
+        "Nagole", "Shamshabad", "Patancheru", "Medchal", "Shamirpet",
+        "Chevella", "Ibrahimpatnam", "Hayathnagar", "Sangareddy"
+    ];
 
 
     API_URL = `${API_URL}/api`;
@@ -248,14 +255,20 @@ const Login = ({ onClose }) => {
                             <option value="Event Planner">Event Planner</option>
                         </select>
 
-                        <input
-                            type="text"
-                            placeholder="Shop Location"
+                        <select
                             className="w-full mb-4 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
                             required
-                        />
+                        >
+                            <option value="">Select Shop Location</option>
+
+                            {locations.map((loc, index) => (
+                                <option key={index} value={loc}>
+                                    {loc}
+                                </option>
+                            ))}
+                        </select>
 
 
                         <button
