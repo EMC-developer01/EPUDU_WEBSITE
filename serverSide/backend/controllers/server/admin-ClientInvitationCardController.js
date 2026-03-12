@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 
 /* ---------------- ADD CARD ---------------- */
-import ClientInvitationCard from "../../models/server/admin-clientInvitaionCardModels.js";
+// import ClientInvitationCard from "../../models/server/admin-clientInvitaionCardModels.js";
 import fs from "fs";
 import path from "path";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
