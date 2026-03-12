@@ -94,8 +94,9 @@ export default function VendorRegistration() {
                         <InputField label="Shop Name" value={vendor?.shopName} readOnly />
                         <InputField label="Vendor Type" value={vendor?.vendorType} readOnly />
                         <InputField label="Mobile Number" value={vendor?.mobile} readOnly />
+                        <InputField label="Location" value={vendor?.vendorLocation} readOnly />
 
-                        <div>
+                        {/* <div>
                             <label className="block font-medium mb-1">Location</label>
                             <input
                                 type="text"
@@ -105,7 +106,7 @@ export default function VendorRegistration() {
                                 placeholder="Enter location"
                                 required
                             />
-                        </div>
+                        </div> */}
 
                         <div>
                             {/* <label className="block font-medium mb-1">Email</label>
@@ -118,7 +119,6 @@ export default function VendorRegistration() {
                                 required
                             /> */}
                             <InputField label="Email" value={vendor?.mail} readOnly />
-
                         </div>
                     </div>
 
