@@ -21,7 +21,7 @@ export const getVendorByMobile = async (req, res) => {
 // ✅ Add new vendor
 export const addVendor = async (req, res) => {
     try {
-        const { name, mobile, mail, shopName, vendorType, } = req.body;
+        const { name, mobile, mail, shopName, vendorType, location} = req.body;
         console.log("📩 Incoming data:", mobile);
 
         if (!mobile) return res.status(400).json({ message: "Mobile is required" });
@@ -35,6 +35,7 @@ export const addVendor = async (req, res) => {
             mail: mail || "geethasree1919@gmail.com",
             shopName,
             vendorType,
+            vendorLocation: location,
         });
 
         await vendor.save();

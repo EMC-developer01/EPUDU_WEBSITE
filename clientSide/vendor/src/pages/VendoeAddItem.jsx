@@ -5,6 +5,7 @@ import Header from "../components/Header";
 export default function VendorAddItem() {
     const [formData, setFormData] = useState({
         vendorId: "",
+        location:"",
         name: "",
         price: "",
         discount: "",
@@ -53,7 +54,7 @@ export default function VendorAddItem() {
         const vendor = JSON.parse(localStorage.getItem("vendor"));
         // console.log(vendor);
         if (vendor) {
-            setFormData((prev) => ({ ...prev, vendorId: vendor._id }));
+            setFormData((prev) => ({ ...prev, vendorId: vendor._id, location:vendor.vendorLocation }));
             setVendorId(vendor._id);
         }
     }, []);

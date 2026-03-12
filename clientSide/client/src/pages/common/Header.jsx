@@ -64,7 +64,7 @@ export default function Header() {
     >
       {/* HEADER */}
       <header
-        className={`w-full z-[9999] ${isHome ? "absolute top-0 left-0" : "relative shadow-md"
+        className={`w-full z-[10000] ${isHome ? "absolute top-0 left-0" : "relative shadow-md"
           }`}
       >
         <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">

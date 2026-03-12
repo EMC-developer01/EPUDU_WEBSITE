@@ -10,6 +10,7 @@ const Login = ({ onClose }) => {
     let [mail, setMail] = useState("");
     let [shopName, setShopName] = useState("");
     let [vendorType, setVendorType] = useState("");
+    let [location, setLocation] = useState("");
     let navigate = useNavigate();
     let API_URL = import.meta.env.VITE_API_URL;
     const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
@@ -96,7 +97,7 @@ const Login = ({ onClose }) => {
     const handleSaveVendorDetails = async (e) => {
         e.preventDefault();
 
-        if (!name || !shopName || !vendorType || !mail) {
+        if (!name || !shopName || !vendorType || !mail || !location) {
             alert("All fields are required!");
             return;
         }
@@ -107,7 +108,7 @@ const Login = ({ onClose }) => {
             const res = await fetch(`${API_URL}/vendor/users`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, mobile: fullMobile, mail, shopName, vendorType }),
+                body: JSON.stringify({ name, mobile: fullMobile, mail, shopName, vendorType, location }),
             });
 
             const data = await res.json();
@@ -116,6 +117,7 @@ const Login = ({ onClose }) => {
                 localStorage.setItem("vendor", JSON.stringify(data.vendor));
                 localStorage.setItem("vendorId", JSON.stringify(data.vendor._id));
                 localStorage.setItem("isVendorLoggedIn", true);
+                localStorage.setItem("vendorLocation", JSON.stringify(data.location));
 
                 alert(`Welcome, ${data.vendor.name}!`);
                 if (!data.vendor.isRegistered) {
@@ -245,6 +247,15 @@ const Login = ({ onClose }) => {
                             <option value="Sound & Lighting">Sound & Lighting</option>
                             <option value="Event Planner">Event Planner</option>
                         </select>
+
+                        <input
+                            type="text"
+                            placeholder="Shop Location"
+                            className="w-full mb-4 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            value={location}
+                            onChange={(e) => setLocation(e.target.value)}
+                            required
+                        />
 
 
                         <button

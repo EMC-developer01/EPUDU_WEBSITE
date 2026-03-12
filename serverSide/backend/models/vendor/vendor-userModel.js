@@ -6,6 +6,7 @@ const vendorUserSchema = new mongoose.Schema({
     mail: { type: String, required: true, },
     shopName: { type: String, required: true },
     vendorType: { type: String, required: true }, // ex: Decorator, Catering, Photography, etc.
+    vendorLocation:{type:String},
     isRegistered: { type: Boolean, default: false },
 }, { timestamps: true });
 

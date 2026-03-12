@@ -7,6 +7,9 @@ const vendorItemSchema = new mongoose.Schema(
             ref: "Vendor",
             required: false, // If you want, make this true to link items to vendor
         },
+        location:{
+            type: String
+        },
         name: {
             type: String,
             required: true,
