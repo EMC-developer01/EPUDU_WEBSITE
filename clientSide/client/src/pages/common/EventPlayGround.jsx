@@ -276,6 +276,7 @@ export default function EventGalaxyPanel() {
                     <motion.button
                         onClick={handleExplore}
                         className="mt-10 px-10 py-3 rounded-full bg-black text-white font-bold shadow-lg hover:scale-105 transition"
+                        style={{ backgroundColor: "black", color: "white" }}
                     >
                         Explore Events
                     </motion.button>
