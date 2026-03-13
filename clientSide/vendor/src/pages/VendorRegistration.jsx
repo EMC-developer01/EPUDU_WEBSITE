@@ -21,17 +21,15 @@ export default function VendorRegistration() {
 
     const handleRegistrationSubmit = async (e) => {
         e.preventDefault();
+
+        if (!vendorSignature) {
+            alert("Please upload vendor signature.");
+            return;
+        }
+
         const emailValue = vendor?.mail;
         const location = vendor?.vendorLocation;
-        // setEmail(vendor.mail);
-        // if (!location || !emailValue) {
-        //     alert("Please fill all fields");
-        //     return;
-        // }
-        // if (!vendorSignature) {
-        //     alert("Please upload vendor signature.");
-        //     return;
-        // }
+
         const formData = new FormData();
         formData.append("vendorId", vendor?._id);
         formData.append("location", location);
@@ -109,14 +107,14 @@ export default function VendorRegistration() {
                                 type="file"
                                 accept="image/*"
                                 onChange={(e) => {
-                                    const file = e.target.files[0];
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+
                                     setVendorSignature(file);
-                                    if (file) {
-                                        setVendorSignaturePreview(URL.createObjectURL(file));
-                                    }
+                                    setVendorSignaturePreview(URL.createObjectURL(file));
                                 }}
                                 className="w-full"
-                                required
+                                // required
                             />
 
                             {/* Preview Box */}
