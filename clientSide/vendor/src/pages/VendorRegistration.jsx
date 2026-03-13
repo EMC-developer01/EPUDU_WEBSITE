@@ -28,10 +28,10 @@ export default function VendorRegistration() {
             alert("Please fill all fields");
             return;
         }
-        if (!vendorSignature) {
-            alert("Please upload vendor signature.");
-            return;
-        }
+        // if (!vendorSignature) {
+        //     alert("Please upload vendor signature.");
+        //     return;
+        // }
         const formData = new FormData();
         formData.append("vendorId", vendor?._id);
         formData.append("location", location);
