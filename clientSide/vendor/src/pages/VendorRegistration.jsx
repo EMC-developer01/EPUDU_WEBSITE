@@ -5,8 +5,6 @@ export default function VendorRegistration() {
     const navigate = useNavigate();
     const vendor = JSON.parse(localStorage.getItem("vendor"));
 
-    
-
     const [vendorSignature, setVendorSignature] = useState(null);
     const [vendorSignaturePreview, setVendorSignaturePreview] = useState(null);
     let API_URL = import.meta.env.VITE_API_URL;
@@ -25,9 +23,13 @@ export default function VendorRegistration() {
         e.preventDefault();
         const emailValue = vendor?.mail;
         const location = vendor?.vendorLocation;
-        setEmail(vendor.mail);
-        if (!location || !emailValue || !vendorSignature) {
-            alert("Please fill all fields and upload signature.");
+        // setEmail(vendor.mail);
+        if (!location || !emailValue) {
+            alert("Please fill all fields");
+            return;
+        }
+        if (!vendorSignature) {
+            alert("Please upload vendor signature.");
             return;
         }
         const formData = new FormData();
