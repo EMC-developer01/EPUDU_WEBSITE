@@ -95,31 +95,7 @@ export default function VendorRegistration() {
                         <InputField label="Vendor Type" value={vendor?.vendorType} readOnly />
                         <InputField label="Mobile Number" value={vendor?.mobile} readOnly />
                         <InputField label="Location" value={vendor?.vendorLocation} readOnly />
-
-                        {/* <div>
-                            <label className="block font-medium mb-1">Location</label>
-                            <input
-                                type="text"
-                                value={location}
-                                onChange={(e) => setLocation(e.target.value)}
-                                className="w-full border p-2 rounded"
-                                placeholder="Enter location"
-                                required
-                            />
-                        </div> */}
-
-                        <div>
-                            {/* <label className="block font-medium mb-1">Email</label>
-                            <input
-                                type="email"
-                                value={vendor?.mail}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full border p-2 rounded"
-                                placeholder="Enter email address"
-                                required
-                            /> */}
-                            <InputField label="Email" value={vendor?.mail} readOnly />
-                        </div>
+                        <InputField label="Email" value={vendor?.mail} readOnly />
                     </div>
 
                     {/* Signature Section */}
