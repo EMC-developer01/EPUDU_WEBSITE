@@ -24,10 +24,10 @@ export default function VendorRegistration() {
         const emailValue = vendor?.mail;
         const location = vendor?.vendorLocation;
         // setEmail(vendor.mail);
-        if (!location || !emailValue) {
-            alert("Please fill all fields");
-            return;
-        }
+        // if (!location || !emailValue) {
+        //     alert("Please fill all fields");
+        //     return;
+        // }
         // if (!vendorSignature) {
         //     alert("Please upload vendor signature.");
         //     return;
