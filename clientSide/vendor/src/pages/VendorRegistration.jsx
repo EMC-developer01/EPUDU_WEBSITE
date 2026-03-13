@@ -5,8 +5,7 @@ export default function VendorRegistration() {
     const navigate = useNavigate();
     const vendor = JSON.parse(localStorage.getItem("vendor"));
 
-    const [location, setLocation] = useState("");
-    const [email, setEmail] = useState("");
+    
 
     const [vendorSignature, setVendorSignature] = useState(null);
     const [vendorSignaturePreview, setVendorSignaturePreview] = useState(null);
@@ -25,7 +24,7 @@ export default function VendorRegistration() {
     const handleRegistrationSubmit = async (e) => {
         e.preventDefault();
         const emailValue = vendor?.mail;
-
+        const location = vendor?.vendorLocation;
         setEmail(vendor.mail);
         if (!location || !emailValue || !vendorSignature) {
             alert("Please fill all fields and upload signature.");
