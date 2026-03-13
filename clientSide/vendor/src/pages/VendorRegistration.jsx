@@ -24,16 +24,17 @@ export default function VendorRegistration() {
 
     const handleRegistrationSubmit = async (e) => {
         e.preventDefault();
+        const emailValue = vendor?.mail;
 
         setEmail(vendor.mail);
-        if (!location || !email || !vendorSignature) {
+        if (!location || !emailValue || !vendorSignature) {
             alert("Please fill all fields and upload signature.");
             return;
         }
         const formData = new FormData();
         formData.append("vendorId", vendor?._id);
         formData.append("location", location);
-        formData.append("email", email);
+        formData.append("email", emailValue);
         formData.append("vendorSignature", vendorSignature);
 
         try {
