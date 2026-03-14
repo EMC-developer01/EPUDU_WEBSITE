@@ -14,27 +14,27 @@ async function convertToPng(filePath) {
 
 export const registerVendorAgreement = async (req, res) => {
     try {
-        const { vendorId, location, email } = req.body;
+        const { vendorId, location, email, vendorSignature } = req.body;
 
-        if (!vendorId || !location || !email) {
+        if (!vendorId || !location || !email || !vendorSignature) {
             return res.status(400).json({ message: "All fields are required." });
         }
 
         // Check signature upload
-        let signaturePath = req.file?.path;
-        if (!signaturePath) {
-            return res.status(400).json({ message: "Vendor signature is required." });
-        }
+        // let signaturePath = req.file?.path;
+        // if (!signaturePath) {
+        //     return res.status(400).json({ message: "Vendor signature is required." });
+        // }
 
-        // 🔄 Convert signature to PNG before saving
-        signaturePath = await convertToPng(signaturePath);
+        // // 🔄 Convert signature to PNG before saving
+        // signaturePath = await convertToPng(signaturePath);
 
         // Save agreement
         const agreement = await VendorAgreement.create({
             vendorId,
             location,
             email,
-            vendorSignatureUrl: signaturePath,
+            vendorSignatureText: vendorSignature,
         });
 
         // Update vendor status
@@ -45,7 +45,7 @@ export const registerVendorAgreement = async (req, res) => {
         );
 
         // Generate PDF
-        const pdfPath = await generateVendorAgreementPDF(vendor, agreement, signaturePath);
+        const pdfPath = await generateVendorAgreementPDF(vendor, agreement);
 
         // Email Setup
         const transporter = nodemailer.createTransport({

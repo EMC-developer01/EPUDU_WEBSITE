@@ -4,7 +4,7 @@ const VendorAgreementSchema = new mongoose.Schema({
     vendorId: { type: mongoose.Schema.Types.ObjectId, ref: "Vendor", required: true },
     location: String,
     email: String,
-    vendorSignatureUrl: String,
+    vendorSignatureText: String,
     adminSignatureUrl: { type: String, default: "/uploads/admin-sign.png" },
     agreementDate: { type: Date, default: Date.now }
 });
