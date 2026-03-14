@@ -5,7 +5,7 @@ export default function VendorRegistration() {
     const navigate = useNavigate();
     const vendor = JSON.parse(localStorage.getItem("vendor"));
 
-    const [vendorSignature, setVendorSignature] = useState(null);
+    const [vendorSignature, setVendorSignature] = useState("");
     const [vendorSignaturePreview, setVendorSignaturePreview] = useState(null);
     let API_URL = import.meta.env.VITE_API_URL;
     const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
@@ -22,8 +22,8 @@ export default function VendorRegistration() {
     const handleRegistrationSubmit = async (e) => {
         e.preventDefault();
 
-        if (!vendorSignature) {
-            alert("Please upload vendor signature.");
+        if (!vendorSignature.trim()) {
+            alert("Please type your full name as signature.");
             return;
         }
 
@@ -101,31 +101,27 @@ export default function VendorRegistration() {
                     {/* Signature Section */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 mt-4">
                         <div>
-                            <p className="mb-2 font-medium">Vendor Signature *</p>
+                            <p className="mb-2 font-medium">Vendor E-Signature *</p>
 
                             <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (!file) return;
-
-                                    setVendorSignature(file);
-                                    setVendorSignaturePreview(URL.createObjectURL(file));
-                                }}
-                                className="w-full"
-                                // required
+                                type="text"
+                                placeholder="Type your full name as signature"
+                                value={vendorSignature}
+                                onChange={(e) => setVendorSignature(e.target.value)}
+                                className="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                required
                             />
 
-                            {/* Preview Box */}
-                            {vendorSignaturePreview && (
+                            <p className="text-xs text-gray-500 mt-1">
+                                By typing your full name, you agree this acts as your electronic signature.
+                            </p>
+
+                            {vendorSignature && (
                                 <div className="mt-3">
-                                    <p className="text-sm text-gray-600 mb-1">Preview:</p>
-                                    <img
-                                        src={vendorSignaturePreview}
-                                        alt="Vendor Signature Preview"
-                                        className="w-40 h-auto border rounded-md shadow-sm"
-                                    />
+                                    <p className="text-sm text-gray-600 mb-1">Signature Preview:</p>
+                                    <p className="text-xl font-semibold italic border p-2 w-fit">
+                                        {vendorSignature}
+                                    </p>
                                 </div>
                             )}
                         </div>
