@@ -99,7 +99,7 @@ export default function EventGalaxyPanel() {
                     muted
                     loop
                     playsInline
-                    cclassName="absolute inset-0 w-full h-full object-cover -z-10"
+                    className="absolute inset-0 w-full h-full object-cover z-0"
                     initial={{ scale: 1 }}
                     animate={{ scale: [1, 1.15, 1] }}
                     transition={{
@@ -109,7 +109,7 @@ export default function EventGalaxyPanel() {
                     }}
                 />
             )}
-            <div className="absolute inset-0 bg-black/35 -z-10" />
+            <div className="absolute inset-0 bg-black/35 z-0" />
 
             <div className="relative flex-1 flex flex-col items-center justify-center px-4 py-10 overflow-hidden ">
 
