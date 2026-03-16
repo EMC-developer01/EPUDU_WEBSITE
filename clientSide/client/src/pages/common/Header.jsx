@@ -291,20 +291,27 @@ export default function Header() {
                       {item}
                     </Link>
                   ))}
+                </div>
 
-                  {/* Profile Links */}
-                  <Link to="/profile" style={{ display: "block", padding: 12 }}>
+              )}
+
+              <Link to="/contact" style={textStyle}>
+                Contact
+              </Link>
+
+              {isLoggedIn && (
+                <>
+                  <hr style={{ margin: "12px 0", opacity: 0.3 }} />
+
+                  <Link to="/profile" style={textStyle}>
                     Profile
                   </Link>
 
-                  <Link to="/eventHistory" style={{ display: "block", padding: 12 }}>
+                  <Link to="/eventHistory" style={textStyle}>
                     Event History
                   </Link>
 
-                  <Link
-                    to="/custom-services-History"
-                    style={{ display: "block", padding: 12 }}
-                  >
+                  <Link to="/custom-services-History" style={textStyle}>
                     Custom Services
                   </Link>
 
@@ -318,16 +325,20 @@ export default function Header() {
                       textAlign: "left",
                       color: "red",
                       cursor: "pointer",
+                      fontWeight: "600",
                     }}
                   >
                     Logout
                   </button>
-                </div>
+                </>
               )}
 
-              <Link to="/contact" style={textStyle}>
-                Contact
-              </Link>
+              {!isLoggedIn && (
+                <Link to="/login" style={textStyle}>
+                  Login →
+                </Link>
+              )}
+
             </div>
           )}
         </header>
