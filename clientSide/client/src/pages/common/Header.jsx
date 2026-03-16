@@ -70,7 +70,7 @@ export default function Header() {
         setUserName(res.data.name);
         setUserPhoto(res.data.photo);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [API_URL]);
 
   /* ───────────── CLICK OUTSIDE ───────────── */
@@ -137,16 +137,14 @@ export default function Header() {
   return (
     <>
       <div
-        className={`w-full galaxy-bg z-[9999] ${
-          isHome
+        className={`w-full galaxy-bg z-[9999] ${isHome
             ? "relative min-h-screen text-white"
             : "fixed top-0 left-0 h-[75px] shadow-md"
-        }`}
+          }`}
       >
         <header
-          className={`w-full ${
-            isHome ? "absolute top-0 left-0" : "relative bg-white"
-          }`}
+          className={`w-full ${isHome ? "absolute top-0 left-0" : "relative bg-white"
+            }`}
         >
           <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
             {/* LOGO */}
@@ -193,9 +191,8 @@ export default function Header() {
                 >
                   Events
                   <ChevronDownIcon
-                    className={`h-4 w-4 transition-transform ${
-                      isDropdownOpen ? "rotate-180" : ""
-                    }`}
+                    className={`h-4 w-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""
+                      }`}
                   />
                 </button>
               </div>
@@ -245,8 +242,12 @@ export default function Header() {
 
           {/* MOBILE MENU */}
           {isMobileMenu && (
-            <div className="lg:hidden bg-black text-white px-6 pb-6">
-              <Link to="/" className="block py-2 text-sm font-semibold">
+            <div className="lg:hidden bg-black text-white px-6 pb-6 relative z-[9999]">
+              <Link
+                to="/"
+                className="block py-2 text-sm font-semibold"
+                onClick={() => setIsMobileMenu(false)}
+              >
                 Home
               </Link>
 
@@ -256,9 +257,8 @@ export default function Header() {
               >
                 Events
                 <ChevronDownIcon
-                  className={`h-4 w-4 ${
-                    isMobileDropdown ? "rotate-180" : ""
-                  }`}
+                  className={`h-4 w-4 transition-transform ${isMobileDropdown ? "rotate-180" : ""
+                    }`}
                 />
               </button>
 
@@ -269,6 +269,10 @@ export default function Header() {
                       key={item}
                       to={`/${item}`}
                       className="block py-2 text-sm capitalize"
+                      onClick={() => {
+                        setIsMobileMenu(false);
+                        setIsMobileDropdown(false);
+                      }}
                     >
                       {item}
                     </Link>
@@ -276,7 +280,11 @@ export default function Header() {
                 </div>
               )}
 
-              <Link to="/contact" className="block py-2 text-sm font-semibold">
+              <Link
+                to="/contact"
+                className="block py-2 text-sm font-semibold"
+                onClick={() => setIsMobileMenu(false)}
+              >
                 Contact
               </Link>
             </div>
