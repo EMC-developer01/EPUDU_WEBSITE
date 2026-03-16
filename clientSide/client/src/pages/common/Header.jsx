@@ -301,17 +301,25 @@ export default function Header() {
 
               {isLoggedIn && (
                 <>
+                  <hr style={{ margin: "12px 0", opacity: 0.3 }} />
+
                   <Link to="/profile" style={textStyle}>
                     Profile
                   </Link>
+                  <hr style={{ margin: "12px 0", opacity: 0.3 }} />
+
 
                   <Link to="/eventHistory" style={textStyle}>
                     Event History
                   </Link>
+                  <hr style={{ margin: "12px 0", opacity: 0.3 }} />
+
 
                   <Link to="/custom-services-History" style={textStyle}>
                     Custom Services
                   </Link>
+                  <hr style={{ margin: "12px 0", opacity: 0.3 }} />
+
 
                   <button
                     onClick={handleLogout}
@@ -331,6 +339,7 @@ export default function Header() {
                 </>
               )}
 
+              <hr style={{ margin: "12px 0", opacity: 0.3 }} />
               {!isLoggedIn && (
                 <Link to="/login" style={textStyle}>
                   Login →
