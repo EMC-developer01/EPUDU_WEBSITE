@@ -138,8 +138,8 @@ export default function Header() {
     <>
       <div
         className={`w-full galaxy-bg z-[9999] ${isHome
-            ? "relative min-h-screen text-white"
-            : "fixed top-0 left-0 w-full shadow-md"
+          ? "relative min-h-screen text-white"
+          : "fixed top-0 left-0 w-full shadow-md"
           }`}
       >
         <header
@@ -177,7 +177,7 @@ export default function Header() {
             <div className="hidden lg:flex lg:gap-x-12 items-center">
               <Link
                 to="/"
-                className={`text-sm font-semibold hover:opacity-70 ${navColor}`}
+                className={`text-sm font-semibold hover:opacity-70 ${isHome ? "text-white" : "text-black"}`}
               >
                 Home
               </Link>
@@ -187,7 +187,8 @@ export default function Header() {
                 <button
                   ref={eventsButtonRef}
                   onClick={openEventsDropdown}
-                  className={`flex items-center gap-x-1 text-sm font-semibold ${cleanBtn} ${navColor}`}
+                  className={`flex items-center gap-x-1 text-sm font-semibold ${isHome ? `${cleanBtn} ${navColor}` : cleanBtn
+                    }`}
                 >
                   Events
                   <ChevronDownIcon
@@ -199,7 +200,7 @@ export default function Header() {
 
               <Link
                 to="/contact"
-                className={`text-sm font-semibold hover:opacity-70 ${navColor}`}
+                className={`text-sm font-semibold hover:opacity-70 ${isHome ? "text-white" : "text-black"}`}
               >
                 Contact
               </Link>
@@ -214,7 +215,7 @@ export default function Header() {
                     onClick={openProfileDropdown}
                     className={`flex items-center gap-2 ${cleanBtn}`}
                   >
-                    <span className={`text-sm font-semibold ${navColor}`}>
+                    <span className={`text-sm font-semibold ${isHome ? "text-white" : "text-black"}`}>
                       {userName}
                     </span>
 
@@ -225,14 +226,14 @@ export default function Header() {
                         alt="avatar"
                       />
                     ) : (
-                      <UserCircleIcon className={`h-8 w-8 ${navColor}`} />
+                      <UserCircleIcon className={`h-8 w-8 ${isHome ? "text-white" : "text-black"}`} />
                     )}
                   </button>
                 </div>
               ) : (
                 <Link
                   to="/login"
-                  className={`text-sm font-semibold hover:opacity-70 ${navColor}`}
+                  className={`text-sm font-semibold hover:opacity-70 ${isHome ? "text-white" : "text-black"}`}
                 >
                   Login →
                 </Link>
@@ -292,10 +293,11 @@ export default function Header() {
         </header>
 
         {isHome && <EventGalaxyPanel />}
-      </div>
+      </div >
 
       {/* EVENTS DROPDOWN */}
-      {isDropdownOpen &&
+      {
+        isDropdownOpen &&
         createPortal(
           <div
             ref={eventsMenuRef}
@@ -319,10 +321,12 @@ export default function Header() {
             ))}
           </div>,
           document.body
-        )}
+        )
+      }
 
       {/* PROFILE DROPDOWN */}
-      {isProfileOpen &&
+      {
+        isProfileOpen &&
         createPortal(
           <div
             ref={profileMenuRef}
@@ -363,7 +367,8 @@ export default function Header() {
             </button>
           </div>,
           document.body
-        )}
+        )
+      }
     </>
   );
 }
