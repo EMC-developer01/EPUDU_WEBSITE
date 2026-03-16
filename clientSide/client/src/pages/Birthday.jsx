@@ -1036,25 +1036,27 @@ export default function Birthday() {
               </h5>
               <div className="flex flex-col lg:flex-row gap-6">
 
-                {/* LEFT SIDE - VENUE LIST */}
-                <div className="lg:w-1/2 max-h-[500px] overflow-y-auto border-r pr-4 space-y-4">
+                {/* LEFT SIDE — VENUE LIST */}
 
-                  {/* SEARCH + FILTERS */}
+                <div className="lg:w-1/2 max-h-[520px] overflow-y-auto border-r pr-4 space-y-4">
+
+                  ```
+                  {/* SEARCH + FILTER */}
                   <div className="sticky top-0 bg-white pb-3 z-10 space-y-3">
 
                     {/* SEARCH */}
                     <input
                       type="text"
-                      placeholder="Search venues..."
+                      placeholder="Search venues or location..."
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       className="w-full border rounded-lg px-3 py-2"
                     />
 
-                    {/* FILTERS */}
+                    {/* FILTER OPTIONS */}
                     <div className="flex flex-wrap gap-2">
 
-                      {/* CITY */}
+                      {/* CITY FILTER */}
                       <select
                         value={filterLocation}
                         onChange={(e) => {
@@ -1068,7 +1070,7 @@ export default function Birthday() {
                         <option value="Bangalore">Bangalore</option>
                       </select>
 
-                      {/* AREA */}
+                      {/* AREA FILTER */}
                       <select
                         value={filterArea}
                         onChange={(e) => setFilterArea(e.target.value)}
@@ -1084,7 +1086,7 @@ export default function Birthday() {
                           ))}
                       </select>
 
-                      {/* RATING */}
+                      {/* RATING FILTER */}
                       <select
                         value={filterRating}
                         onChange={(e) => setFilterRating(e.target.value)}
@@ -1096,24 +1098,12 @@ export default function Birthday() {
                         <option value="5">5★</option>
                       </select>
 
-                      {/* PRICE */}
-                      <select
-                        value={filterPrice}
-                        onChange={(e) => setFilterPrice(e.target.value)}
-                        className="border rounded-lg px-2 py-2"
-                      >
-                        <option value="">All Prices</option>
-                        <option value="low">Below ₹50k</option>
-                        <option value="mid">₹50k - ₹1.5L</option>
-                        <option value="high">Above ₹1.5L</option>
-                      </select>
-
                     </div>
                   </div>
 
                   {/* VENUE LIST */}
                   {filteredVenues.length === 0 && (
-                    <p className="text-black-500 text-sm">No venues found.</p>
+                    <p className="text-gray-500 text-sm">No venues found.</p>
                   )}
 
                   {filteredVenues.map((venue) => (
@@ -1121,17 +1111,10 @@ export default function Birthday() {
                       key={venue.id}
                       onClick={() => {
                         setSelectedVenue(venue);
-
-                        handleCustomChange("venue", {
-                          name: venue.name,
-                          address: venue.address || "",
-                          city: venue.location || "",
-                          cost: venue.cost || 0,
-                        });
                       }}
-                      className={`flex gap-4 p-4 border rounded-lg cursor-pointer transition 
-        ${selectedVenue?.id === venue.id
-                          ? "bg-pink-50 border-pink-400"
+                      className={`flex gap-4 p-4 border rounded-xl cursor-pointer transition shadow-sm
+    ${selectedVenue?.id === venue.id
+                          ? "bg-blue-50 border-blue-400"
                           : "hover:bg-gray-50"
                         }`}
                     >
@@ -1146,10 +1129,12 @@ export default function Birthday() {
                       {/* INFO */}
                       <div className="flex flex-col justify-between">
 
-                        <h4 className="font-semibold">{venue.name}</h4>
+                        <h4 className="font-semibold text-lg">
+                          {venue.name}
+                        </h4>
 
-                        <p className="text-sm text-black-600">
-                          {venue.type} | {venue.area}, {venue.location}
+                        <p className="text-sm text-gray-600">
+                          {venue.type} • {venue.area}, {venue.location}
                         </p>
 
                         <p className="text-yellow-500 text-sm">
@@ -1157,19 +1142,19 @@ export default function Birthday() {
                           {"☆".repeat(5 - venue.stars)}
                         </p>
 
-                        <p className="font-bold mt-1">₹ {venue.cost.toLocaleString()}</p>
-
                       </div>
 
                     </div>
                   ))}
+                  ```
 
                 </div>
 
+                {/* RIGHT SIDE — GOOGLE MAP */}
 
-                {/* RIGHT SIDE - GOOGLE MAP */}
                 <div className="lg:w-1/2">
 
+                  ```
                   <GoogleMap
                     zoom={13}
                     center={
@@ -1179,8 +1164,8 @@ export default function Birthday() {
                     }
                     mapContainerStyle={{
                       width: "100%",
-                      height: "500px",
-                      borderRadius: "12px",
+                      height: "520px",
+                      borderRadius: "12px"
                     }}
                   >
 
@@ -1198,7 +1183,7 @@ export default function Birthday() {
                       <InfoWindow
                         position={{
                           lat: selectedVenue.lat,
-                          lng: selectedVenue.lng,
+                          lng: selectedVenue.lng
                         }}
                         onCloseClick={() => setSelectedVenue(null)}
                       >
@@ -1209,10 +1194,10 @@ export default function Birthday() {
                     )}
 
                   </GoogleMap>
-
                 </div>
 
               </div>
+
               <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-black- mb-8 text-center pt-5">
                 📝 Invitation Card
               </h5>
