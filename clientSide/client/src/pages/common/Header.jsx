@@ -261,7 +261,7 @@ export default function Header() {
 
           {/* MOBILE MENU */}
           {isMobileMenu && (
-            <div className={`lg:hidden ${isHome ? "bg-black":" bg-white"} text-white px-6 pb-6 relative z-[9999]`}>
+            <div className={`lg:hidden ${isHome ? "bg-black" : " bg-white"} text-white px-6 pb-6 relative z-[9999]`}>
               <Link to="/" style={textStyle}>Home</Link>
 
               <button
@@ -291,6 +291,37 @@ export default function Header() {
                       {item}
                     </Link>
                   ))}
+
+                  {/* Profile Links */}
+                  <Link to="/profile" style={{ display: "block", padding: 12 }}>
+                    Profile
+                  </Link>
+
+                  <Link to="/eventHistory" style={{ display: "block", padding: 12 }}>
+                    Event History
+                  </Link>
+
+                  <Link
+                    to="/custom-services-History"
+                    style={{ display: "block", padding: 12 }}
+                  >
+                    Custom Services
+                  </Link>
+
+                  <button
+                    onClick={handleLogout}
+                    style={{
+                      width: "100%",
+                      padding: 12,
+                      border: "none",
+                      background: "transparent",
+                      textAlign: "left",
+                      color: "red",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Logout
+                  </button>
                 </div>
               )}
 
