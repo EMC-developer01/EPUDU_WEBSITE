@@ -152,9 +152,9 @@ export default function Header() {
   return (
     <>
       <div
-        className={`w-full galaxy-bg z-[9999] ${isHome
-            ? "relative min-h-screen text-white"
-            : "fixed top-0 left-0 w-full shadow-md"
+        className={`w-full galaxy-bg ${isHome
+            ? "fixed top-0 left-0 text-white z-[9999]"
+            : "fixed top-0 left-0 w-full shadow-md z-[9999]"
           }`}
       >
         <header
@@ -261,7 +261,7 @@ export default function Header() {
 
           {/* MOBILE MENU */}
           {isMobileMenu && (
-            <div className="lg:hidden bg-black text-white px-6 pb-6 relative z-[9999]">
+            <div className="lg:hidden bg-white text-white px-6 pb-6 relative z-[9999]">
               <Link to="/" style={textStyle}>Home</Link>
 
               <button
