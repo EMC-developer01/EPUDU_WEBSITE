@@ -18,7 +18,7 @@ export default function Header() {
   const isHome = pathname === "/";
   const API_URL = import.meta.env.VITE_API_URL;
 
-  /* ───────────── STATE ───────────── */
+  /* ───────── STATE ───────── */
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenu, setIsMobileMenu] = useState(false);
@@ -27,25 +27,40 @@ export default function Header() {
   const [userName, setUserName] = useState("User");
   const [userPhoto, setUserPhoto] = useState("");
 
-  /* ───────────── REFS ───────────── */
+  /* ───────── REFS ───────── */
   const dropdownRef = useRef(null);
   const profileRef = useRef(null);
   const eventsButtonRef = useRef(null);
   const profileButtonRef = useRef(null);
-
   const eventsMenuRef = useRef(null);
   const profileMenuRef = useRef(null);
 
-  /* ───────────── PORTAL POSITIONS ───────────── */
   const [eventsDropPos, setEventsDropPos] = useState({ top: 0, left: 0 });
   const [profileDropPos, setProfileDropPos] = useState({ top: 0, right: 0 });
 
-  const navColor = isHome ? "text-white" : "text-black";
+  /* ───────── INLINE STYLES ───────── */
+  const buttonStyle = {
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    background: "transparent",
+    border: "none",
+    outline: "none",
+    cursor: "pointer",
+    fontSize: "14px",
+    fontWeight: "600",
+    color: isHome ? "#fff" : "#000",
+  };
 
-  const cleanBtn =
-    "bg-transparent border-none outline-none cursor-pointer hover:opacity-70 transition-opacity";
+  const textStyle = {
+    fontSize: "14px",
+    fontWeight: "600",
+    color: isHome ? "#fff" : "#000",
+    textDecoration: "none",
+    cursor: "pointer",
+  };
 
-  /* ───────────── LOGIN CHECK ───────────── */
+  /* ───────── LOGIN CHECK ───────── */
   useEffect(() => {
     const logged = localStorage.getItem("isLoggedIn") === "true";
     setIsLoggedIn(logged);
@@ -56,7 +71,7 @@ export default function Header() {
     }
   }, []);
 
-  /* ───────────── FETCH USER ───────────── */
+  /* ───────── FETCH USER ───────── */
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (!storedUser) return;
@@ -73,7 +88,7 @@ export default function Header() {
       .catch(() => { });
   }, [API_URL]);
 
-  /* ───────────── CLICK OUTSIDE ───────────── */
+  /* ───────── CLICK OUTSIDE ───────── */
   useEffect(() => {
     const handler = (e) => {
       if (
@@ -99,7 +114,7 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  /* ───────────── ROUTE CHANGE ───────────── */
+  /* ───────── ROUTE CHANGE ───────── */
   useEffect(() => {
     setIsDropdownOpen(false);
     setIsProfileOpen(false);
@@ -107,7 +122,7 @@ export default function Header() {
     setIsMobileDropdown(false);
   }, [pathname]);
 
-  /* ───────────── OPEN EVENTS ───────────── */
+  /* ───────── OPEN EVENTS ───────── */
   const openEventsDropdown = () => {
     if (!isDropdownOpen && eventsButtonRef.current) {
       const r = eventsButtonRef.current.getBoundingClientRect();
@@ -116,7 +131,7 @@ export default function Header() {
     setIsDropdownOpen((p) => !p);
   };
 
-  /* ───────────── OPEN PROFILE ───────────── */
+  /* ───────── OPEN PROFILE ───────── */
   const openProfileDropdown = () => {
     if (!isProfileOpen && profileButtonRef.current) {
       const r = profileButtonRef.current.getBoundingClientRect();
@@ -128,7 +143,7 @@ export default function Header() {
     setIsProfileOpen((p) => !p);
   };
 
-  /* ───────────── LOGOUT ───────────── */
+  /* ───────── LOGOUT ───────── */
   const handleLogout = () => {
     localStorage.clear();
     navigate("/login");
@@ -138,8 +153,8 @@ export default function Header() {
     <>
       <div
         className={`w-full galaxy-bg z-[9999] ${isHome
-          ? "relative min-h-screen text-white"
-          : "fixed top-0 left-0 w-full shadow-md"
+            ? "relative min-h-screen text-white"
+            : "fixed top-0 left-0 w-full shadow-md"
           }`}
       >
         <header
@@ -147,6 +162,7 @@ export default function Header() {
             }`}
         >
           <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
+
             {/* LOGO */}
             <div
               className="flex lg:flex-1 cursor-pointer"
@@ -159,26 +175,24 @@ export default function Header() {
               />
             </div>
 
-            {/* MOBILE MENU BUTTON */}
+            {/* MOBILE BUTTON */}
             <div className="flex lg:hidden">
               <button
                 onClick={() => setIsMobileMenu((p) => !p)}
-                className={`p-2 ${cleanBtn} ${navColor}`}
+                style={buttonStyle}
               >
                 {isMobileMenu ? (
-                  <XMarkIcon className="h-6 w-6" />
+                  <XMarkIcon style={{ width: 24, height: 24 }} />
                 ) : (
-                  <Bars3Icon className="h-6 w-6" />
+                  <Bars3Icon style={{ width: 24, height: 24 }} />
                 )}
               </button>
             </div>
 
             {/* DESKTOP NAV */}
             <div className="hidden lg:flex lg:gap-x-12 items-center">
-              <Link
-                to="/"
-                className={`text-sm font-semibold hover:opacity-70 ${isHome ? "text-white" : "text-black"}`}
-              >
+
+              <Link to="/" style={textStyle}>
                 Home
               </Link>
 
@@ -187,21 +201,23 @@ export default function Header() {
                 <button
                   ref={eventsButtonRef}
                   onClick={openEventsDropdown}
-                  className={`flex items-center gap-x-1 text-sm font-semibold ${isHome ? `${cleanBtn} ${navColor}` : cleanBtn
-                    }`}
+                  style={buttonStyle}
                 >
                   Events
                   <ChevronDownIcon
-                    className={`h-4 w-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""
-                      }`}
+                    style={{
+                      width: 16,
+                      height: 16,
+                      transform: isDropdownOpen
+                        ? "rotate(180deg)"
+                        : "rotate(0deg)",
+                      transition: "0.2s",
+                    }}
                   />
                 </button>
               </div>
 
-              <Link
-                to="/contact"
-                className={`text-sm font-semibold hover:opacity-70 ${isHome ? "text-white" : "text-black"}`}
-              >
+              <Link to="/contact" style={textStyle}>
                 Contact
               </Link>
             </div>
@@ -213,28 +229,30 @@ export default function Header() {
                   <button
                     ref={profileButtonRef}
                     onClick={openProfileDropdown}
-                    className={`flex items-center gap-2 ${cleanBtn}`}
+                    style={buttonStyle}
                   >
-                    <span className={`text-sm font-semibold ${isHome ? "text-white" : "text-black"}`}>
-                      {userName}
-                    </span>
+                    <span style={textStyle}>{userName}</span>
 
                     {userPhoto ? (
                       <img
                         src={userPhoto}
-                        className="h-8 w-8 rounded-full object-cover"
+                        style={{
+                          height: 32,
+                          width: 32,
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                        }}
                         alt="avatar"
                       />
                     ) : (
-                      <UserCircleIcon className={`h-8 w-8 ${isHome ? "text-white" : "text-black"}`} />
+                      <UserCircleIcon
+                        style={{ width: 32, height: 32 }}
+                      />
                     )}
                   </button>
                 </div>
               ) : (
-                <Link
-                  to="/login"
-                  className={`text-sm font-semibold hover:opacity-70 ${isHome ? "text-white" : "text-black"}`}
-                >
+                <Link to="/login" style={textStyle}>
                   Login →
                 </Link>
               )}
@@ -244,36 +262,31 @@ export default function Header() {
           {/* MOBILE MENU */}
           {isMobileMenu && (
             <div className="lg:hidden bg-black text-white px-6 pb-6 relative z-[9999]">
-              <Link
-                to="/"
-                className="block py-2 text-sm font-semibold"
-                onClick={() => setIsMobileMenu(false)}
-              >
-                Home
-              </Link>
+              <Link to="/" style={textStyle}>Home</Link>
 
               <button
                 onClick={() => setIsMobileDropdown((p) => !p)}
-                className="flex justify-between w-full py-2 text-sm font-semibold"
+                style={{ ...buttonStyle, width: "100%", justifyContent: "space-between" }}
               >
                 Events
                 <ChevronDownIcon
-                  className={`h-4 w-4 transition-transform ${isMobileDropdown ? "rotate-180" : ""
-                    }`}
+                  style={{
+                    width: 16,
+                    height: 16,
+                    transform: isMobileDropdown
+                      ? "rotate(180deg)"
+                      : "rotate(0deg)",
+                  }}
                 />
               </button>
 
               {isMobileDropdown && (
-                <div className="pl-4 border-l border-white/30 ml-1">
+                <div style={{ paddingLeft: 15 }}>
                   {["birthday", "wedding", "functions"].map((item) => (
                     <Link
                       key={item}
                       to={`/${item}`}
-                      className="block py-2 text-sm capitalize"
-                      onClick={() => {
-                        setIsMobileMenu(false);
-                        setIsMobileDropdown(false);
-                      }}
+                      style={textStyle}
                     >
                       {item}
                     </Link>
@@ -281,11 +294,7 @@ export default function Header() {
                 </div>
               )}
 
-              <Link
-                to="/contact"
-                className="block py-2 text-sm font-semibold"
-                onClick={() => setIsMobileMenu(false)}
-              >
+              <Link to="/contact" style={textStyle}>
                 Contact
               </Link>
             </div>
@@ -293,11 +302,10 @@ export default function Header() {
         </header>
 
         {isHome && <EventGalaxyPanel />}
-      </div >
+      </div>
 
       {/* EVENTS DROPDOWN */}
-      {
-        isDropdownOpen &&
+      {isDropdownOpen &&
         createPortal(
           <div
             ref={eventsMenuRef}
@@ -305,28 +313,36 @@ export default function Header() {
               position: "fixed",
               top: eventsDropPos.top,
               left: eventsDropPos.left,
+              background: "#fff",
+              color: "#000",
+              width: 180,
+              borderRadius: 8,
+              boxShadow: "0 5px 20px rgba(0,0,0,0.2)",
+              border: "1px solid #eee",
               zIndex: 999999,
             }}
-            className="w-44 bg-white text-black rounded-lg shadow-xl border"
           >
             {["birthday", "wedding", "functions"].map((item) => (
               <Link
                 key={item}
                 to={`/${item}`}
-                className="block px-4 py-2 text-sm capitalize hover:bg-gray-50"
-                onClick={() => setIsDropdownOpen(false)}
+                style={{
+                  display: "block",
+                  padding: "10px 15px",
+                  textTransform: "capitalize",
+                  textDecoration: "none",
+                  color: "#000",
+                }}
               >
                 {item}
               </Link>
             ))}
           </div>,
           document.body
-        )
-      }
+        )}
 
       {/* PROFILE DROPDOWN */}
-      {
-        isProfileOpen &&
+      {isProfileOpen &&
         createPortal(
           <div
             ref={profileMenuRef}
@@ -334,41 +350,47 @@ export default function Header() {
               position: "fixed",
               top: profileDropPos.top,
               right: profileDropPos.right,
+              background: "#fff",
+              color: "#000",
+              width: 200,
+              borderRadius: 8,
+              boxShadow: "0 5px 20px rgba(0,0,0,0.2)",
+              border: "1px solid #eee",
               zIndex: 999999,
             }}
-            className="w-48 bg-white text-black rounded-lg shadow-xl border"
           >
-            <Link
-              to="/profile"
-              className="block px-4 py-2 text-sm hover:bg-gray-50"
-            >
+            <Link to="/profile" style={{ display: "block", padding: 12 }}>
               Profile
             </Link>
 
-            <Link
-              to="/eventHistory"
-              className="block px-4 py-2 text-sm hover:bg-gray-50"
-            >
+            <Link to="/eventHistory" style={{ display: "block", padding: 12 }}>
               Event History
             </Link>
 
             <Link
               to="/custom-services-History"
-              className="block px-4 py-2 text-sm hover:bg-gray-50"
+              style={{ display: "block", padding: 12 }}
             >
               Custom Services
             </Link>
 
             <button
               onClick={handleLogout}
-              className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
+              style={{
+                width: "100%",
+                padding: 12,
+                border: "none",
+                background: "transparent",
+                textAlign: "left",
+                color: "red",
+                cursor: "pointer",
+              }}
             >
               Logout
             </button>
           </div>,
           document.body
-        )
-      }
+        )}
     </>
   );
 }
