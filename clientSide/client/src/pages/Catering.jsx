@@ -206,166 +206,168 @@ const Catering = () => {
     return (
         <>
             <Header />
-            <Banner title="Catering & Food Arrangements" />
+            <div className="pt-[75px]">
+                <Banner title="Catering & Food Arrangements" />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                    name="name"
-                    placeholder="Name"
-                    className="border p-2 rounded"
-                    onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
-                />
-                <input
-                    name="email"
-                    placeholder="Email"
-                    className="border p-2 rounded"
-                    onChange={e => setFormData(p => ({ ...p, email: e.target.value }))}
-                />
-                <input
-                    name="phone"
-                    placeholder="Phone"
-                    className="border p-2 rounded sm:col-span-2"
-                    onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))}
-                />
-            </div>
-
-
-            <section className="px-3 md:px-6 py-10">
-                <div className="space-y-10 pb-20">
-
-                    <h3 className="text-2xl font-bold text-black-600 text-center">
-                        🍽️ Food Arrangements 
-                    </h3>
-
-                    {/* SEARCH + FILTERS */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <input
-                            className="border p-2 rounded"
-                            placeholder="Search food..."
-                            value={searchFood}
-                            onChange={e => setSearchFood(e.target.value)}
-                        />
-                        <select className="border p-2 rounded" value={mealTypeFilter} onChange={e => setMealTypeFilter(e.target.value)}>
-                            <option value="All">Meal Type (All)</option>
-                            <option value="Veg">Veg</option>
-                            <option value="Non-Veg">Non-Veg</option>
-                            <option value="Mixed">Mixed</option>
-                        </select>
-                        <select className="border p-2 rounded" value={foodTimeFilter} onChange={e => setFoodTimeFilter(e.target.value)}>
-                            <option value="All">Food Time (All)</option>
-                            <option value="Breakfast">Breakfast</option>
-                            <option value="Lunch">Lunch</option>
-                            <option value="Snacks">Snacks</option>
-                            <option value="Dinner">Dinner</option>
-                        </select>
-                        <select className="border p-2 rounded" value={cuisineFilter} onChange={e => setCuisineFilter(e.target.value)}>
-                            <option value="All">Cuisine (All)</option>
-                            <option value="Indian">Indian</option>
-                            <option value="North Indian">North Indian</option>
-                            <option value="South Indian">South Indian</option>
-                            <option value="Chinese">Chinese</option>
-                        </select>
-                    </div>
-
-                    {/* FOOD SECTIONS */}
-                    {foodSections.map(section => {
-                        const items = filterItems(section.items);
-                        if (!items.length) return null;
-
-                        return (
-                            <div key={section.field}>
-                                <h4 className="text-xl font-semibold text-black-600 mb-3">
-                                    {section.title}
-                                </h4>
-
-                                {/* MAIN COURSE GROUPING */}
-                                {section.title === "Main Course" ? (
-                                    Object.entries(
-                                        items.reduce((acc, i) => {
-                                            acc[i.foodModel] = acc[i.foodModel] || [];
-                                            acc[i.foodModel].push(i);
-                                            return acc;
-                                        }, {})
-                                    ).map(([model, foods]) => (
-                                        <div key={model} className="mb-6">
-                                            <h5 className="text-lg font-medium text-black-600 mb-2">{model}</h5>
-                                            <Swiper modules={[A11y]} slidesPerView={2} spaceBetween={8} breakpoints={{ 640: { slidesPerView: 3 }, 1024: { slidesPerView: 4 } }}>
-                                                {foods.map(item => {
-                                                    const price = item.price * 1.5;
-                                                    const selected = formData.foodArrangements[section.field]?.some(i => i._id === item._id);
-                                                    return (
-                                                        <SwiperSlide key={item._id}>
-                                                            <div
-                                                                onClick={() => handleCheckboxChange("foodArrangements", section.field, item, price)}
-                                                                className={`cursor-pointer ${selected && "ring-4 ring-pink-500 rounded-xl"}`}
-                                                            >
-                                                                <ItemCard image={item.image} name={item.name} price={item.price} />
-                                                            </div>
-                                                        </SwiperSlide>
-                                                    );
-                                                })}
-                                            </Swiper>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="flex gap-4 overflow-x-auto pb-3">
-                                        {items.map(item => {
-                                            const price = item.price * 1.5;
-                                            const selected = formData.foodArrangements[section.field]?.some(i => i._id === item._id);
-                                            return (
-                                                <div
-                                                    key={item._id}
-                                                    onClick={() => handleCheckboxChange("foodArrangements", section.field, item, price)}
-                                                    className={`min-w-[160px] cursor-pointer ${selected && "ring-4 ring-pink-500 rounded-xl"}`}
-                                                >
-                                                    <ItemCard image={item.image} name={item.name} price={item.price} />
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-
-                    {/* SEATING */}
-                    <div>
-                        <h3 className="text-lg font-semibold text-black-600 mb-3">Seating Arrangements</h3>
-                        <Swiper modules={[A11y]} slidesPerView={2} spaceBetween={8} breakpoints={{ 640: { slidesPerView: 3 }, 1024: { slidesPerView: 4 } }}>
-                            {seatingItems.map(item => {
-                                const price = item.price * 1.5;
-                                const selected = formData.foodArrangements.seating?.some(i => i._id === item._id);
-                                return (
-                                    <SwiperSlide key={item._id}>
-                                        <div
-                                            onClick={() => handleCheckboxChange("foodArrangements", "seating", item, price)}
-                                            className={`cursor-pointer ${selected && "ring-4 ring-pink-500 rounded-xl"}`}
-                                        >
-                                            <ItemCard image={item.image} name={item.name} price={item.price} />
-                                        </div>
-                                    </SwiperSlide>
-                                );
-                            })}
-                        </Swiper>
-                    </div>
-
-                    <div className="text-right font-bold text-lg">
-                        Total: ₹ {formData.totalAmount}
-                    </div>
-
-                    <button
-                        onClick={startPayment}
-                        className="w-full bg-pink-600 text-white py-3 rounded-lg hover:bg-pink-700"
-                        style={{ backgroundColor: "#030303", color: "#ffffff" }}
-                    >
-                        💳 Pay & Book Catering
-                    </button>
-
-
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input
+                        name="name"
+                        placeholder="Name"
+                        className="border p-2 rounded"
+                        onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
+                    />
+                    <input
+                        name="email"
+                        placeholder="Email"
+                        className="border p-2 rounded"
+                        onChange={e => setFormData(p => ({ ...p, email: e.target.value }))}
+                    />
+                    <input
+                        name="phone"
+                        placeholder="Phone"
+                        className="border p-2 rounded sm:col-span-2"
+                        onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))}
+                    />
                 </div>
-            </section>
 
-            <Footer />
+
+                <section className="px-3 md:px-6 py-10">
+                    <div className="space-y-10 pb-20">
+
+                        <h3 className="text-2xl font-bold text-black-600 text-center">
+                            🍽️ Food Arrangements
+                        </h3>
+
+                        {/* SEARCH + FILTERS */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <input
+                                className="border p-2 rounded"
+                                placeholder="Search food..."
+                                value={searchFood}
+                                onChange={e => setSearchFood(e.target.value)}
+                            />
+                            <select className="border p-2 rounded" value={mealTypeFilter} onChange={e => setMealTypeFilter(e.target.value)}>
+                                <option value="All">Meal Type (All)</option>
+                                <option value="Veg">Veg</option>
+                                <option value="Non-Veg">Non-Veg</option>
+                                <option value="Mixed">Mixed</option>
+                            </select>
+                            <select className="border p-2 rounded" value={foodTimeFilter} onChange={e => setFoodTimeFilter(e.target.value)}>
+                                <option value="All">Food Time (All)</option>
+                                <option value="Breakfast">Breakfast</option>
+                                <option value="Lunch">Lunch</option>
+                                <option value="Snacks">Snacks</option>
+                                <option value="Dinner">Dinner</option>
+                            </select>
+                            <select className="border p-2 rounded" value={cuisineFilter} onChange={e => setCuisineFilter(e.target.value)}>
+                                <option value="All">Cuisine (All)</option>
+                                <option value="Indian">Indian</option>
+                                <option value="North Indian">North Indian</option>
+                                <option value="South Indian">South Indian</option>
+                                <option value="Chinese">Chinese</option>
+                            </select>
+                        </div>
+
+                        {/* FOOD SECTIONS */}
+                        {foodSections.map(section => {
+                            const items = filterItems(section.items);
+                            if (!items.length) return null;
+
+                            return (
+                                <div key={section.field}>
+                                    <h4 className="text-xl font-semibold text-black-600 mb-3">
+                                        {section.title}
+                                    </h4>
+
+                                    {/* MAIN COURSE GROUPING */}
+                                    {section.title === "Main Course" ? (
+                                        Object.entries(
+                                            items.reduce((acc, i) => {
+                                                acc[i.foodModel] = acc[i.foodModel] || [];
+                                                acc[i.foodModel].push(i);
+                                                return acc;
+                                            }, {})
+                                        ).map(([model, foods]) => (
+                                            <div key={model} className="mb-6">
+                                                <h5 className="text-lg font-medium text-black-600 mb-2">{model}</h5>
+                                                <Swiper modules={[A11y]} slidesPerView={2} spaceBetween={8} breakpoints={{ 640: { slidesPerView: 3 }, 1024: { slidesPerView: 4 } }}>
+                                                    {foods.map(item => {
+                                                        const price = item.price * 1.5;
+                                                        const selected = formData.foodArrangements[section.field]?.some(i => i._id === item._id);
+                                                        return (
+                                                            <SwiperSlide key={item._id}>
+                                                                <div
+                                                                    onClick={() => handleCheckboxChange("foodArrangements", section.field, item, price)}
+                                                                    className={`cursor-pointer ${selected && "ring-4 ring-pink-500 rounded-xl"}`}
+                                                                >
+                                                                    <ItemCard image={item.image} name={item.name} price={item.price} />
+                                                                </div>
+                                                            </SwiperSlide>
+                                                        );
+                                                    })}
+                                                </Swiper>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="flex gap-4 overflow-x-auto pb-3">
+                                            {items.map(item => {
+                                                const price = item.price * 1.5;
+                                                const selected = formData.foodArrangements[section.field]?.some(i => i._id === item._id);
+                                                return (
+                                                    <div
+                                                        key={item._id}
+                                                        onClick={() => handleCheckboxChange("foodArrangements", section.field, item, price)}
+                                                        className={`min-w-[160px] cursor-pointer ${selected && "ring-4 ring-pink-500 rounded-xl"}`}
+                                                    >
+                                                        <ItemCard image={item.image} name={item.name} price={item.price} />
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+
+                        {/* SEATING */}
+                        <div>
+                            <h3 className="text-lg font-semibold text-black-600 mb-3">Seating Arrangements</h3>
+                            <Swiper modules={[A11y]} slidesPerView={2} spaceBetween={8} breakpoints={{ 640: { slidesPerView: 3 }, 1024: { slidesPerView: 4 } }}>
+                                {seatingItems.map(item => {
+                                    const price = item.price * 1.5;
+                                    const selected = formData.foodArrangements.seating?.some(i => i._id === item._id);
+                                    return (
+                                        <SwiperSlide key={item._id}>
+                                            <div
+                                                onClick={() => handleCheckboxChange("foodArrangements", "seating", item, price)}
+                                                className={`cursor-pointer ${selected && "ring-4 ring-pink-500 rounded-xl"}`}
+                                            >
+                                                <ItemCard image={item.image} name={item.name} price={item.price} />
+                                            </div>
+                                        </SwiperSlide>
+                                    );
+                                })}
+                            </Swiper>
+                        </div>
+
+                        <div className="text-right font-bold text-lg">
+                            Total: ₹ {formData.totalAmount}
+                        </div>
+
+                        <button
+                            onClick={startPayment}
+                            className="w-full bg-pink-600 text-white py-3 rounded-lg hover:bg-pink-700"
+                            style={{ backgroundColor: "#030303", color: "#ffffff" }}
+                        >
+                            💳 Pay & Book Catering
+                        </button>
+
+
+                    </div>
+                </section>
+
+                <Footer />
+            </div>
         </>
     );
 };

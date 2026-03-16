@@ -98,138 +98,139 @@ export default function Home() {
   return (
     <>
       <Header />
-
-      <section
-        id="events"
-        className="relative w-screen py-28 px-8 text-center overflow-hidden
+      <div className="pt-[75px]">
+        <section
+          id="events"
+          className="relative w-screen py-28 px-8 text-center overflow-hidden
   bg-white"
-      >
-        <h2 className="text-6xl font-semibold text-black-500 mb-12 tracking-wide">Our Events</h2>
+        >
+          <h2 className="text-6xl font-semibold text-black-500 mb-12 tracking-wide">Our Events</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
-          {/* Birthday Events */}
-          <div className="bg-whit backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
-            <img
-              key={bIndex}
-              src={`${IMAGE_BASE}/${birthdayImg[bIndex]?.image}`}
-              className={`${imgClass} animate-slideFade`}
-              alt="Birthday"
-            />
-
-
-            <div className="p-6">
-              <h3 className="text-xl font-semibold text-black-900 mb-3">Birthday Events</h3>
-              <p className="text-black-600 text-sm mb-6">
-                Celebrate your special day with unforgettable decorations and vibrant moments.
-              </p>
-              <Link
-                to="/birthday"
-                onClick={() => {
-                  localStorage.removeItem("birthdayId"); // optional: also clear old event if needed
-                }}
-                className="inline-block bg-black text-white px-5 py-2 rounded-lg hover:bg-black-700 transition"
-              >
-                Book Your Event
-              </Link>
-            </div>
-          </div>
-
-          {/* Wedding Events */}
-          <div className="bg-white-200 backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
-            <img
-              key={wIndex}
-              src={`${IMAGE_BASE}/${weddingImg[wIndex]?.image}`}
-              className={`${imgClass} animate-slideFade`}
-              alt="Wedding"
-            />
-
-
-            <div className="p-6">
-              <h3 className="text-xl font-semibold text-black-900 mb-3">Wedding Events</h3>
-              <p className="text-black-600 text-sm mb-6">
-                Make your big day magical with elegant setups and creative planning.
-              </p>
-              <Link
-                to="/wedding"
-                className="inline-block bg-black text-white px-5 py-2 rounded-lg hover:bg-black-700 transition"
-              >
-                Book Your Event
-              </Link>
-            </div>
-          </div>
-
-          {/* Other Functions */}
-          <div className="bg-White-200 backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
-            <img
-              key={fIndex}
-              src={`${IMAGE_BASE}/${functionsImg[fIndex]?.image}`}
-              className={`${imgClass} animate-slideFade`}
-              alt="Functions"
-            />
-
-
-
-            <div className="p-6">
-              <h3 className="text-xl font-semibold text-black-900 mb-3">Other Functions</h3>
-              <p className="text-black-600 text-sm mb-6">
-                From corporate parties to cultural gatherings — we bring creativity to every event.
-              </p>
-              <Link
-                to="/functions"
-                className="inline-block bg-black text-white px-5 py-2 rounded-lg hover:bg-black-700 transition"
-              >
-                Book Your Event
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section
-        id="services"
-        className="relative w-screen py-28 px-8 text-center overflow-hidden bg-white"
-      >
-        <h2 className="text-6xl font-semibold text-black-500 mb-12 tracking-wide">
-          Our Services
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
-          {services.map((service, i) => (
-            <div
-              key={service._id}
-              className="bg-black-200 backdrop-blur-lg rounded-2xl shadow-2xl
-               hover:scale-[1.03] transition"
-            >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
+            {/* Birthday Events */}
+            <div className="bg-whit backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
               <img
-                src={`${Service_IMAGE_BASE}/${service.image}`}
-                alt={service.title}
-                className="w-full h-52 object-cover rounded-t-2xl"
+                key={bIndex}
+                src={`${IMAGE_BASE}/${birthdayImg[bIndex]?.image}`}
+                className={`${imgClass} animate-slideFade`}
+                alt="Birthday"
               />
 
+
               <div className="p-6">
-                <h3 className="text-xl font-semibold text-black-900 mb-3">
-                  {service.title}
-                </h3>
-
+                <h3 className="text-xl font-semibold text-black-900 mb-3">Birthday Events</h3>
                 <p className="text-black-600 text-sm mb-6">
-                  {service.desc}
+                  Celebrate your special day with unforgettable decorations and vibrant moments.
                 </p>
-
                 <Link
-                  to={service.link}
+                  to="/birthday"
+                  onClick={() => {
+                    localStorage.removeItem("birthdayId"); // optional: also clear old event if needed
+                  }}
                   className="inline-block bg-black text-white px-5 py-2 rounded-lg hover:bg-black-700 transition"
                 >
-                  {service.btn}
+                  Book Your Event
                 </Link>
               </div>
             </div>
-          ))}
-        </div>
-      </section>
 
-      <Banner />
+            {/* Wedding Events */}
+            <div className="bg-white-200 backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
+              <img
+                key={wIndex}
+                src={`${IMAGE_BASE}/${weddingImg[wIndex]?.image}`}
+                className={`${imgClass} animate-slideFade`}
+                alt="Wedding"
+              />
 
-      <Footer />
+
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-black-900 mb-3">Wedding Events</h3>
+                <p className="text-black-600 text-sm mb-6">
+                  Make your big day magical with elegant setups and creative planning.
+                </p>
+                <Link
+                  to="/wedding"
+                  className="inline-block bg-black text-white px-5 py-2 rounded-lg hover:bg-black-700 transition"
+                >
+                  Book Your Event
+                </Link>
+              </div>
+            </div>
+
+            {/* Other Functions */}
+            <div className="bg-White-200 backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
+              <img
+                key={fIndex}
+                src={`${IMAGE_BASE}/${functionsImg[fIndex]?.image}`}
+                className={`${imgClass} animate-slideFade`}
+                alt="Functions"
+              />
+
+
+
+              <div className="p-6">
+                <h3 className="text-xl font-semibold text-black-900 mb-3">Other Functions</h3>
+                <p className="text-black-600 text-sm mb-6">
+                  From corporate parties to cultural gatherings — we bring creativity to every event.
+                </p>
+                <Link
+                  to="/functions"
+                  className="inline-block bg-black text-white px-5 py-2 rounded-lg hover:bg-black-700 transition"
+                >
+                  Book Your Event
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="services"
+          className="relative w-screen py-28 px-8 text-center overflow-hidden bg-white"
+        >
+          <h2 className="text-6xl font-semibold text-black-500 mb-12 tracking-wide">
+            Our Services
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
+            {services.map((service, i) => (
+              <div
+                key={service._id}
+                className="bg-black-200 backdrop-blur-lg rounded-2xl shadow-2xl
+               hover:scale-[1.03] transition"
+              >
+                <img
+                  src={`${Service_IMAGE_BASE}/${service.image}`}
+                  alt={service.title}
+                  className="w-full h-52 object-cover rounded-t-2xl"
+                />
+
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold text-black-900 mb-3">
+                    {service.title}
+                  </h3>
+
+                  <p className="text-black-600 text-sm mb-6">
+                    {service.desc}
+                  </p>
+
+                  <Link
+                    to={service.link}
+                    className="inline-block bg-black text-white px-5 py-2 rounded-lg hover:bg-black-700 transition"
+                  >
+                    {service.btn}
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <Banner />
+
+        <Footer />
+      </div>
       {/* 🔹 Overlay Login Modal */}
       {showLoginOverlay && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100]">
