@@ -139,7 +139,7 @@ export default function Header() {
       <div
         className={`w-full galaxy-bg z-[9999] ${isHome
             ? "relative min-h-screen text-white"
-            : "fixed top-0 left-0 h-[75px] shadow-md"
+            : "fixed top-0 left-0 w-full shadow-md"
           }`}
       >
         <header

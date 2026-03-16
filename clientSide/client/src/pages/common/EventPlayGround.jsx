@@ -4,17 +4,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import api from "./api";
 
-// const logoLetters = ["E", "P", "U", "D", "U"];
-// const fallback = "/default.jpg";
-// const API_URL = import.meta.env.VITE_API_URL;
-// const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
-
-// const API = `${API_URL}/api/admin/Client-homepages-images/all`;
-// const IMAGE_BASE = `${MEDIA_URL}/homepageImages`;
-// const VIDEO_API = `${API_URL}/api/admin/client-homepage-videos/all`;
-// const VIDEO_BASE = `${MEDIA_URL}/homepageVideos`;
-
-
 export default function EventGalaxyPanel() {
 
     const logoLetters = ["E", "P", "U", "D", "U"];
@@ -122,82 +111,8 @@ export default function EventGalaxyPanel() {
             )}
             <div className="absolute inset-0 bg-black/35 z-0" />
 
-
-            {/* LEFT - EPUDU LOGO */}
-            {/* <div className="ocean-layer ocean-back" />
-            <div className="ocean-layer ocean-mid" />
-            <div className="ocean-layer ocean-foam" /> */}
-
             <div className="relative flex-1 flex flex-col items-center justify-center px-4 py-10 overflow-hidden ">
-
-                {/* 🌊 TOP WAVE */}
-                {/* <motion.svg
-                    className="absolute top-0 left-0 w-full h-28 opacity-30"
-                    viewBox="0 0 1440 120"
-                    preserveAspectRatio="none"
-                    animate={{ x: [0, -200, 0] }}
-                    transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-                >
-                    <path
-                        d="M0,60 C120,20 240,100 360,70 480,40 600,100 720,70 840,40 960,100 1080,70 1200,40 1320,100 1440,70"
-                        fill="none"
-                        stroke="blue"
-                        strokeWidth="2"
-                    />
-                </motion.svg> */}
-
-
-                {/* 🌊 BOTTOM WAVE */}
-                {/* <motion.svg
-                    className="absolute bottom-0 left-0 w-full h-28 opacity-30 rotate-180"
-                    viewBox="0 0 1440 120"
-                    preserveAspectRatio="none"
-                    animate={{ x: [0, 200, 0] }}
-                    transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-                >
-                    <path
-                        d="M0,60 C120,20 240,100 360,70 480,40 600,100 720,70 840,40 960,100 1080,70 1200,40 1320,100 1440,70"
-                        fill="none"
-                        stroke="blue"
-                        strokeWidth="2"
-                    />
-                </motion.svg> */}
-
-
-                {/* 🌊 LEFT WAVE */}
-                {/* <motion.svg
-                    className="absolute left-0 top-0 h-full w-28 opacity-25"
-                    viewBox="0 0 120 800"
-                    preserveAspectRatio="none"
-                    animate={{ y: [0, -160, 0] }}
-                    transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
-                >
-                    <path
-                        d="M60,0 C20,100 100,200 60,300 20,400 100,500 60,600 20,700 100,800 60,900"
-                        fill="none"
-                        stroke="white"
-                        strokeWidth="2"
-                    />
-                </motion.svg> */}
-
-
-                {/* 🌊 RIGHT WAVE */}
-                {/* <motion.svg
-                    className="absolute right-0 top-0 h-full w-28 opacity-25 rotate-180"
-                    viewBox="0 0 120 800"
-                    preserveAspectRatio="none"
-                    animate={{ y: [0, 160, 0] }}
-                    transition={{ duration: 30, repeat: Infinity, ease: "easeInOut" }}
-                >
-                    <path
-                        d="M60,0 C20,100 100,200 60,300 20,400 100,500 60,600 20,700 100,800 60,900"
-                        fill="none"
-                        stroke="blue"
-                        strokeWidth="2"
-                    />
-                </motion.svg> */}
-
-
+                
                 {/* 🔹 CONTENT (UNCHANGED) */}
                 <div className="relative z-10 flex flex-col items-center">
 
