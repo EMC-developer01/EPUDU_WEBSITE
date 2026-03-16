@@ -153,12 +153,12 @@ export default function Header() {
     <>
       <div
         className={`w-full galaxy-bg z-[9999] ${isHome
-          ? "fixed top-0 left-0 w-full text-white z-[10000]"
+          ? "relative min-h-screen text-white z-[10000]"
           : "fixed top-0 left-0 w-full shadow-md"
           }`}
       >
         <header
-          className={`w-full ${isHome ? "absolute top-0 left-0" : "relative bg-white"
+          className={`w-full ${isHome ? "absolute top-0 left-0 z-[10000]" : "relative bg-white"
             }`}
         >
           <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
