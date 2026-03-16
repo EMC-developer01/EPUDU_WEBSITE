@@ -261,15 +261,9 @@ export default function Header() {
 
           {/* MOBILE MENU */}
           {isMobileMenu && (
+            <div className={`lg:hidden ${isHome ? "bg-black" : " bg-white"} text-white px-6 pb-6 relative z-[9999]`}>
+              <Link to="/" style={textStyle}>Home</Link>
 
-            <div
-              className={`lg:hidden ${isHome ? "bg-black" : "bg-white"} text-white px-6 pb-6 relative z-[9999]`}
-            >
-              <Link to="/" style={textStyle}>
-                Home
-              </Link>
-
-              ```
               <button
                 onClick={() => setIsMobileDropdown((p) => !p)}
                 style={{ ...buttonStyle, width: "100%", justifyContent: "space-between" }}
@@ -279,7 +273,9 @@ export default function Header() {
                   style={{
                     width: 16,
                     height: 16,
-                    transform: isMobileDropdown ? "rotate(180deg)" : "rotate(0deg)",
+                    transform: isMobileDropdown
+                      ? "rotate(180deg)"
+                      : "rotate(0deg)",
                   }}
                 />
               </button>
@@ -287,11 +283,16 @@ export default function Header() {
               {isMobileDropdown && (
                 <div style={{ paddingLeft: 15 }}>
                   {["birthday", "wedding", "functions"].map((item) => (
-                    <Link key={item} to={`/${item}`} style={textStyle}>
+                    <Link
+                      key={item}
+                      to={`/${item}`}
+                      style={textStyle}
+                    >
                       {item}
                     </Link>
                   ))}
                 </div>
+
               )}
 
               <Link to="/contact" style={textStyle}>
@@ -322,6 +323,7 @@ export default function Header() {
                       textAlign: "left",
                       color: "red",
                       cursor: "pointer",
+                      fontWeight: "600",
                     }}
                   >
                     Logout
@@ -334,11 +336,9 @@ export default function Header() {
                   Login →
                 </Link>
               )}
-              ```
 
             </div>
           )}
-
         </header>
 
         {isHome && <EventGalaxyPanel />}
