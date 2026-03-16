@@ -16,50 +16,54 @@ export default function Header() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const isHome = pathname === "/";
-
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // ── STATE ────────────────────────────────────────────────────
-  const [isDropdownOpen,   setIsDropdownOpen]   = useState(false);
-  const [isProfileOpen,    setIsProfileOpen]    = useState(false);
-  const [isMobileMenu,     setIsMobileMenu]     = useState(false);
+  /* ───────────── STATE ───────────── */
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isMobileMenu, setIsMobileMenu] = useState(false);
   const [isMobileDropdown, setIsMobileDropdown] = useState(false);
-  const [isLoggedIn,       setIsLoggedIn]       = useState(false);
-  const [userName,         setUserName]         = useState("User");
-  const [userPhoto,        setUserPhoto]        = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState("User");
+  const [userPhoto, setUserPhoto] = useState("");
 
-  // ── REFS ─────────────────────────────────────────────────────
-  const dropdownRef      = useRef(null); // click-outside for Events
-  const profileRef       = useRef(null); // click-outside for Profile
-  const eventsButtonRef  = useRef(null); // position source for Events portal
-  const profileButtonRef = useRef(null); // position source for Profile portal
+  /* ───────────── REFS ───────────── */
+  const dropdownRef = useRef(null);
+  const profileRef = useRef(null);
+  const eventsButtonRef = useRef(null);
+  const profileButtonRef = useRef(null);
 
-  // ── PORTAL POSITIONS ─────────────────────────────────────────
-  const [eventsDropPos,  setEventsDropPos]  = useState({ top: 0, left: 0 });
+  const eventsMenuRef = useRef(null);
+  const profileMenuRef = useRef(null);
+
+  /* ───────────── PORTAL POSITIONS ───────────── */
+  const [eventsDropPos, setEventsDropPos] = useState({ top: 0, left: 0 });
   const [profileDropPos, setProfileDropPos] = useState({ top: 0, right: 0 });
 
-  // ── COLOUR TOKEN — white on home, black everywhere else ──────
   const navColor = isHome ? "text-white" : "text-black";
 
-  // ── SHARED CLEAN-BUTTON CLASS (no bg, no border, no outline) ─
   const cleanBtn =
     "bg-transparent border-none outline-none cursor-pointer hover:opacity-70 transition-opacity";
 
-  // ── LOGIN CHECK ──────────────────────────────────────────────
+  /* ───────────── LOGIN CHECK ───────────── */
   useEffect(() => {
     const logged = localStorage.getItem("isLoggedIn") === "true";
     setIsLoggedIn(logged);
+
     if (logged) {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       setUserName(user?.name || "User");
     }
   }, []);
 
-  // ── FETCH FRESH USER ─────────────────────────────────────────
+  /* ───────────── FETCH USER ───────────── */
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (!storedUser) return;
+
     const { mobile } = JSON.parse(storedUser);
+    if (!mobile) return;
+
     axios
       .get(`${API_URL}/api/client/users/${mobile}`)
       .then((res) => {
@@ -67,21 +71,35 @@ export default function Header() {
         setUserPhoto(res.data.photo);
       })
       .catch(() => {});
-  }, []);
+  }, [API_URL]);
 
-  // ── CLICK OUTSIDE → close both dropdowns ────────────────────
+  /* ───────────── CLICK OUTSIDE ───────────── */
   useEffect(() => {
     const handler = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target))
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target) &&
+        eventsMenuRef.current &&
+        !eventsMenuRef.current.contains(e.target)
+      ) {
         setIsDropdownOpen(false);
-      if (profileRef.current && !profileRef.current.contains(e.target))
+      }
+
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(e.target) &&
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(e.target)
+      ) {
         setIsProfileOpen(false);
+      }
     };
+
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // ── ROUTE CHANGE → close everything ─────────────────────────
+  /* ───────────── ROUTE CHANGE ───────────── */
   useEffect(() => {
     setIsDropdownOpen(false);
     setIsProfileOpen(false);
@@ -89,7 +107,7 @@ export default function Header() {
     setIsMobileDropdown(false);
   }, [pathname]);
 
-  // ── OPEN EVENTS DROPDOWN ─────────────────────────────────────
+  /* ───────────── OPEN EVENTS ───────────── */
   const openEventsDropdown = () => {
     if (!isDropdownOpen && eventsButtonRef.current) {
       const r = eventsButtonRef.current.getBoundingClientRect();
@@ -98,32 +116,26 @@ export default function Header() {
     setIsDropdownOpen((p) => !p);
   };
 
-  // ── OPEN PROFILE DROPDOWN ────────────────────────────────────
+  /* ───────────── OPEN PROFILE ───────────── */
   const openProfileDropdown = () => {
     if (!isProfileOpen && profileButtonRef.current) {
       const r = profileButtonRef.current.getBoundingClientRect();
       setProfileDropPos({
-        top:   r.bottom + 8,
+        top: r.bottom + 8,
         right: window.innerWidth - r.right,
       });
     }
     setIsProfileOpen((p) => !p);
   };
 
-  // ── LOGOUT ───────────────────────────────────────────────────
+  /* ───────────── LOGOUT ───────────── */
   const handleLogout = () => {
     localStorage.clear();
     navigate("/login");
   };
 
-  // ────────────────────────────────────────────────────────────
   return (
     <>
-      {/* ══════════════════════════════════════════════════════
-          WRAPPER
-          home    → relative, full-height hero container
-          others  → fixed 75 px bar at top of viewport
-      ══════════════════════════════════════════════════════ */}
       <div
         className={`w-full galaxy-bg z-[9999] ${
           isHome
@@ -131,19 +143,13 @@ export default function Header() {
             : "fixed top-0 left-0 h-[75px] shadow-md"
         }`}
       >
-        {/* ════════════════════════════════════════════════════
-            HEADER
-            home   → absolute overlay on hero, transparent
-            others → relative inside fixed bar + white bg
-        ════════════════════════════════════════════════════ */}
         <header
           className={`w-full ${
             isHome ? "absolute top-0 left-0" : "relative bg-white"
           }`}
         >
           <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
-
-            {/* ── LOGO ───────────────────────────────────── */}
+            {/* LOGO */}
             <div
               className="flex lg:flex-1 cursor-pointer"
               onClick={() => navigate("/")}
@@ -155,41 +161,39 @@ export default function Header() {
               />
             </div>
 
-            {/* ── MOBILE HAMBURGER ───────────────────────── */}
+            {/* MOBILE MENU BUTTON */}
             <div className="flex lg:hidden">
               <button
                 onClick={() => setIsMobileMenu((p) => !p)}
                 className={`p-2 ${cleanBtn} ${navColor}`}
-                aria-label="Toggle mobile menu"
               >
-                {isMobileMenu
-                  ? <XMarkIcon className="h-6 w-6" />
-                  : <Bars3Icon className="h-6 w-6" />}
+                {isMobileMenu ? (
+                  <XMarkIcon className="h-6 w-6" />
+                ) : (
+                  <Bars3Icon className="h-6 w-6" />
+                )}
               </button>
             </div>
 
-            {/* ── DESKTOP NAV LINKS ──────────────────────── */}
+            {/* DESKTOP NAV */}
             <div className="hidden lg:flex lg:gap-x-12 items-center">
-
               <Link
                 to="/"
-                className={`text-sm font-semibold hover:opacity-70
-                  transition-opacity ${navColor}`}
+                className={`text-sm font-semibold hover:opacity-70 ${navColor}`}
               >
                 Home
               </Link>
 
-              {/* Events button */}
+              {/* EVENTS */}
               <div ref={dropdownRef}>
                 <button
                   ref={eventsButtonRef}
                   onClick={openEventsDropdown}
-                  className={`flex items-center gap-x-1 text-sm font-semibold
-                    ${cleanBtn} ${navColor}`}
+                  className={`flex items-center gap-x-1 text-sm font-semibold ${cleanBtn} ${navColor}`}
                 >
                   Events
                   <ChevronDownIcon
-                    className={`h-4 w-4 transition-transform duration-200 ${
+                    className={`h-4 w-4 transition-transform ${
                       isDropdownOpen ? "rotate-180" : ""
                     }`}
                   />
@@ -198,14 +202,13 @@ export default function Header() {
 
               <Link
                 to="/contact"
-                className={`text-sm font-semibold hover:opacity-70
-                  transition-opacity ${navColor}`}
+                className={`text-sm font-semibold hover:opacity-70 ${navColor}`}
               >
                 Contact
               </Link>
             </div>
 
-            {/* ── PROFILE / LOGIN ────────────────────────── */}
+            {/* PROFILE */}
             <div className="hidden lg:flex lg:flex-1 lg:justify-end">
               {isLoggedIn ? (
                 <div ref={profileRef}>
@@ -217,6 +220,7 @@ export default function Header() {
                     <span className={`text-sm font-semibold ${navColor}`}>
                       {userName}
                     </span>
+
                     {userPhoto ? (
                       <img
                         src={userPhoto}
@@ -231,8 +235,7 @@ export default function Header() {
               ) : (
                 <Link
                   to="/login"
-                  className={`text-sm font-semibold hover:opacity-70
-                    transition-opacity ${navColor}`}
+                  className={`text-sm font-semibold hover:opacity-70 ${navColor}`}
                 >
                   Login →
                 </Link>
@@ -240,28 +243,20 @@ export default function Header() {
             </div>
           </nav>
 
-          {/* ── MOBILE SLIDE-DOWN MENU ─────────────────────── */}
+          {/* MOBILE MENU */}
           {isMobileMenu && (
-            <div className="lg:hidden bg-black text-white px-6 pb-6
-              relative z-[9999]">
-
-              <Link
-                to="/"
-                className="block py-2 text-sm font-semibold hover:opacity-70"
-                onClick={() => setIsMobileMenu(false)}
-              >
+            <div className="lg:hidden bg-black text-white px-6 pb-6">
+              <Link to="/" className="block py-2 text-sm font-semibold">
                 Home
               </Link>
 
-              {/* Mobile Events accordion */}
               <button
                 onClick={() => setIsMobileDropdown((p) => !p)}
-                className={`flex items-center justify-between w-full py-2
-                  text-sm font-semibold text-white ${cleanBtn}`}
+                className="flex justify-between w-full py-2 text-sm font-semibold"
               >
                 Events
                 <ChevronDownIcon
-                  className={`h-4 w-4 transition-transform duration-200 ${
+                  className={`h-4 w-4 ${
                     isMobileDropdown ? "rotate-180" : ""
                   }`}
                 />
@@ -273,11 +268,7 @@ export default function Header() {
                     <Link
                       key={item}
                       to={`/${item}`}
-                      className="block py-2 text-sm capitalize hover:opacity-70"
-                      onClick={() => {
-                        setIsMobileMenu(false);
-                        setIsMobileDropdown(false);
-                      }}
+                      className="block py-2 text-sm capitalize"
                     >
                       {item}
                     </Link>
@@ -285,80 +276,34 @@ export default function Header() {
                 </div>
               )}
 
-              <Link
-                to="/contact"
-                className="block py-2 text-sm font-semibold hover:opacity-70"
-                onClick={() => setIsMobileMenu(false)}
-              >
+              <Link to="/contact" className="block py-2 text-sm font-semibold">
                 Contact
               </Link>
-
-              <div className="border-t border-white/30 mt-4 pt-4">
-                {isLoggedIn ? (
-                  <>
-                    {[
-                      { label: "Profile",         to: "/profile"                 },
-                      { label: "Event History",   to: "/eventHistory"            },
-                      { label: "Custom Services", to: "/custom-services-History" },
-                    ].map(({ label, to }) => (
-                      <Link
-                        key={to}
-                        to={to}
-                        className="block py-2 text-sm hover:opacity-70"
-                        onClick={() => setIsMobileMenu(false)}
-                      >
-                        {label}
-                      </Link>
-                    ))}
-
-                    <button
-                      onClick={handleLogout}
-                      className={`block py-2 text-sm text-red-400 w-full
-                        text-left ${cleanBtn}`}
-                    >
-                      Logout
-                    </button>
-                  </>
-                ) : (
-                  <Link
-                    to="/login"
-                    className="block py-2 text-sm hover:opacity-70"
-                    onClick={() => setIsMobileMenu(false)}
-                  >
-                    Login
-                  </Link>
-                )}
-              </div>
             </div>
           )}
         </header>
 
-        {/* HOME HERO PANEL */}
         {isHome && <EventGalaxyPanel />}
       </div>
 
-      {/* ══════════════════════════════════════════════════════
-          PORTAL — EVENTS DROPDOWN
-          Mounted on <body> → escapes all page stacking contexts
-      ══════════════════════════════════════════════════════ */}
+      {/* EVENTS DROPDOWN */}
       {isDropdownOpen &&
         createPortal(
           <div
+            ref={eventsMenuRef}
             style={{
-              position : "fixed",
-              top      : eventsDropPos.top,
-              left     : eventsDropPos.left,
-              zIndex   : 999999,
+              position: "fixed",
+              top: eventsDropPos.top,
+              left: eventsDropPos.left,
+              zIndex: 999999,
             }}
-            className="w-44 bg-white text-black rounded-lg shadow-xl
-              border border-gray-100 overflow-hidden"
+            className="w-44 bg-white text-black rounded-lg shadow-xl border"
           >
             {["birthday", "wedding", "functions"].map((item) => (
               <Link
                 key={item}
                 to={`/${item}`}
-                className="block px-4 py-2 text-sm font-medium capitalize
-                  text-black hover:bg-gray-50 transition-colors"
+                className="block px-4 py-2 text-sm capitalize hover:bg-gray-50"
                 onClick={() => setIsDropdownOpen(false)}
               >
                 {item}
@@ -368,41 +313,43 @@ export default function Header() {
           document.body
         )}
 
-      {/* ══════════════════════════════════════════════════════
-          PORTAL — PROFILE DROPDOWN
-      ══════════════════════════════════════════════════════ */}
+      {/* PROFILE DROPDOWN */}
       {isProfileOpen &&
         createPortal(
           <div
+            ref={profileMenuRef}
             style={{
-              position : "fixed",
-              top      : profileDropPos.top,
-              right    : profileDropPos.right,
-              zIndex   : 999999,
+              position: "fixed",
+              top: profileDropPos.top,
+              right: profileDropPos.right,
+              zIndex: 999999,
             }}
-            className="w-48 bg-white text-black rounded-lg shadow-xl
-              border border-gray-100 overflow-hidden"
+            className="w-48 bg-white text-black rounded-lg shadow-xl border"
           >
-            {[
-              { label: "Profile",         to: "/profile"                 },
-              { label: "Event History",   to: "/eventHistory"            },
-              { label: "Custom Services", to: "/custom-services-History" },
-            ].map(({ label, to }) => (
-              <Link
-                key={to}
-                to={to}
-                className="block px-4 py-2 text-sm text-black
-                  hover:bg-gray-50 transition-colors"
-                onClick={() => setIsProfileOpen(false)}
-              >
-                {label}
-              </Link>
-            ))}
+            <Link
+              to="/profile"
+              className="block px-4 py-2 text-sm hover:bg-gray-50"
+            >
+              Profile
+            </Link>
+
+            <Link
+              to="/eventHistory"
+              className="block px-4 py-2 text-sm hover:bg-gray-50"
+            >
+              Event History
+            </Link>
+
+            <Link
+              to="/custom-services-History"
+              className="block px-4 py-2 text-sm hover:bg-gray-50"
+            >
+              Custom Services
+            </Link>
 
             <button
               onClick={handleLogout}
-              className={`block w-full text-left px-4 py-2 text-sm
-                text-red-600 hover:bg-gray-50 transition-colors ${cleanBtn}`}
+              className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50"
             >
               Logout
             </button>
