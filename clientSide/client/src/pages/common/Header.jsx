@@ -261,7 +261,7 @@ export default function Header() {
 
           {/* MOBILE MENU */}
           {isMobileMenu && (
-            <div className="lg:hidden bg-white text-white px-6 pb-6 relative z-[9999]">
+            <div className={`lg:hidden ${isHome ? "bg-black":" bg-white"} text-white px-6 pb-6 relative z-[9999]`}>
               <Link to="/" style={textStyle}>Home</Link>
 
               <button
