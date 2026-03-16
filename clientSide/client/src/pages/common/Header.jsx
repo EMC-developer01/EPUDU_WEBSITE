@@ -283,13 +283,17 @@ export default function Header() {
               {isMobileDropdown && (
                 <div style={{ paddingLeft: 15 }}>
                   {["birthday", "wedding", "functions"].map((item) => (
-                    <Link
-                      key={item}
-                      to={`/${item}`}
-                      style={textStyle}
-                    >
-                      {item}
-                    </Link>
+                    <>
+                      <hr style={{ margin: "12px 0", opacity: 0.3 }} />
+
+                      <Link
+                        key={item}
+                        to={`/${item}`}
+                        style={textStyle}
+                      >
+                        {item}
+                      </Link>
+                    </>
                   ))}
                 </div>
 
