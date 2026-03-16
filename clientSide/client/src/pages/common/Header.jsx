@@ -152,9 +152,9 @@ export default function Header() {
   return (
     <>
       <div
-        className={`w-full galaxy-bg z-[9999] ${isHome
-            ? "relative min-h-screen text-white z-[10000]"
-            : "fixed top-0 left-0 w-full shadow-md"
+        className={`w-full galaxy-bg ${isHome
+            ? "fixed top-0 left-0 text-white z-[9999]"
+            : "fixed top-0 left-0 w-full shadow-md z-[9999]"
           }`}
       >
         <header
