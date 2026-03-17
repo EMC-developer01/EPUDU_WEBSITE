@@ -25,6 +25,7 @@ import Decoration from "./pages/Decoration.jsx";
 import Photography from "./pages/Photography.jsx";
 import Catering from "./pages/Catering.jsx";
 import CustomServicesHistory from "./pages/Custum-Services-History.jsx";
+import VenueSearch from "./pages/Maps.jsx";
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter basename="/client" >
@@ -77,6 +78,14 @@ createRoot(document.getElementById("root")).render(
           element={
             <ProtectedRoute>
               <Wedding />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/maps"
+          element={
+            <ProtectedRoute>
+              < VenueSearch />
             </ProtectedRoute>
           }
         />
