@@ -22,8 +22,38 @@ import api from './common/api';
 import logo from "../../dist/logo-try-1.png";
 
 
-const libraries = ["places"];
+// --- Helpers ---
+const geocodeAddress = async (address) => {
 
+  if (!window.google) return null;
+  const geocoder = new window.google.maps.Geocoder();
+  return new Promise((resolve) => {
+    geocoder.geocode({ address }, (results, status) => {
+      if (status === "OK" && results[0]) {
+        const loc = results[0].geometry.location;
+        resolve({ lat: loc.lat(), lng: loc.lng() });
+      } else {
+        console.error("Geocode failed:", status);
+        resolve(null);
+      }
+    });
+  });
+};
+
+const getDistanceKm = (lat1, lon1, lat2, lon2) => {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+// let API_URL = import.meta.env.VITE_API_URL;
+// const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 export default function Birthday() {
   let API_URL = import.meta.env.VITE_API_URL;
   const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
@@ -580,7 +610,7 @@ export default function Birthday() {
   const [filterType, setFilterType] = useState("");
   const [radius, setRadius] = useState("10");
   const [filterStars, setFilterStars] = useState(0);
-  // const [selectedVenue, setSelectedVenue] = useState(null);
+  const [selectedVenue, setSelectedVenue] = useState(null);
 
   const initialVenues = [
     {
@@ -632,9 +662,9 @@ export default function Birthday() {
 
 
 
-  // const [search, setSearch] = useState("");
+  const [search, setSearch] = useState("");
   const [filterLocation, setFilterLocation] = useState("");
-  // const [filterRating, setFilterRating] = useState("");
+  const [filterRating, setFilterRating] = useState("");
   const [filterPrice, setFilterPrice] = useState("");
   const [filterArea, setFilterArea] = useState("");
 
@@ -653,106 +683,39 @@ export default function Birthday() {
   //   );
   // });
 
-  // const filteredVenues = venues.filter((v) => {
+  const filteredVenues = venues.filter((v) => {
 
-  //   const matchesSearch =
-  //     !search || v.name.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch =
+      !search || v.name.toLowerCase().includes(search.toLowerCase());
 
-  //   const matchesLocation =
-  //     !filterLocation || v.location === filterLocation;
+    const matchesLocation =
+      !filterLocation || v.location === filterLocation;
 
-  //   const matchesArea =
-  //     !filterArea || v.area === filterArea;
+    const matchesArea =
+      !filterArea || v.area === filterArea;
 
-  //   const matchesRating =
-  //     !filterRating || v.stars >= Number(filterRating);
+    const matchesRating =
+      !filterRating || v.stars >= Number(filterRating);
 
-  //   const matchesPrice =
-  //     !filterPrice ||
-  //     (filterPrice === "low" && v.cost < 50000) ||
-  //     (filterPrice === "mid" && v.cost >= 50000 && v.cost <= 150000) ||
-  //     (filterPrice === "high" && v.cost > 150000);
+    const matchesPrice =
+      !filterPrice ||
+      (filterPrice === "low" && v.cost < 50000) ||
+      (filterPrice === "mid" && v.cost >= 50000 && v.cost <= 150000) ||
+      (filterPrice === "high" && v.cost > 150000);
 
-  //   return (
-  //     matchesSearch &&
-  //     matchesLocation &&
-  //     matchesArea &&
-  //     matchesRating &&
-  //     matchesPrice
-  //   );
-  // });
+    return (
+      matchesSearch &&
+      matchesLocation &&
+      matchesArea &&
+      matchesRating &&
+      matchesPrice
+    );
+  });
 
-  const { isLoaded } = useLoadScript({
+  const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
-    libraries,
+    // libraries: ["places"],
   });
-
-  const [map, setMap] = useState(null);
-  const [search, setSearch] = useState("");
-  const [places, setPlaces] = useState([]);
-  const [selectedVenue, setSelectedVenue] = useState(null);
-
-  const [filterRating, setFilterRating] = useState("");
-
-  const [location, setLocation] = useState({
-    lat: 17.385,
-    lng: 78.4867,
-  });
-
-  const getCurrentLocation = () => {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const coords = {
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude,
-      };
-      setLocation(coords);
-
-      localStorage.setItem("selectedLocation", JSON.stringify(coords));
-    });
-  };
-
-  useEffect(() => {
-    const saved = localStorage.getItem("selectedLocation");
-    if (saved) setLocation(JSON.parse(saved));
-  }, []);
-
-
-  const searchPlaces = () => {
-    if (!map) return;
-
-    const service = new window.google.maps.places.PlacesService(map);
-
-    const request = {
-      location,
-      radius: 5000,
-      keyword: search || "hotel OR resort OR banquet hall OR party lawn",
-      type: "lodging",
-    };
-
-    service.nearbySearch(request, (results, status) => {
-      if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-        const formatted = results.map((place) => ({
-          id: place.place_id,
-          name: place.name,
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng(),
-          rating: place.rating || 0,
-          address: place.vicinity,
-          image: place.photos
-            ? place.photos[0].getUrl()
-            : "https://via.placeholder.com/150",
-        }));
-
-        setPlaces(formatted);
-      }
-    });
-  };
-
-  const filteredVenues = places.filter((p) => {
-    return filterRating ? p.rating >= Number(filterRating) : true;
-  });
-
-  if (!isLoaded) return <div>Loading...</div>;
 
   const [budget, setBudget] = useState({
     totalBudget: 0,
@@ -1073,36 +1036,57 @@ export default function Birthday() {
               </h5>
               <div className="flex flex-col lg:flex-row gap-6">
 
-                {/* LEFT SIDE */}
+                {/* LEFT SIDE — VENUE LIST */}
+
                 <div className="lg:w-1/2 max-h-[520px] overflow-y-auto border-r pr-4 space-y-4">
 
+                  ```
                   {/* SEARCH + FILTER */}
                   <div className="sticky top-0 bg-white pb-3 z-10 space-y-3">
 
+                    {/* SEARCH */}
                     <input
                       type="text"
-                      placeholder="Search hotels, resorts, party places..."
+                      placeholder="Search venues or location..."
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       className="w-full border rounded-lg px-3 py-2"
                     />
 
+                    {/* FILTER OPTIONS */}
                     <div className="flex flex-wrap gap-2">
 
-                      <button
-                        onClick={getCurrentLocation}
-                        className="px-3 py-2 bg-blue-500 text-white rounded-lg"
+                      {/* CITY FILTER */}
+                      <select
+                        value={filterLocation}
+                        onChange={(e) => {
+                          setFilterLocation(e.target.value);
+                          setFilterArea("");
+                        }}
+                        className="border rounded-lg px-2 py-2"
                       >
-                        Use Current Location
-                      </button>
+                        <option value="">All Cities</option>
+                        <option value="Hyderabad">Hyderabad</option>
+                        <option value="Bangalore">Bangalore</option>
+                      </select>
 
-                      <button
-                        onClick={searchPlaces}
-                        className="px-3 py-2 bg-green-500 text-white rounded-lg"
+                      {/* AREA FILTER */}
+                      <select
+                        value={filterArea}
+                        onChange={(e) => setFilterArea(e.target.value)}
+                        className="border rounded-lg px-2 py-2"
                       >
-                        Search
-                      </button>
+                        <option value="">All Areas</option>
 
+                        {filterLocation &&
+                          cityAreas[filterLocation]?.map((area) => (
+                            <option key={area} value={area}>
+                              {area}
+                            </option>
+                          ))}
+                      </select>
+
+                      {/* RATING FILTER */}
                       <select
                         value={filterRating}
                         onChange={(e) => setFilterRating(e.target.value)}
@@ -1117,7 +1101,7 @@ export default function Birthday() {
                     </div>
                   </div>
 
-                  {/* LIST */}
+                  {/* VENUE LIST */}
                   {filteredVenues.length === 0 && (
                     <p className="text-gray-500 text-sm">No venues found.</p>
                   )}
@@ -1125,49 +1109,66 @@ export default function Birthday() {
                   {filteredVenues.map((venue) => (
                     <div
                       key={venue.id}
-                      onClick={() => setSelectedVenue(venue)}
-                      className={`flex gap-4 p-4 border rounded-xl cursor-pointer
-              ${selectedVenue?.id === venue.id
+                      onClick={() => {
+                        setSelectedVenue(venue);
+                      }}
+                      className={`flex gap-4 p-4 border rounded-xl cursor-pointer transition shadow-sm
+    ${selectedVenue?.id === venue.id
                           ? "bg-blue-50 border-blue-400"
-                          : "hover:bg-gray-50"}`}
+                          : "hover:bg-gray-50"
+                        }`}
                     >
 
+                      {/* IMAGE */}
                       <img
                         src={venue.image}
                         alt={venue.name}
                         className="w-24 h-24 object-cover rounded-lg"
                       />
 
-                      <div>
-                        <h4 className="font-semibold text-lg">{venue.name}</h4>
+                      {/* INFO */}
+                      <div className="flex flex-col justify-between">
+
+                        <h4 className="font-semibold text-lg">
+                          {venue.name}
+                        </h4>
 
                         <p className="text-sm text-gray-600">
-                          {venue.address}
+                          {venue.type} • {venue.area}, {venue.location}
                         </p>
 
                         <p className="text-yellow-500 text-sm">
-                          ⭐ {venue.rating}
+                          {"★".repeat(venue.stars)}
+                          {"☆".repeat(5 - venue.stars)}
                         </p>
+
                       </div>
 
                     </div>
                   ))}
+                  ```
+
                 </div>
 
-                {/* RIGHT SIDE MAP */}
+                {/* RIGHT SIDE — GOOGLE MAP */}
+
                 <div className="lg:w-1/2">
 
                   <GoogleMap
                     zoom={13}
-                    center={location}
-                    onLoad={(map) => setMap(map)}
+                    center={
+                      selectedVenue
+                        ? { lat: selectedVenue.lat, lng: selectedVenue.lng }
+                        : { lat: 17.385, lng: 78.4867 }
+                    }
                     mapContainerStyle={{
                       width: "100%",
                       height: "520px",
-                      borderRadius: "12px",
+                      borderRadius: "12px"
                     }}
                   >
 
+                    {/* MAP MARKERS */}
                     {filteredVenues.map((venue) => (
                       <Marker
                         key={venue.id}
@@ -1176,23 +1177,24 @@ export default function Birthday() {
                       />
                     ))}
 
+                    {/* INFO WINDOW */}
                     {selectedVenue && (
                       <InfoWindow
                         position={{
                           lat: selectedVenue.lat,
-                          lng: selectedVenue.lng,
+                          lng: selectedVenue.lng
                         }}
                         onCloseClick={() => setSelectedVenue(null)}
                       >
-                        <div>
-                          <h4 className="font-semibold">{selectedVenue.name}</h4>
-                          <p className="text-sm">{selectedVenue.address}</p>
+                        <div className="font-semibold">
+                          {selectedVenue.name}
                         </div>
                       </InfoWindow>
                     )}
 
                   </GoogleMap>
                 </div>
+
               </div>
 
               <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-black- mb-8 text-center pt-5">
@@ -1202,6 +1204,36 @@ export default function Birthday() {
                 {/* Event Timings & Guest Details */}
                 <div className="lg:w-1/2 space-y-6">
 
+                  {/* Date & Time */}
+                  {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
+                      <label className="font-medium">Event Date</label>
+                      <DatePicker
+                        selected={formData.eventDate ? new Date(formData.eventDate) : null}
+                        onChange={(date) =>
+                          handleChange({
+                            target: { name: "timings.date", value: date.toISOString().split("T")[0] },
+                          })
+                        }
+                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                        minDate={new Date()}
+                        placeholderText="Select Date"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <label className="font-medium">Event Time</label>
+                      <input
+                        type="time"
+                        name="timings.time"
+                        value={formData.timings?.time || ""}
+                        onChange={handleChange}
+                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                      />
+                    </div>
+                  </div> */}
+
+                  {/* Number of Guests */}
                   <div className="flex flex-col gap-2">
                     <label className="font-medium">Number of Guests</label>
                     <input
