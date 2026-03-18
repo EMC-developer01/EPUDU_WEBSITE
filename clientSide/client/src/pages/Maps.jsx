@@ -1,365 +1,387 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { GoogleMap, Marker, InfoWindow, useLoadScript } from "@react-google-maps/api";
+import {
+  GoogleMap,
+  Marker,
+  InfoWindow,
+  useJsApiLoader,
+} from "@react-google-maps/api";
 
-const libraries = ["places", "geocoding"];
+// ── must be defined OUTSIDE component to stay reference-stable ───────────────
+const LIBRARIES = ["places"];
+const MAP_CENTER_DEFAULT = { lat: 17.385, lng: 78.4867 };
+const MAP_CONTAINER_STYLE = { width: "100%", height: "100%" };
 
-// ─── tiny helpers ────────────────────────────────────────────────────────────
-const typeLabel = (types = []) => {
-  const map = {
-    lodging: "Hotel", restaurant: "Restaurant", food: "Food", bar: "Bar",
-    cafe: "Café", spa: "Spa", gym: "Gym", night_club: "Night Club",
-    tourist_attraction: "Attraction", event_venue: "Event Venue",
-  };
-  for (const t of types) if (map[t]) return map[t];
-  return "Venue";
+// ─── helpers ──────────────────────────────────────────────────────────────────
+const TYPE_MAP = {
+  lodging: "Hotel", restaurant: "Restaurant", food: "Food", bar: "Bar",
+  cafe: "Café", spa: "Spa", gym: "Gym", night_club: "Night Club",
+  tourist_attraction: "Attraction", event_venue: "Event Venue",
 };
-const priceDisplay = (l) => (l != null ? "₹".repeat(l + 1) : null);
+const typeLabel  = (types = []) => { for (const t of types) if (TYPE_MAP[t]) return TYPE_MAP[t]; return "Venue"; };
+const priceLabel = (l) => (l != null ? "₹".repeat(l + 1) : "");
 
-// ─── LOCATION MODES ──────────────────────────────────────────────────────────
-// "none"   → nothing selected yet
-// "gps"    → navigator.geolocation
-// "pin"    → user clicked somewhere on the map
-// "manual" → user typed an address
+const DARK_MAP_STYLE = [
+  { elementType: "geometry",             stylers: [{ color: "#13132a" }] },
+  { elementType: "labels.text.stroke",   stylers: [{ color: "#13132a" }] },
+  { elementType: "labels.text.fill",     stylers: [{ color: "#6060a0" }] },
+  { featureType: "administrative",       elementType: "geometry.stroke",      stylers: [{ color: "#1e1e3a" }] },
+  { featureType: "administrative.locality", elementType: "labels.text.fill",  stylers: [{ color: "#9090c0" }] },
+  { featureType: "poi",                  stylers: [{ visibility: "off" }] },
+  { featureType: "road",                 elementType: "geometry",             stylers: [{ color: "#1e1e3a" }] },
+  { featureType: "road",                 elementType: "geometry.stroke",      stylers: [{ color: "#0c0c1d" }] },
+  { featureType: "road",                 elementType: "labels.text.fill",     stylers: [{ color: "#5050a0" }] },
+  { featureType: "road.highway",         elementType: "geometry",             stylers: [{ color: "#2a2a4a" }] },
+  { featureType: "road.highway",         elementType: "labels.text.fill",     stylers: [{ color: "#8080c0" }] },
+  { featureType: "transit",              stylers: [{ visibility: "off" }] },
+  { featureType: "water",                elementType: "geometry",             stylers: [{ color: "#0a0a1a" }] },
+  { featureType: "water",                elementType: "labels.text.fill",     stylers: [{ color: "#3a3a6a" }] },
+];
 
+// ─────────────────────────────────────────────────────────────────────────────
 export default function VenueSearch() {
-  const { isLoaded } = useLoadScript({
+  const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries,
+    libraries: LIBRARIES,
   });
 
-  const mapRef          = useRef(null);
-  const acServiceRef    = useRef(null);
-  const sessionTokenRef = useRef(null);
+  // refs
+  const mapRef       = useRef(null);
+  const acRef        = useRef(null);   // AutocompleteService
+  const geocoderRef  = useRef(null);   // Geocoder
 
-  // ── location state ────────────────────────────────────────────────────────
-  const [locationMode,    setLocationMode]    = useState("none");   // "none"|"gps"|"pin"|"manual"
-  const [userLocation,    setUserLocation]    = useState(null);     // { lat, lng }
-  const [locationAddress, setLocationAddress] = useState("");       // reverse-geocoded label
-  const [pinMode,         setPinMode]         = useState(false);    // map click = drop pin?
-  const [pinMarker,       setPinMarker]       = useState(null);     // { lat, lng }
-  const [manualInput,     setManualInput]     = useState("");       // typed address
-  const [manualSuggestions, setManualSuggestions] = useState([]);
-  const [showManualDrop,  setShowManualDrop]  = useState(false);
-  const [gpsLoading,      setGpsLoading]      = useState(false);
+  // ── location ──────────────────────────────────────────────────────────────
+  const [locMode,    setLocMode]    = useState("none"); // none | gps | pin | manual
+  const [userCoords, setUserCoords] = useState(null);   // { lat, lng }
+  const [locLabel,   setLocLabel]   = useState("");
+  const [pinMode,    setPinMode]    = useState(false);
+  const [gpsLoading, setGpsLoading] = useState(false);
 
-  // ── search state ──────────────────────────────────────────────────────────
-  const [keyword,          setKeyword]          = useState("");
-  const [keywordSuggestions, setKeywordSuggestions] = useState([]);
-  const [showKeywordDrop,  setShowKeywordDrop]  = useState(false);
+  // manual address
+  const [manualInput, setManualInput]   = useState("");
+  const [manualPreds, setManualPreds]   = useState([]);
+  const [showManual,  setShowManual]    = useState(false);
 
-  const [cityInput,        setCityInput]        = useState("");
-  const [citySuggestions,  setCitySuggestions]  = useState([]);
-  const [showCityDrop,     setShowCityDrop]     = useState(false);
-  const [selectedCity,     setSelectedCity]     = useState(null);
+  // ── search filters ────────────────────────────────────────────────────────
+  const [keyword,      setKeyword]      = useState("");
+  const [kwPreds,      setKwPreds]      = useState([]);
+  const [showKwDrop,   setShowKwDrop]   = useState(false);
 
-  const [areaInput,        setAreaInput]        = useState("");
-  const [areaSuggestions,  setAreaSuggestions]  = useState([]);
-  const [showAreaDrop,     setShowAreaDrop]     = useState(false);
-  const [selectedArea,     setSelectedArea]     = useState(null);
+  const [cityInput,    setCityInput]    = useState("");
+  const [cityPreds,    setCityPreds]    = useState([]);
+  const [showCityDrop, setShowCityDrop] = useState(false);
+  const [selCity,      setSelCity]      = useState(null); // { name, lat, lng }
 
-  const [filterRating,     setFilterRating]     = useState("");
+  const [areaInput,    setAreaInput]    = useState("");
+  const [areaPreds,    setAreaPreds]    = useState([]);
+  const [showAreaDrop, setShowAreaDrop] = useState(false);
+  const [selArea,      setSelArea]      = useState(null);
 
-  // ── result state ──────────────────────────────────────────────────────────
-  const [places,        setPlaces]        = useState([]);
-  const [selectedVenue, setSelectedVenue] = useState(null);
-  const [isSearching,   setIsSearching]   = useState(false);
-  const [mapCenter,     setMapCenter]     = useState({ lat: 17.385, lng: 78.4867 });
+  const [minRating,    setMinRating]    = useState("");
 
-  // ── init autocomplete service ─────────────────────────────────────────────
-  useEffect(() => {
-    if (isLoaded) {
-      acServiceRef.current    = new window.google.maps.places.AutocompleteService();
-      sessionTokenRef.current = new window.google.maps.places.AutocompleteSessionToken();
-    }
-  }, [isLoaded]);
+  // ── results ───────────────────────────────────────────────────────────────
+  const [venues,       setVenues]       = useState([]);
+  const [selVenue,     setSelVenue]     = useState(null);
+  const [searching,    setSearching]    = useState(false);
+  const [mapCenter,    setMapCenter]    = useState(MAP_CENTER_DEFAULT);
 
-  // ── generic autocomplete fetch ────────────────────────────────────────────
-  const fetchAC = useCallback((input, types, bias, cb) => {
-    if (!acServiceRef.current || !input.trim()) { cb([]); return; }
-    const req = { input, sessionToken: sessionTokenRef.current, types };
+  // ── init services after map loads ─────────────────────────────────────────
+  const onMapLoad = useCallback((map) => {
+    mapRef.current      = map;
+    acRef.current       = new window.google.maps.places.AutocompleteService();
+    geocoderRef.current = new window.google.maps.Geocoder();
+  }, []);
+
+  // ── autocomplete helper ───────────────────────────────────────────────────
+  const getAC = useCallback((input, types, bias, cb) => {
+    if (!acRef.current || !input.trim()) { cb([]); return; }
+    const req = { input, types };
     if (bias) req.locationBias = bias;
-    acServiceRef.current.getPlacePredictions(req, (preds, status) => {
-      cb(status === window.google.maps.places.PlacesServiceStatus.OK && preds ? preds : []);
+    acRef.current.getPlacePredictions(req, (preds, status) => {
+      cb(
+        status === window.google.maps.places.PlacesServiceStatus.OK && preds
+          ? preds : []
+      );
+    });
+  }, []);
+
+  // ── reverse geocode ───────────────────────────────────────────────────────
+  const reverseGeocode = useCallback((lat, lng, cb) => {
+    if (!geocoderRef.current) { cb(`${lat.toFixed(5)}, ${lng.toFixed(5)}`); return; }
+    geocoderRef.current.geocode({ location: { lat, lng } }, (res, status) => {
+      cb(status === "OK" && res[0] ? res[0].formatted_address : `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+    });
+  }, []);
+
+  // ── place_id → coords + address ───────────────────────────────────────────
+  const resolvePlaceId = useCallback((placeId, cb) => {
+    if (!geocoderRef.current) return;
+    geocoderRef.current.geocode({ placeId }, (res, status) => {
+      if (status === "OK" && res[0]) {
+        const loc = res[0].geometry.location;
+        cb({ lat: loc.lat(), lng: loc.lng() }, res[0].formatted_address);
+      }
     });
   }, []);
 
   // ── keyword suggestions ───────────────────────────────────────────────────
   useEffect(() => {
-    if (!isLoaded || !keyword.trim()) { setKeywordSuggestions([]); return; }
-    const center = userLocation || pinMarker || mapCenter;
-    fetchAC(keyword, ["establishment"],
-      { center: { lat: center.lat, lng: center.lng }, radius: 15000 },
-      setKeywordSuggestions);
-  }, [keyword, isLoaded, userLocation, pinMarker, mapCenter, fetchAC]);
+    if (!isLoaded || !keyword.trim()) { setKwPreds([]); return; }
+    const c = userCoords || mapCenter;
+    getAC(keyword, ["establishment"], { center: c, radius: 15000 }, setKwPreds);
+  }, [keyword, isLoaded, userCoords, mapCenter, getAC]);
 
   // ── city suggestions ──────────────────────────────────────────────────────
   useEffect(() => {
-    if (!isLoaded || !cityInput.trim()) { setCitySuggestions([]); return; }
-    fetchAC(cityInput, ["(cities)"], null, setCitySuggestions);
-  }, [cityInput, isLoaded, fetchAC]);
+    if (!isLoaded || !cityInput.trim()) { setCityPreds([]); return; }
+    getAC(cityInput, ["(cities)"], null, setCityPreds);
+  }, [cityInput, isLoaded, getAC]);
 
   // ── area suggestions ──────────────────────────────────────────────────────
   useEffect(() => {
-    if (!isLoaded || !areaInput.trim() || !selectedCity) { setAreaSuggestions([]); return; }
-    fetchAC(areaInput, ["sublocality", "neighborhood"],
-      selectedCity.lat ? { center: { lat: selectedCity.lat, lng: selectedCity.lng }, radius: 50000 } : null,
-      setAreaSuggestions);
-  }, [areaInput, isLoaded, selectedCity, fetchAC]);
+    if (!isLoaded || !areaInput.trim() || !selCity) { setAreaPreds([]); return; }
+    getAC(
+      areaInput,
+      ["sublocality", "neighborhood"],
+      selCity.lat ? { center: { lat: selCity.lat, lng: selCity.lng }, radius: 50000 } : null,
+      setAreaPreds
+    );
+  }, [areaInput, isLoaded, selCity, getAC]);
 
-  // ── manual address suggestions ────────────────────────────────────────────
+  // ── manual suggestions ────────────────────────────────────────────────────
   useEffect(() => {
-    if (!isLoaded || !manualInput.trim()) { setManualSuggestions([]); return; }
-    fetchAC(manualInput, ["geocode", "establishment"], null, setManualSuggestions);
-  }, [manualInput, isLoaded, fetchAC]);
-
-  // ── resolve placeId → coords ──────────────────────────────────────────────
-  const resolvePlace = useCallback((placeId, cb) => {
-    new window.google.maps.Geocoder().geocode({ placeId }, (results, status) => {
-      if (status === "OK" && results[0]) {
-        const loc = results[0].geometry.location;
-        cb({ lat: loc.lat(), lng: loc.lng() }, results[0].formatted_address);
-      }
-    });
-  }, []);
-
-  // ── reverse geocode coords → address string ───────────────────────────────
-  const reverseGeocode = useCallback((lat, lng, cb) => {
-    new window.google.maps.Geocoder().geocode({ location: { lat, lng } }, (results, status) => {
-      if (status === "OK" && results[0]) cb(results[0].formatted_address);
-      else cb(`${lat.toFixed(5)}, ${lng.toFixed(5)}`);
-    });
-  }, []);
+    if (!isLoaded || !manualInput.trim()) { setManualPreds([]); return; }
+    getAC(manualInput, ["geocode", "establishment"], null, setManualPreds);
+  }, [manualInput, isLoaded, getAC]);
 
   // ── GPS ───────────────────────────────────────────────────────────────────
   const handleGPS = () => {
+    if (!navigator.geolocation) { alert("Geolocation not supported"); return; }
     setGpsLoading(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        reverseGeocode(coords.lat, coords.lng, (addr) => {
-          setUserLocation(coords);
-          setLocationAddress(addr);
-          setLocationMode("gps");
-          setMapCenter(coords);
-          setPinMarker(null);
+      ({ coords }) => {
+        const { latitude: lat, longitude: lng } = coords;
+        reverseGeocode(lat, lng, (addr) => {
+          setUserCoords({ lat, lng });
+          setLocLabel(addr);
+          setLocMode("gps");
+          setMapCenter({ lat, lng });
           setPinMode(false);
           setGpsLoading(false);
         });
       },
-      () => {
-        setGpsLoading(false);
-        alert("Could not get your location. Please allow location access.");
-      }
+      () => { setGpsLoading(false); alert("Location access denied. Please allow it in browser settings."); }
     );
   };
 
-  // ── map click → pin ───────────────────────────────────────────────────────
+  // ── map click (pin mode) ──────────────────────────────────────────────────
   const handleMapClick = useCallback((e) => {
     if (!pinMode) return;
     const lat = e.latLng.lat();
     const lng = e.latLng.lng();
     reverseGeocode(lat, lng, (addr) => {
-      setPinMarker({ lat, lng });
-      setLocationAddress(addr);
-      setUserLocation({ lat, lng });
-      setLocationMode("pin");
+      setUserCoords({ lat, lng });
+      setLocLabel(addr);
+      setLocMode("pin");
       setMapCenter({ lat, lng });
       setPinMode(false);
     });
   }, [pinMode, reverseGeocode]);
 
-  // ── manual address select ─────────────────────────────────────────────────
-  const handleManualSelect = (pred) => {
-    setManualInput(pred.description);
-    setShowManualDrop(false);
-    resolvePlace(pred.place_id, (coords, addr) => {
-      setUserLocation(coords);
-      setLocationAddress(addr || pred.description);
-      setLocationMode("manual");
-      setMapCenter(coords);
-      setPinMarker(null);
-    });
-  };
-
-  // ── city select ───────────────────────────────────────────────────────────
-  const handleSelectCity = (pred) => {
+  // ── select city ───────────────────────────────────────────────────────────
+  const pickCity = (pred) => {
     setCityInput(pred.structured_formatting.main_text);
-    setShowCityDrop(false); setCitySuggestions([]);
-    setSelectedArea(null); setAreaInput("");
-    resolvePlace(pred.place_id, (coords) => {
-      setSelectedCity({ name: pred.structured_formatting.main_text, placeId: pred.place_id, ...coords });
+    setShowCityDrop(false); setCityPreds([]);
+    setSelArea(null); setAreaInput("");
+    resolvePlaceId(pred.place_id, (coords) => {
+      setSelCity({ name: pred.structured_formatting.main_text, ...coords });
       setMapCenter(coords);
     });
   };
 
-  // ── area select ───────────────────────────────────────────────────────────
-  const handleSelectArea = (pred) => {
+  // ── select area ───────────────────────────────────────────────────────────
+  const pickArea = (pred) => {
     setAreaInput(pred.structured_formatting.main_text);
-    setShowAreaDrop(false); setAreaSuggestions([]);
-    resolvePlace(pred.place_id, (coords) => {
-      setSelectedArea({ name: pred.structured_formatting.main_text, placeId: pred.place_id, ...coords });
+    setShowAreaDrop(false); setAreaPreds([]);
+    resolvePlaceId(pred.place_id, (coords) => {
+      setSelArea({ name: pred.structured_formatting.main_text, ...coords });
+      setMapCenter(coords);
+    });
+  };
+
+  // ── select manual address ─────────────────────────────────────────────────
+  const pickManual = (pred) => {
+    setManualInput(pred.description);
+    setShowManual(false);
+    resolvePlaceId(pred.place_id, (coords, addr) => {
+      setUserCoords(coords);
+      setLocLabel(addr || pred.description);
+      setLocMode("manual");
       setMapCenter(coords);
     });
   };
 
   // ── clear location ────────────────────────────────────────────────────────
-  const clearLocation = () => {
-    setLocationMode("none"); setUserLocation(null);
-    setLocationAddress(""); setPinMarker(null);
-    setPinMode(false); setManualInput("");
+  const clearLoc = () => {
+    setLocMode("none"); setUserCoords(null); setLocLabel("");
+    setPinMode(false); setManualInput(""); setManualPreds([]);
   };
 
   // ── search ────────────────────────────────────────────────────────────────
-  const searchPlaces = () => {
+  const doSearch = () => {
     if (!mapRef.current) return;
-    setIsSearching(true); setPlaces([]); setSelectedVenue(null);
+    setSearching(true); setVenues([]); setSelVenue(null);
 
     const service = new window.google.maps.places.PlacesService(mapRef.current);
-
-    // priority: area > city > user location pin/gps > default center
     const center =
-      selectedArea?.lat   ? { lat: selectedArea.lat,   lng: selectedArea.lng }   :
-      selectedCity?.lat   ? { lat: selectedCity.lat,   lng: selectedCity.lng }   :
-      userLocation        ? { lat: userLocation.lat,   lng: userLocation.lng }   :
+      selArea?.lat    ? { lat: selArea.lat,    lng: selArea.lng }    :
+      selCity?.lat    ? { lat: selCity.lat,    lng: selCity.lng }    :
+      userCoords      ? { lat: userCoords.lat, lng: userCoords.lng } :
       mapCenter;
 
-    const radius =
-      selectedArea  ? 3000  :
-      selectedCity  ? 10000 :
-      userLocation  ? 5000  : 5000;
+    const radius = selArea ? 3000 : selCity ? 10000 : 5000;
 
-    service.nearbySearch({
-      location: new window.google.maps.LatLng(center.lat, center.lng),
-      radius,
-      keyword: keyword || "hotel resort banquet hall restaurant",
-    }, (results, status) => {
-      setIsSearching(false);
-      if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
-        setPlaces(results.map((place) => ({
-          id: place.place_id,
-          name: place.name,
-          lat: place.geometry.location.lat(),
-          lng: place.geometry.location.lng(),
-          rating: place.rating || 0,
-          ratingCount: place.user_ratings_total || 0,
-          stars: Math.round(place.rating || 0),
-          address: place.vicinity || "",
-          types: place.types || [],
-          openNow: place.opening_hours?.open_now,
-          priceLevel: place.price_level,
-          image: place.photos?.length
-            ? place.photos[0].getUrl({ maxWidth: 320, maxHeight: 220 })
-            : null,
-        })));
-        setMapCenter(center);
+    service.nearbySearch(
+      {
+        location: new window.google.maps.LatLng(center.lat, center.lng),
+        radius,
+        keyword: keyword || "hotel resort banquet hall restaurant",
+      },
+      (results, status) => {
+        setSearching(false);
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
+          setVenues(results.map((p) => ({
+            id:          p.place_id,
+            name:        p.name,
+            lat:         p.geometry.location.lat(),
+            lng:         p.geometry.location.lng(),
+            rating:      p.rating || 0,
+            ratingCount: p.user_ratings_total || 0,
+            stars:       Math.round(p.rating || 0),
+            address:     p.vicinity || "",
+            types:       p.types || [],
+            openNow:     p.opening_hours?.open_now,
+            priceLevel:  p.price_level,
+            image:       p.photos?.length
+              ? p.photos[0].getUrl({ maxWidth: 320, maxHeight: 220 })
+              : null,
+          })));
+          setMapCenter(center);
+        } else {
+          alert("No results found. Try a different keyword or location.");
+        }
       }
-    });
+    );
   };
 
-  const filteredVenues = places.filter((p) =>
-    filterRating ? p.rating >= Number(filterRating) : true
-  );
+  const filtered = venues.filter((v) => minRating ? v.rating >= Number(minRating) : true);
 
-  // ─────────────────────────────────────────────────────────────────────────
-  if (!isLoaded)
+  // ── error / loading states ────────────────────────────────────────────────
+  if (loadError)
     return (
-      <div style={s.loaderWrap}>
-        <div style={s.spinner} />
-        <p style={s.loaderTxt}>Loading Google Maps…</p>
+      <div style={css.errWrap}>
+        <p style={css.errTitle}>⚠ Google Maps failed to load</p>
+        <p style={css.errMsg}>Check that your <code>VITE_GOOGLE_MAPS_API_KEY</code> in <code>.env</code> is valid and that <strong>Maps JavaScript API</strong> + <strong>Places API</strong> are enabled in Google Cloud Console.</p>
+        <p style={css.errDetail}>{loadError.message}</p>
       </div>
     );
 
+  if (!isLoaded)
+    return (
+      <div style={css.loaderWrap}>
+        <div style={css.spinner} />
+        <p style={css.loaderTxt}>Loading Google Maps…</p>
+      </div>
+    );
+
+  // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div style={s.root}>
+    <div style={css.root}>
+
       {/* ── HEADER ── */}
-      <div style={s.header}>
-        <h1 style={s.title}><span style={s.accent}>Venue</span> Finder</h1>
-        <p style={s.sub}>Live search · GPS · Map Pin · Manual Address</p>
+      <div style={css.header}>
+        <div>
+          <h1 style={css.title}><span style={css.accent}>Venue</span> Finder</h1>
+          <p style={css.sub}>Live · GPS · Map Pin · Address Search</p>
+        </div>
       </div>
 
-      <div style={s.body}>
-        {/* ════════ LEFT PANEL ════════ */}
-        <div style={s.panel}>
+      <div style={css.body}>
 
-          {/* ── LOCATION SECTION ── */}
-          <div style={s.sectionCard}>
-            <div style={s.sectionHead}>
-              <span style={s.sectionIcon}>📍</span>
-              <span style={s.sectionTitle}>Set Your Location</span>
-              {locationMode !== "none" && (
-                <button style={s.clearBtn} onClick={clearLocation}>✕ Clear</button>
+        {/* ══════════ LEFT PANEL ══════════ */}
+        <div style={css.panel}>
+
+          {/* ── LOCATION CARD ── */}
+          <div style={css.card2}>
+            <div style={css.cardHead}>
+              <span>📍</span>
+              <span style={css.cardHeadTitle}>Your Location</span>
+              {locMode !== "none" && (
+                <button style={css.clearBtn} onClick={clearLoc}>✕ Clear</button>
               )}
             </div>
 
-            {/* Active location pill */}
-            {locationMode !== "none" && (
-              <div style={s.locPill}>
-                <span style={s.locPillIcon}>
-                  {locationMode === "gps" ? "🛰" : locationMode === "pin" ? "📌" : "🔤"}
-                </span>
-                <span style={s.locPillTxt}>{locationAddress}</span>
+            {/* Resolved address pill */}
+            {locMode !== "none" && locLabel && (
+              <div style={css.locPill}>
+                <span>{locMode === "gps" ? "🛰" : locMode === "pin" ? "📌" : "🔤"}</span>
+                <span style={css.locPillTxt}>{locLabel}</span>
               </div>
             )}
 
-            {/* Three mode buttons */}
-            <div style={s.modeRow}>
-              {/* GPS */}
+            {/* Mode buttons */}
+            <div style={css.modeRow}>
               <button
-                style={{ ...s.modeBtn, ...(locationMode === "gps" ? s.modeBtnActive : {}) }}
+                style={{ ...css.modeBtn, ...(locMode === "gps" ? css.modeBtnGps : {}) }}
                 onClick={handleGPS}
                 disabled={gpsLoading}
               >
-                {gpsLoading ? <span style={s.modeBtnSpinner} /> : "🛰"}
-                <span>{gpsLoading ? "Locating…" : "GPS"}</span>
+                <span style={{ fontSize: 18 }}>{gpsLoading ? "⏳" : "🛰"}</span>
+                <span>{gpsLoading ? "Locating…" : "Use GPS"}</span>
               </button>
 
-              {/* Pin on map */}
               <button
-                style={{
-                  ...s.modeBtn,
-                  ...(pinMode ? s.modeBtnPinActive : locationMode === "pin" ? s.modeBtnActive : {}),
-                }}
-                onClick={() => { setPinMode((v) => !v); }}
+                style={{ ...css.modeBtn, ...(pinMode ? css.modeBtnPinOn : locMode === "pin" ? css.modeBtnPin : {}) }}
+                onClick={() => setPinMode((v) => !v)}
               >
-                📌
-                <span>{pinMode ? "Click map ▶" : "Pin Map"}</span>
+                <span style={{ fontSize: 18 }}>📌</span>
+                <span>{pinMode ? "Click map ▶" : "Pin on Map"}</span>
               </button>
 
-              {/* Manual */}
               <button
-                style={{ ...s.modeBtn, ...(locationMode === "manual" ? s.modeBtnActive : {}) }}
-                onClick={() => { setLocationMode("manual"); }}
+                style={{ ...css.modeBtn, ...(locMode === "manual" ? css.modeBtnManual : {}) }}
+                onClick={() => { setLocMode("manual"); setManualInput(""); }}
               >
-                🔤
-                <span>Address</span>
+                <span style={{ fontSize: 18 }}>🔤</span>
+                <span>Type Address</span>
               </button>
             </div>
 
             {/* Pin hint */}
             {pinMode && (
-              <div style={s.pinHint}>
+              <div style={css.pinHint}>
                 ☝ Click anywhere on the map to drop a pin
+                <button style={css.pinCancelBtn} onClick={() => setPinMode(false)}>Cancel</button>
               </div>
             )}
 
-            {/* Manual address input */}
-            {(locationMode === "manual" || (locationMode === "none" && manualInput)) && (
-              <div style={{ ...s.inputWrap, marginTop: 10 }}>
+            {/* Manual input */}
+            {locMode === "manual" && (
+              <div style={{ ...css.inputWrap, marginTop: 10 }}>
                 <input
-                  style={s.input}
-                  placeholder="Type any address, landmark or place…"
-                  value={manualInput}
-                  onChange={(e) => { setManualInput(e.target.value); setShowManualDrop(true); }}
-                  onBlur={() => setTimeout(() => setShowManualDrop(false), 160)}
-                  onFocus={() => manualInput && setShowManualDrop(true)}
+                  style={css.input}
                   autoFocus
+                  placeholder="Type any address or landmark…"
+                  value={manualInput}
+                  onChange={(e) => { setManualInput(e.target.value); setShowManual(true); }}
+                  onBlur={() => setTimeout(() => setShowManual(false), 160)}
+                  onFocus={() => manualInput && setShowManual(true)}
                 />
-                {showManualDrop && manualSuggestions.length > 0 && (
-                  <div style={s.dropdown}>
-                    {manualSuggestions.map((p) => (
-                      <div key={p.place_id} style={s.dropItem} onMouseDown={() => handleManualSelect(p)}>
-                        <span style={s.dropMain}>{p.structured_formatting.main_text}</span>
-                        <span style={s.dropSub}>{p.structured_formatting.secondary_text}</span>
+                {showManual && manualPreds.length > 0 && (
+                  <div style={css.dropdown}>
+                    {manualPreds.map((p) => (
+                      <div key={p.place_id} style={css.dropItem} onMouseDown={() => pickManual(p)}>
+                        <span style={css.dropMain}>{p.structured_formatting.main_text}</span>
+                        <span style={css.dropSub}>{p.structured_formatting.secondary_text}</span>
                       </div>
                     ))}
                   </div>
@@ -368,32 +390,32 @@ export default function VenueSearch() {
             )}
           </div>
 
-          {/* ── SEARCH SECTION ── */}
-          <div style={s.sectionCard}>
-            <div style={s.sectionHead}>
-              <span style={s.sectionIcon}>🔍</span>
-              <span style={s.sectionTitle}>Search Venues</span>
+          {/* ── SEARCH CARD ── */}
+          <div style={css.card2}>
+            <div style={css.cardHead}>
+              <span>🔍</span>
+              <span style={css.cardHeadTitle}>Search Venues</span>
             </div>
 
             {/* Keyword */}
-            <label style={s.label}>What are you looking for?</label>
-            <div style={{ ...s.inputWrap, marginBottom: 10 }}>
+            <label style={css.label}>Keyword</label>
+            <div style={{ ...css.inputWrap, marginBottom: 10 }}>
               <input
-                style={s.input}
-                placeholder="Hotels, resorts, banquet halls, restaurants…"
+                style={css.input}
+                placeholder="Hotels, resorts, banquet halls…"
                 value={keyword}
-                onChange={(e) => { setKeyword(e.target.value); setShowKeywordDrop(true); }}
-                onKeyDown={(e) => { if (e.key === "Enter") { setShowKeywordDrop(false); searchPlaces(); } }}
-                onBlur={() => setTimeout(() => setShowKeywordDrop(false), 160)}
-                onFocus={() => keyword && setShowKeywordDrop(true)}
+                onChange={(e) => { setKeyword(e.target.value); setShowKwDrop(true); }}
+                onKeyDown={(e) => { if (e.key === "Enter") { setShowKwDrop(false); doSearch(); } }}
+                onBlur={() => setTimeout(() => setShowKwDrop(false), 160)}
+                onFocus={() => keyword && setShowKwDrop(true)}
               />
-              {showKeywordDrop && keywordSuggestions.length > 0 && (
-                <div style={s.dropdown}>
-                  {keywordSuggestions.map((p) => (
-                    <div key={p.place_id} style={s.dropItem}
-                      onMouseDown={() => { setKeyword(p.structured_formatting.main_text); setShowKeywordDrop(false); }}>
-                      <span style={s.dropMain}>{p.structured_formatting.main_text}</span>
-                      <span style={s.dropSub}>{p.structured_formatting.secondary_text}</span>
+              {showKwDrop && kwPreds.length > 0 && (
+                <div style={css.dropdown}>
+                  {kwPreds.map((p) => (
+                    <div key={p.place_id} style={css.dropItem}
+                      onMouseDown={() => { setKeyword(p.structured_formatting.main_text); setShowKwDrop(false); }}>
+                      <span style={css.dropMain}>{p.structured_formatting.main_text}</span>
+                      <span style={css.dropSub}>{p.structured_formatting.secondary_text}</span>
                     </div>
                   ))}
                 </div>
@@ -401,22 +423,22 @@ export default function VenueSearch() {
             </div>
 
             {/* City */}
-            <label style={s.label}>City</label>
-            <div style={{ ...s.inputWrap, marginBottom: 10 }}>
+            <label style={css.label}>City</label>
+            <div style={{ ...css.inputWrap, marginBottom: 10 }}>
               <input
-                style={s.input}
-                placeholder="Type any city…"
+                style={css.input}
+                placeholder="Search any city…"
                 value={cityInput}
-                onChange={(e) => { setCityInput(e.target.value); setShowCityDrop(true); if (!e.target.value) setSelectedCity(null); }}
+                onChange={(e) => { setCityInput(e.target.value); setShowCityDrop(true); if (!e.target.value) setSelCity(null); }}
                 onBlur={() => setTimeout(() => setShowCityDrop(false), 160)}
                 onFocus={() => cityInput && setShowCityDrop(true)}
               />
-              {showCityDrop && citySuggestions.length > 0 && (
-                <div style={s.dropdown}>
-                  {citySuggestions.map((p) => (
-                    <div key={p.place_id} style={s.dropItem} onMouseDown={() => handleSelectCity(p)}>
-                      <span style={s.dropMain}>{p.structured_formatting.main_text}</span>
-                      <span style={s.dropSub}>{p.structured_formatting.secondary_text}</span>
+              {showCityDrop && cityPreds.length > 0 && (
+                <div style={css.dropdown}>
+                  {cityPreds.map((p) => (
+                    <div key={p.place_id} style={css.dropItem} onMouseDown={() => pickCity(p)}>
+                      <span style={css.dropMain}>{p.structured_formatting.main_text}</span>
+                      <span style={css.dropSub}>{p.structured_formatting.secondary_text}</span>
                     </div>
                   ))}
                 </div>
@@ -424,23 +446,23 @@ export default function VenueSearch() {
             </div>
 
             {/* Area */}
-            <label style={{ ...s.label, opacity: selectedCity ? 1 : 0.4 }}>Area / Neighbourhood</label>
-            <div style={{ ...s.inputWrap, marginBottom: 12 }}>
+            <label style={{ ...css.label, opacity: selCity ? 1 : 0.4 }}>Area / Neighbourhood</label>
+            <div style={{ ...css.inputWrap, marginBottom: 12 }}>
               <input
-                style={{ ...s.input, opacity: selectedCity ? 1 : 0.45, cursor: selectedCity ? "text" : "not-allowed" }}
-                placeholder={selectedCity ? `Areas in ${selectedCity.name}…` : "Select a city first"}
+                style={{ ...css.input, opacity: selCity ? 1 : 0.4, cursor: selCity ? "text" : "not-allowed" }}
+                placeholder={selCity ? `Areas in ${selCity.name}…` : "Pick a city first"}
                 value={areaInput}
-                disabled={!selectedCity}
-                onChange={(e) => { setAreaInput(e.target.value); setShowAreaDrop(true); if (!e.target.value) setSelectedArea(null); }}
+                disabled={!selCity}
+                onChange={(e) => { setAreaInput(e.target.value); setShowAreaDrop(true); if (!e.target.value) setSelArea(null); }}
                 onBlur={() => setTimeout(() => setShowAreaDrop(false), 160)}
                 onFocus={() => areaInput && setShowAreaDrop(true)}
               />
-              {showAreaDrop && areaSuggestions.length > 0 && (
-                <div style={s.dropdown}>
-                  {areaSuggestions.map((p) => (
-                    <div key={p.place_id} style={s.dropItem} onMouseDown={() => handleSelectArea(p)}>
-                      <span style={s.dropMain}>{p.structured_formatting.main_text}</span>
-                      <span style={s.dropSub}>{p.structured_formatting.secondary_text}</span>
+              {showAreaDrop && areaPreds.length > 0 && (
+                <div style={css.dropdown}>
+                  {areaPreds.map((p) => (
+                    <div key={p.place_id} style={css.dropItem} onMouseDown={() => pickArea(p)}>
+                      <span style={css.dropMain}>{p.structured_formatting.main_text}</span>
+                      <span style={css.dropSub}>{p.structured_formatting.secondary_text}</span>
                     </div>
                   ))}
                 </div>
@@ -448,324 +470,291 @@ export default function VenueSearch() {
             </div>
 
             {/* Rating */}
-            <label style={s.label}>Minimum Rating</label>
-            <div style={{ ...s.ratingRow, marginBottom: 12 }}>
-              {[["", "All"], ["3", "3★+"], ["4", "4★+"], ["4.5", "4.5★+"]].map(([val, lbl]) => (
-                <button key={val}
-                  style={{ ...s.ratingBtn, ...(filterRating === val ? s.ratingBtnActive : {}) }}
-                  onClick={() => setFilterRating(val)}>{lbl}</button>
+            <label style={css.label}>Min Rating</label>
+            <div style={{ ...css.ratingRow, marginBottom: 14 }}>
+              {[["", "Any"], ["3", "3★+"], ["4", "4★+"], ["4.5", "4.5★+"]].map(([v, l]) => (
+                <button key={v}
+                  style={{ ...css.ratingBtn, ...(minRating === v ? css.ratingBtnOn : {}) }}
+                  onClick={() => setMinRating(v)}>{l}</button>
               ))}
             </div>
 
-            {/* Search button */}
             <button
-              style={{ ...s.searchBtn, opacity: isSearching ? 0.65 : 1 }}
-              onClick={searchPlaces}
-              disabled={isSearching}>
-              {isSearching ? "Searching Google Maps…" : "🔍  Search Venues"}
+              style={{ ...css.searchBtn, opacity: searching ? 0.65 : 1 }}
+              onClick={doSearch}
+              disabled={searching}
+            >
+              {searching ? "Searching…" : "Search Venues"}
             </button>
           </div>
 
-          {/* ── Active chips ── */}
-          {(keyword || selectedCity || selectedArea || locationMode !== "none") && (
-            <div style={s.chips}>
-              {locationMode !== "none" && <span style={{ ...s.chip, borderColor: "#22c55e40", color: "#22c55e" }}>📍 {locationMode === "gps" ? "GPS" : locationMode === "pin" ? "Pinned" : "Manual"}</span>}
-              {keyword && <span style={s.chip}>🔍 {keyword}</span>}
-              {selectedCity && <span style={s.chip}>🏙 {selectedCity.name}</span>}
-              {selectedArea && <span style={s.chip}>📌 {selectedArea.name}</span>}
-              {filterRating && <span style={s.chip}>⭐ {filterRating}+</span>}
+          {/* ── Chips ── */}
+          {(keyword || selCity || selArea || locMode !== "none") && (
+            <div style={css.chips}>
+              {locMode !== "none" && <span style={{ ...css.chip, borderColor: "#22c55e50", color: "#22c55e" }}>📍 {locMode}</span>}
+              {keyword   && <span style={css.chip}>🔍 {keyword}</span>}
+              {selCity   && <span style={css.chip}>🏙 {selCity.name}</span>}
+              {selArea   && <span style={css.chip}>📌 {selArea.name}</span>}
+              {minRating && <span style={css.chip}>⭐ {minRating}+</span>}
             </div>
           )}
 
           {/* ── Count ── */}
-          {(isSearching || places.length > 0) && (
-            <div style={s.countBar}>
-              <span style={s.countTxt}>
-                {isSearching ? "Fetching from Google Maps…" : `${filteredVenues.length} of ${places.length} venues`}
-              </span>
-            </div>
+          {(searching || venues.length > 0) && (
+            <p style={css.countTxt}>
+              {searching ? "Fetching live results…" : `${filtered.length} of ${venues.length} venues`}
+            </p>
           )}
 
           {/* ── Venue list ── */}
-          <div style={s.list}>
-            {!isSearching && filteredVenues.length === 0 && (
-              <div style={s.empty}>
-                <div style={s.emptyIcon}>🏨</div>
-                <p style={s.emptyTxt}>
-                  {places.length > 0
-                    ? "No venues match your rating filter"
-                    : "Set a location & search to discover venues"}
+          <div style={css.venueList}>
+            {!searching && filtered.length === 0 && (
+              <div style={css.empty}>
+                <p style={{ fontSize: 32, margin: "0 0 8px" }}>🏨</p>
+                <p style={css.emptyTxt}>
+                  {venues.length > 0 ? "No match for rating filter" : "Search to see live venues"}
                 </p>
               </div>
             )}
 
-            {filteredVenues.map((venue) => (
-              <div key={venue.id}
-                style={{ ...s.card, ...(selectedVenue?.id === venue.id ? s.cardActive : {}) }}
-                onClick={() => { setSelectedVenue(venue); setMapCenter({ lat: venue.lat, lng: venue.lng }); }}>
-
-                <div style={s.cardImgWrap}>
-                  {venue.image
-                    ? <img src={venue.image} alt={venue.name} style={s.cardImg} />
-                    : <div style={s.cardImgPh}>{venue.name.charAt(0)}</div>}
-                  {venue.openNow != null && (
-                    <span style={{ ...s.openBadge, background: venue.openNow ? "#16a34a" : "#dc2626" }}>
-                      {venue.openNow ? "Open" : "Closed"}
+            {filtered.map((v) => (
+              <div
+                key={v.id}
+                style={{ ...css.venueCard, ...(selVenue?.id === v.id ? css.venueCardOn : {}) }}
+                onClick={() => { setSelVenue(v); setMapCenter({ lat: v.lat, lng: v.lng }); }}
+              >
+                <div style={{ position: "relative", flexShrink: 0 }}>
+                  {v.image
+                    ? <img src={v.image} alt={v.name} style={css.venueImg} />
+                    : <div style={css.venueImgPh}>{v.name[0]}</div>}
+                  {v.openNow != null && (
+                    <span style={{ ...css.openBadge, background: v.openNow ? "#16a34a" : "#dc2626" }}>
+                      {v.openNow ? "Open" : "Closed"}
                     </span>
                   )}
                 </div>
-
-                <div style={s.cardInfo}>
-                  <div style={s.cardName}>{venue.name}</div>
-                  <div style={s.cardMeta}>
-                    <span style={s.typeBadge}>{typeLabel(venue.types)}</span>
-                    {venue.priceLevel != null && <span style={s.priceTag}>{priceDisplay(venue.priceLevel)}</span>}
+                <div style={css.venueInfo}>
+                  <div style={css.venueName}>{v.name}</div>
+                  <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+                    <span style={css.typeBadge}>{typeLabel(v.types)}</span>
+                    {v.priceLevel != null && <span style={css.priceTag}>{priceLabel(v.priceLevel)}</span>}
                   </div>
-                  <div style={s.starsRow}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
                     {[1,2,3,4,5].map((i) => (
-                      <span key={i} style={{ fontSize: 12, color: i <= venue.stars ? "#f59e0b" : "#2a2a4a" }}>★</span>
+                      <span key={i} style={{ fontSize: 11, color: i <= v.stars ? "#f59e0b" : "#2a2a4a" }}>★</span>
                     ))}
-                    {venue.rating > 0 && <span style={s.ratingVal}>{venue.rating.toFixed(1)}</span>}
-                    {venue.ratingCount > 0 && <span style={s.ratingCount}>({venue.ratingCount.toLocaleString()})</span>}
+                    {v.rating > 0 && <span style={css.ratingVal}>{v.rating.toFixed(1)}</span>}
+                    {v.ratingCount > 0 && <span style={css.ratingCnt}>({v.ratingCount.toLocaleString()})</span>}
                   </div>
-                  <div style={s.cardAddr}>{venue.address}</div>
+                  <div style={css.venueAddr}>{v.address}</div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
 
-        {/* ════════ MAP ════════ */}
-        <div style={s.mapWrap}>
-          {/* Pin mode overlay banner */}
+        </div>{/* end panel */}
+
+        {/* ══════════ MAP ══════════ */}
+        <div style={css.mapWrap}>
+
+          {/* Pin mode banner */}
           {pinMode && (
-            <div style={s.pinBanner}>
-              📌 Click anywhere on the map to set your location
-              <button style={s.pinCancelBtn} onClick={() => setPinMode(false)}>Cancel</button>
+            <div style={css.pinBanner}>
+              📌 Click anywhere on the map to drop a pin
+              <button style={css.pinCancelBtn2} onClick={() => setPinMode(false)}>✕ Cancel</button>
             </div>
           )}
 
           <GoogleMap
-            zoom={13}
+            mapContainerStyle={MAP_CONTAINER_STYLE}
             center={mapCenter}
-            onLoad={(m) => (mapRef.current = m)}
+            zoom={selArea ? 14 : selCity ? 12 : 13}
+            onLoad={onMapLoad}
             onClick={handleMapClick}
-            mapContainerStyle={{
-              ...s.map,
-              cursor: pinMode ? "crosshair" : "grab",
-            }}
             options={{
-              styles: darkMap,
+              styles: DARK_MAP_STYLE,
               streetViewControl: false,
               mapTypeControl: false,
               fullscreenControl: true,
               zoomControl: true,
+              cursor: pinMode ? "crosshair" : undefined,
             }}
           >
-            {/* User location / pin marker */}
-            {userLocation && (
+            {/* user location marker */}
+            {userCoords && (
               <Marker
-                position={userLocation}
+                position={userCoords}
+                zIndex={1000}
                 icon={{
                   path: window.google.maps.SymbolPath.CIRCLE,
                   scale: 10,
-                  fillColor: locationMode === "pin" ? "#f97316" : "#22c55e",
+                  fillColor: locMode === "pin" ? "#f97316" : "#22c55e",
                   fillOpacity: 1,
-                  strokeColor: "#fff",
+                  strokeColor: "#ffffff",
                   strokeWeight: 3,
                 }}
-                zIndex={1000}
               />
             )}
 
-            {/* Venue markers */}
-            {filteredVenues.map((venue) => (
-              <Marker key={venue.id}
-                position={{ lat: venue.lat, lng: venue.lng }}
-                onClick={() => { setSelectedVenue(venue); setMapCenter({ lat: venue.lat, lng: venue.lng }); }}
+            {/* venue markers */}
+            {filtered.map((v) => (
+              <Marker
+                key={v.id}
+                position={{ lat: v.lat, lng: v.lng }}
+                onClick={() => { setSelVenue(v); setMapCenter({ lat: v.lat, lng: v.lng }); }}
                 icon={{
                   path: window.google.maps.SymbolPath.CIRCLE,
-                  scale: selectedVenue?.id === venue.id ? 11 : 7,
-                  fillColor: selectedVenue?.id === venue.id ? "#f59e0b" : "#7c6af7",
+                  scale: selVenue?.id === v.id ? 11 : 7,
+                  fillColor: selVenue?.id === v.id ? "#f59e0b" : "#7c6af7",
                   fillOpacity: 1,
-                  strokeColor: "#fff",
+                  strokeColor: "#ffffff",
                   strokeWeight: 2,
                 }}
               />
             ))}
 
-            {/* Venue info window */}
-            {selectedVenue && (
+            {/* venue info window */}
+            {selVenue && (
               <InfoWindow
-                position={{ lat: selectedVenue.lat, lng: selectedVenue.lng }}
-                onCloseClick={() => setSelectedVenue(null)}>
-                <div style={iw.wrap}>
-                  {selectedVenue.image && <img src={selectedVenue.image} alt={selectedVenue.name} style={iw.img} />}
-                  <div style={iw.name}>{selectedVenue.name}</div>
-                  <div style={iw.type}>{typeLabel(selectedVenue.types)}</div>
-                  <div style={iw.starsRow}>
+                position={{ lat: selVenue.lat, lng: selVenue.lng }}
+                onCloseClick={() => setSelVenue(null)}
+              >
+                <div style={{ fontFamily: "sans-serif", maxWidth: 200 }}>
+                  {selVenue.image && (
+                    <img src={selVenue.image} alt={selVenue.name}
+                      style={{ width: "100%", height: 100, objectFit: "cover", borderRadius: 6, marginBottom: 6 }} />
+                  )}
+                  <div style={{ fontWeight: 700, fontSize: 13, color: "#111", marginBottom: 2 }}>{selVenue.name}</div>
+                  <div style={{ fontSize: 10, color: "#888", marginBottom: 4 }}>{typeLabel(selVenue.types)}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 2, marginBottom: 4 }}>
                     {[1,2,3,4,5].map((i) => (
-                      <span key={i} style={{ color: i <= selectedVenue.stars ? "#f59e0b" : "#ccc", fontSize: 13 }}>★</span>
+                      <span key={i} style={{ color: i <= selVenue.stars ? "#f59e0b" : "#ccc", fontSize: 13 }}>★</span>
                     ))}
-                    {selectedVenue.rating > 0 && <span style={iw.ratingTxt}>{selectedVenue.rating.toFixed(1)}</span>}
+                    {selVenue.rating > 0 && (
+                      <span style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700, marginLeft: 4 }}>
+                        {selVenue.rating.toFixed(1)}
+                      </span>
+                    )}
                   </div>
-                  <div style={iw.addr}>{selectedVenue.address}</div>
-                  {selectedVenue.openNow != null && (
-                    <div style={{ ...iw.open, color: selectedVenue.openNow ? "#16a34a" : "#dc2626" }}>
-                      {selectedVenue.openNow ? "✓ Open Now" : "✗ Closed"}
+                  <div style={{ fontSize: 11, color: "#555", marginBottom: 4 }}>{selVenue.address}</div>
+                  {selVenue.openNow != null && (
+                    <div style={{ fontSize: 11, fontWeight: 700, color: selVenue.openNow ? "#16a34a" : "#dc2626" }}>
+                      {selVenue.openNow ? "✓ Open Now" : "✗ Closed"}
                     </div>
                   )}
                 </div>
               </InfoWindow>
             )}
 
-            {/* User location InfoWindow */}
-            {userLocation && locationMode !== "none" && !pinMode && (
-              <InfoWindow
-                position={userLocation}
-                options={{ disableAutoPan: true }}
-                onCloseClick={clearLocation}>
-                <div style={{ fontFamily: "DM Sans,sans-serif", maxWidth: 220, padding: 4 }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, color: "#111", marginBottom: 4 }}>
-                    {locationMode === "gps" ? "🛰 Your GPS Location" :
-                     locationMode === "pin" ? "📌 Pinned Location" : "🔤 Manual Location"}
+            {/* user location info window */}
+            {userCoords && locMode !== "none" && !pinMode && (
+              <InfoWindow position={userCoords} options={{ disableAutoPan: true }} onCloseClick={clearLoc}>
+                <div style={{ fontFamily: "sans-serif", maxWidth: 220 }}>
+                  <div style={{ fontWeight: 700, fontSize: 12, color: "#111", marginBottom: 3 }}>
+                    {locMode === "gps" ? "🛰 GPS Location" : locMode === "pin" ? "📌 Pinned" : "🔤 Address"}
                   </div>
-                  <div style={{ fontSize: 11, color: "#555" }}>{locationAddress}</div>
+                  <div style={{ fontSize: 11, color: "#555" }}>{locLabel}</div>
                 </div>
               </InfoWindow>
             )}
           </GoogleMap>
 
-          {/* Map legend */}
-          <div style={s.legend}>
-            <div style={s.legendItem}><div style={{ ...s.legendDot, background: "#22c55e" }} />GPS</div>
-            <div style={s.legendItem}><div style={{ ...s.legendDot, background: "#f97316" }} />Pin</div>
-            <div style={s.legendItem}><div style={{ ...s.legendDot, background: "#7c6af7" }} />Venue</div>
-            <div style={s.legendItem}><div style={{ ...s.legendDot, background: "#f59e0b" }} />Selected</div>
+          {/* Legend */}
+          <div style={css.legend}>
+            <div style={css.legendItem}><div style={{ ...css.dot, background: "#22c55e" }} />GPS</div>
+            <div style={css.legendItem}><div style={{ ...css.dot, background: "#f97316" }} />Pin</div>
+            <div style={css.legendItem}><div style={{ ...css.dot, background: "#7c6af7" }} />Venue</div>
+            <div style={css.legendItem}><div style={{ ...css.dot, background: "#f59e0b" }} />Selected</div>
           </div>
         </div>
+
       </div>
     </div>
   );
 }
 
 // ─── STYLES ──────────────────────────────────────────────────────────────────
-const s = {
-  root: { fontFamily: "'DM Sans','Segoe UI',sans-serif", background: "#0c0c1d", minHeight: "100vh", color: "#e2e2f0", display: "flex", flexDirection: "column" },
-  loaderWrap: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12, height: "100vh", background: "#0c0c1d" },
-  spinner: { width: 30, height: 30, border: "3px solid #1e1e3a", borderTop: "3px solid #7c6af7", borderRadius: "50%", animation: "spin 0.8s linear infinite" },
-  loaderTxt: { color: "#5a5a8a", fontSize: 13, margin: 0 },
-  header: { padding: "16px 24px", borderBottom: "1px solid #1a1a30", flexShrink: 0 },
-  title: { margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.4px" },
-  accent: { color: "#f59e0b" },
-  sub: { margin: "2px 0 0", fontSize: 11, color: "#4a4a7a" },
-  body: { display: "flex", flex: 1, overflow: "hidden", height: "calc(100vh - 67px)" },
+const css = {
+  root:       { fontFamily: "'DM Sans','Segoe UI',sans-serif", background: "#0c0c1d", minHeight: "100vh", color: "#e2e2f0", display: "flex", flexDirection: "column" },
+  loaderWrap: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", gap: 14, background: "#0c0c1d" },
+  spinner:    { width: 32, height: 32, border: "3px solid #1e1e3a", borderTop: "3px solid #7c6af7", borderRadius: "50%", animation: "spin 0.9s linear infinite" },
+  loaderTxt:  { color: "#5a5a8a", fontSize: 13, margin: 0 },
+  errWrap:    { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", padding: 32, textAlign: "center", background: "#0c0c1d" },
+  errTitle:   { fontSize: 20, fontWeight: 700, color: "#f87171", marginBottom: 12 },
+  errMsg:     { fontSize: 14, color: "#9090c0", maxWidth: 480, lineHeight: 1.7 },
+  errDetail:  { fontSize: 12, color: "#4a4a7a", marginTop: 8 },
+  header:     { padding: "16px 24px", borderBottom: "1px solid #1a1a30", flexShrink: 0 },
+  title:      { margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.4px" },
+  accent:     { color: "#f59e0b" },
+  sub:        { margin: "2px 0 0", fontSize: 11, color: "#4a4a7a" },
+  body:       { display: "flex", flex: 1, height: "calc(100vh - 65px)", overflow: "hidden" },
 
   // Panel
-  panel: { width: 370, minWidth: 330, display: "flex", flexDirection: "column", borderRight: "1px solid #1a1a30", overflowY: "auto", padding: "12px", gap: 10 },
-
-  sectionCard: { background: "#111128", border: "1px solid #1a1a30", borderRadius: 12, padding: "14px 14px 12px" },
-  sectionHead: { display: "flex", alignItems: "center", gap: 6, marginBottom: 10 },
-  sectionIcon: { fontSize: 14 },
-  sectionTitle: { fontWeight: 700, fontSize: 13, color: "#c0c0e0", flex: 1 },
-  clearBtn: { fontSize: 11, color: "#dc2626", background: "none", border: "none", cursor: "pointer", padding: "2px 6px" },
+  panel:    { width: 370, minWidth: 330, display: "flex", flexDirection: "column", gap: 10, overflowY: "auto", padding: 12, borderRight: "1px solid #1a1a30" },
+  card2:    { background: "#111128", border: "1px solid #1e1e38", borderRadius: 12, padding: "14px 13px 12px" },
+  cardHead: { display: "flex", alignItems: "center", gap: 7, marginBottom: 10, fontSize: 14 },
+  cardHeadTitle: { flex: 1, fontWeight: 700, fontSize: 13, color: "#b0b0d0" },
+  clearBtn: { fontSize: 11, color: "#f87171", background: "none", border: "none", cursor: "pointer", padding: "2px 6px" },
 
   // Location pill
-  locPill: { display: "flex", alignItems: "flex-start", gap: 7, background: "#0c0c1d", border: "1px solid #22223a", borderRadius: 8, padding: "8px 10px", marginBottom: 10 },
-  locPillIcon: { fontSize: 14, flexShrink: 0, marginTop: 1 },
-  locPillTxt: { fontSize: 11, color: "#9090c0", lineHeight: 1.5, wordBreak: "break-word" },
+  locPill:    { display: "flex", gap: 8, background: "#0c0c1d", border: "1px solid #1e1e38", borderRadius: 8, padding: "8px 10px", marginBottom: 10, alignItems: "flex-start" },
+  locPillTxt: { fontSize: 11, color: "#8080b0", lineHeight: 1.5, wordBreak: "break-word" },
 
   // Mode buttons
-  modeRow: { display: "flex", gap: 7 },
-  modeBtn: { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "10px 4px 8px", borderRadius: 10, border: "1px solid #22223a", background: "#0c0c1d", color: "#7070a0", fontSize: 11, fontWeight: 600, cursor: "pointer", transition: "all 0.15s", lineHeight: 1 },
-  modeBtnActive: { border: "1px solid #22c55e", background: "#0d2010", color: "#22c55e" },
-  modeBtnPinActive: { border: "1px solid #f97316", background: "#1a0e00", color: "#f97316" },
-  modeBtnSpinner: { width: 14, height: 14, border: "2px solid #22223a", borderTop: "2px solid #22c55e", borderRadius: "50%", display: "inline-block" },
+  modeRow:       { display: "flex", gap: 7 },
+  modeBtn:       { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "10px 4px 8px", borderRadius: 10, border: "1px solid #1e1e38", background: "#0c0c1d", color: "#5a5a8a", fontSize: 11, fontWeight: 600, cursor: "pointer", lineHeight: 1.2 },
+  modeBtnGps:    { border: "1px solid #22c55e", background: "#071a0e", color: "#22c55e" },
+  modeBtnPin:    { border: "1px solid #f97316", background: "#1a0800", color: "#f97316" },
+  modeBtnPinOn:  { border: "1px solid #f97316", background: "#2a1000", color: "#f97316", boxShadow: "0 0 0 2px #f9731630" },
+  modeBtnManual: { border: "1px solid #7c6af7", background: "#0e0d1f", color: "#7c6af7" },
 
-  pinHint: { marginTop: 8, fontSize: 11, color: "#f97316", background: "#1a0e0030", border: "1px dashed #f9731640", borderRadius: 7, padding: "7px 10px", textAlign: "center" },
+  pinHint:      { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: 9, fontSize: 11, color: "#f97316", background: "#1a080030", border: "1px dashed #f9731650", borderRadius: 7, padding: "7px 10px" },
+  pinCancelBtn: { fontSize: 11, background: "rgba(249,115,22,0.2)", border: "none", color: "#f97316", borderRadius: 5, padding: "3px 8px", cursor: "pointer", fontWeight: 700 },
 
-  // Inputs & dropdowns
-  label: { display: "block", fontSize: 10, fontWeight: 700, color: "#4a4a7a", textTransform: "uppercase", letterSpacing: "0.7px", marginBottom: 5 },
-  inputWrap: { position: "relative" },
-  input: { width: "100%", background: "#0c0c1d", border: "1px solid #22223a", borderRadius: 8, padding: "9px 12px", color: "#e2e2f0", fontSize: 13, outline: "none", boxSizing: "border-box" },
-  dropdown: { position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: "#13132a", border: "1px solid #22223a", borderRadius: 8, zIndex: 9999, boxShadow: "0 8px 28px rgba(0,0,0,0.7)", overflow: "hidden", maxHeight: 220, overflowY: "auto" },
-  dropItem: { padding: "9px 12px", cursor: "pointer", borderBottom: "1px solid #1a1a30", display: "flex", flexDirection: "column", gap: 1 },
+  // Inputs
+  label:    { display: "block", fontSize: 10, fontWeight: 700, color: "#4a4a7a", textTransform: "uppercase", letterSpacing: "0.7px", marginBottom: 5 },
+  inputWrap:{ position: "relative" },
+  input:    { width: "100%", background: "#0c0c1d", border: "1px solid #1e1e38", borderRadius: 8, padding: "9px 12px", color: "#e2e2f0", fontSize: 13, outline: "none", boxSizing: "border-box" },
+
+  // Dropdown
+  dropdown: { position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: "#13132a", border: "1px solid #22223a", borderRadius: 9, zIndex: 9999, boxShadow: "0 10px 30px rgba(0,0,0,0.7)", overflow: "hidden", maxHeight: 230, overflowY: "auto" },
+  dropItem: { padding: "9px 12px", cursor: "pointer", borderBottom: "1px solid #1a1a30", display: "flex", flexDirection: "column", gap: 2 },
   dropMain: { fontSize: 13, color: "#e2e2f0", fontWeight: 500 },
-  dropSub: { fontSize: 11, color: "#4a4a7a" },
+  dropSub:  { fontSize: 11, color: "#4a4a7a" },
 
   // Rating
-  ratingRow: { display: "flex", gap: 6 },
-  ratingBtn: { flex: 1, padding: "7px 0", borderRadius: 7, border: "1px solid #22223a", background: "#0c0c1d", color: "#5a5a8a", fontSize: 12, fontWeight: 600, cursor: "pointer" },
-  ratingBtnActive: { background: "#f59e0b", borderColor: "#f59e0b", color: "#000" },
+  ratingRow:    { display: "flex", gap: 6 },
+  ratingBtn:    { flex: 1, padding: "7px 0", borderRadius: 7, border: "1px solid #1e1e38", background: "#0c0c1d", color: "#5a5a8a", fontSize: 12, fontWeight: 600, cursor: "pointer" },
+  ratingBtnOn:  { background: "#f59e0b", borderColor: "#f59e0b", color: "#000" },
 
-  // Search button
-  searchBtn: { width: "100%", padding: "11px 0", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#7c6af7,#5b48e8)", color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", letterSpacing: "0.2px" },
+  searchBtn: { width: "100%", padding: "11px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#7c6af7,#5540e0)", color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer" },
 
-  // Chips
-  chips: { display: "flex", flexWrap: "wrap", gap: 5 },
-  chip: { fontSize: 11, background: "#1a1a32", border: "1px solid #2a2a50", borderRadius: 20, padding: "3px 10px", color: "#7070b0" },
+  chips:    { display: "flex", flexWrap: "wrap", gap: 5 },
+  chip:     { fontSize: 11, background: "#1a1a32", border: "1px solid #2a2a50", borderRadius: 20, padding: "3px 10px", color: "#7070b0" },
+  countTxt: { fontSize: 11, color: "#4a4a7a", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.4px", margin: 0 },
 
-  // Count
-  countBar: {},
-  countTxt: { fontSize: 11, color: "#4a4a7a", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.4px" },
+  venueList: { display: "flex", flexDirection: "column", gap: 8, paddingBottom: 20 },
+  empty:     { textAlign: "center", padding: "40px 0" },
+  emptyTxt:  { fontSize: 12, color: "#2e2e5e", margin: 0 },
 
-  // List
-  list: { display: "flex", flexDirection: "column", gap: 8, paddingBottom: 20 },
-  empty: { textAlign: "center", marginTop: 40 },
-  emptyIcon: { fontSize: 34, marginBottom: 8 },
-  emptyTxt: { fontSize: 12, color: "#2e2e5e" },
-
-  // Cards
-  card: { display: "flex", gap: 10, padding: 11, borderRadius: 12, border: "1px solid #1a1a30", background: "#111128", cursor: "pointer", transition: "all 0.15s" },
-  cardActive: { border: "1px solid #7c6af7", background: "#181836", boxShadow: "0 0 0 3px rgba(124,106,247,0.1)" },
-  cardImgWrap: { position: "relative", flexShrink: 0 },
-  cardImg: { width: 74, height: 74, borderRadius: 8, objectFit: "cover", display: "block" },
-  cardImgPh: { width: 74, height: 74, borderRadius: 8, background: "#1e1e3a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, color: "#7c6af7", fontWeight: 700 },
-  openBadge: { position: "absolute", bottom: 4, left: 4, fontSize: 9, fontWeight: 700, color: "#fff", borderRadius: 4, padding: "2px 5px", textTransform: "uppercase", letterSpacing: "0.3px" },
-  cardInfo: { flex: 1, display: "flex", flexDirection: "column", gap: 3, minWidth: 0 },
-  cardName: { fontWeight: 600, fontSize: 13, color: "#e2e2f0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
-  cardMeta: { display: "flex", gap: 5, alignItems: "center" },
-  typeBadge: { fontSize: 9, background: "#7c6af712", color: "#9d90f7", border: "1px solid #7c6af728", padding: "2px 6px", borderRadius: 4, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.4px" },
-  priceTag: { fontSize: 11, color: "#4a4a7a", fontWeight: 600 },
-  starsRow: { display: "flex", alignItems: "center", gap: 1 },
-  ratingVal: { fontSize: 11, color: "#f59e0b", fontWeight: 700, marginLeft: 4 },
-  ratingCount: { fontSize: 10, color: "#333360", marginLeft: 2 },
-  cardAddr: { fontSize: 10, color: "#333360", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
+  venueCard:   { display: "flex", gap: 10, padding: 11, borderRadius: 12, border: "1px solid #1a1a30", background: "#0e0e22", cursor: "pointer" },
+  venueCardOn: { border: "1px solid #7c6af7", background: "#181836", boxShadow: "0 0 0 3px rgba(124,106,247,0.12)" },
+  venueImg:    { width: 74, height: 74, borderRadius: 8, objectFit: "cover", display: "block" },
+  venueImgPh:  { width: 74, height: 74, borderRadius: 8, background: "#1e1e3a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, color: "#7c6af7", fontWeight: 700 },
+  openBadge:   { position: "absolute", bottom: 4, left: 4, fontSize: 9, fontWeight: 700, color: "#fff", borderRadius: 4, padding: "2px 5px", textTransform: "uppercase" },
+  venueInfo:   { flex: 1, display: "flex", flexDirection: "column", gap: 3, minWidth: 0 },
+  venueName:   { fontWeight: 600, fontSize: 13, color: "#e2e2f0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
+  typeBadge:   { fontSize: 9, background: "#7c6af712", color: "#9d90f7", border: "1px solid #7c6af728", padding: "2px 6px", borderRadius: 4, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.4px" },
+  priceTag:    { fontSize: 11, color: "#4a4a7a", fontWeight: 600 },
+  ratingVal:   { fontSize: 11, color: "#f59e0b", fontWeight: 700, marginLeft: 4 },
+  ratingCnt:   { fontSize: 10, color: "#333360", marginLeft: 2 },
+  venueAddr:   { fontSize: 10, color: "#333360", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
 
   // Map
-  mapWrap: { flex: 1, position: "relative" },
-  map: { width: "100%", height: "100%" },
-  pinBanner: { position: "absolute", top: 12, left: "50%", transform: "translateX(-50%)", zIndex: 10, background: "#f97316", color: "#fff", fontWeight: 700, fontSize: 13, padding: "10px 18px", borderRadius: 10, display: "flex", alignItems: "center", gap: 14, boxShadow: "0 4px 20px rgba(249,115,22,0.5)", whiteSpace: "nowrap" },
-  pinCancelBtn: { background: "rgba(255,255,255,0.25)", border: "none", color: "#fff", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 12, fontWeight: 700 },
-  legend: { position: "absolute", bottom: 16, right: 16, background: "rgba(12,12,29,0.88)", border: "1px solid #1a1a30", borderRadius: 8, padding: "8px 12px", display: "flex", gap: 12, backdropFilter: "blur(6px)" },
-  legendItem: { display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#7070a0", fontWeight: 600 },
-  legendDot: { width: 9, height: 9, borderRadius: "50%", flexShrink: 0 },
+  mapWrap:      { flex: 1, position: "relative" },
+  pinBanner:    { position: "absolute", top: 14, left: "50%", transform: "translateX(-50%)", zIndex: 10, background: "#f97316", color: "#fff", fontWeight: 700, fontSize: 13, padding: "10px 16px", borderRadius: 10, display: "flex", alignItems: "center", gap: 12, boxShadow: "0 4px 20px rgba(249,115,22,0.45)", whiteSpace: "nowrap", pointerEvents: "none" },
+  pinCancelBtn2:{ pointerEvents: "all", background: "rgba(255,255,255,0.25)", border: "none", color: "#fff", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 12, fontWeight: 700 },
+  legend:       { position: "absolute", bottom: 16, right: 16, background: "rgba(12,12,29,0.9)", border: "1px solid #1a1a30", borderRadius: 8, padding: "8px 12px", display: "flex", gap: 12, backdropFilter: "blur(6px)" },
+  legendItem:   { display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#6060a0", fontWeight: 600 },
+  dot:          { width: 9, height: 9, borderRadius: "50%", flexShrink: 0 },
 };
-
-const iw = {
-  wrap: { fontFamily: "DM Sans,sans-serif", maxWidth: 200, padding: 2 },
-  img: { width: "100%", height: 100, objectFit: "cover", borderRadius: 6, marginBottom: 6, display: "block" },
-  name: { fontWeight: 700, fontSize: 13, color: "#111", marginBottom: 2 },
-  type: { fontSize: 10, color: "#888", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: 4 },
-  starsRow: { display: "flex", alignItems: "center", gap: 1, marginBottom: 3 },
-  ratingTxt: { fontSize: 11, color: "#f59e0b", fontWeight: 700, marginLeft: 4 },
-  addr: { fontSize: 11, color: "#666", marginBottom: 4 },
-  open: { fontSize: 11, fontWeight: 700 },
-};
-
-const darkMap = [
-  { elementType: "geometry", stylers: [{ color: "#13132a" }] },
-  { elementType: "labels.text.stroke", stylers: [{ color: "#13132a" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#6060a0" }] },
-  { featureType: "administrative", elementType: "geometry.stroke", stylers: [{ color: "#1e1e3a" }] },
-  { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#9090c0" }] },
-  { featureType: "poi", stylers: [{ visibility: "off" }] },
-  { featureType: "road", elementType: "geometry", stylers: [{ color: "#1e1e3a" }] },
-  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#0c0c1d" }] },
-  { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#5050a0" }] },
-  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#2a2a4a" }] },
-  { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#8080c0" }] },
-  { featureType: "transit", stylers: [{ visibility: "off" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0a0a1a" }] },
-  { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#3a3a6a" }] },
-];
