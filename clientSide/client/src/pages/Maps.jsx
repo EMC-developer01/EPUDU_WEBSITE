@@ -6,10 +6,10 @@ import {
   useJsApiLoader,
 } from "@react-google-maps/api";
 
-// ── stable references outside component ──────────────────────────────────────
-const LIBRARIES = ["places"];
-const MAP_CONTAINER_STYLE = { width: "100%", height: "100%" };
+// ── stable outside component ──────────────────────────────────────────────────
+const LIBRARIES      = ["places"];
 const DEFAULT_CENTER = { lat: 17.385, lng: 78.4867 };
+const MAP_STYLE      = { width: "100%", height: "520px", borderRadius: "12px" };
 
 const TYPE_MAP = {
   lodging: "Hotel", restaurant: "Restaurant", food: "Food", bar: "Bar",
@@ -19,61 +19,43 @@ const TYPE_MAP = {
 const typeLabel  = (types = []) => { for (const t of types) if (TYPE_MAP[t]) return TYPE_MAP[t]; return "Venue"; };
 const priceLabel = (l) => (l != null ? "₹".repeat(l + 1) : "");
 
-const DARK_MAP = [
-  { elementType: "geometry",                stylers: [{ color: "#13132a" }] },
-  { elementType: "labels.text.stroke",      stylers: [{ color: "#13132a" }] },
-  { elementType: "labels.text.fill",        stylers: [{ color: "#6060a0" }] },
-  { featureType: "administrative",          elementType: "geometry.stroke",  stylers: [{ color: "#1e1e3a" }] },
-  { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#9090c0" }] },
-  { featureType: "poi",                     stylers: [{ visibility: "off" }] },
-  { featureType: "road",                    elementType: "geometry",         stylers: [{ color: "#1e1e3a" }] },
-  { featureType: "road",                    elementType: "geometry.stroke",  stylers: [{ color: "#0c0c1d" }] },
-  { featureType: "road",                    elementType: "labels.text.fill", stylers: [{ color: "#5050a0" }] },
-  { featureType: "road.highway",            elementType: "geometry",         stylers: [{ color: "#2a2a4a" }] },
-  { featureType: "road.highway",            elementType: "labels.text.fill", stylers: [{ color: "#8080c0" }] },
-  { featureType: "transit",                 stylers: [{ visibility: "off" }] },
-  { featureType: "water",                   elementType: "geometry",         stylers: [{ color: "#0a0a1a" }] },
-  { featureType: "water",                   elementType: "labels.text.fill", stylers: [{ color: "#3a3a6a" }] },
-];
-
-// ─── extract text from new AutocompleteSuggestion shape ───────────────────────
-const sMain = (s) => s?.placePrediction?.mainText?.text ?? s?.placePrediction?.text?.text ?? "";
-const sSec  = (s) => s?.placePrediction?.secondaryText?.text ?? "";
-const sId   = (s) => s?.placePrediction?.placeId ?? "";
-
 // ─────────────────────────────────────────────────────────────────────────────
 export default function VenueSearch() {
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries: LIBRARIES,
-    version: "weekly",
   });
 
   const mapRef      = useRef(null);
   const geocoderRef = useRef(null);
 
-  // ── location ──────────────────────────────────────────────────────────────
-  const [locMode,    setLocMode]    = useState("none");
+  // ── location state ────────────────────────────────────────────────────────
+  const [locMode,    setLocMode]    = useState("none"); // none | gps | pin | manual
   const [userCoords, setUserCoords] = useState(null);
   const [locLabel,   setLocLabel]   = useState("");
   const [pinMode,    setPinMode]    = useState(false);
   const [gpsLoading, setGpsLoading] = useState(false);
+
+  // manual address
   const [manualInput, setManualInput] = useState("");
   const [manualPreds, setManualPreds] = useState([]);
   const [showManual,  setShowManual]  = useState(false);
 
-  // ── search ────────────────────────────────────────────────────────────────
+  // ── search / filter state ─────────────────────────────────────────────────
   const [keyword,      setKeyword]      = useState("");
   const [kwPreds,      setKwPreds]      = useState([]);
   const [showKwDrop,   setShowKwDrop]   = useState(false);
+
   const [cityInput,    setCityInput]    = useState("");
   const [cityPreds,    setCityPreds]    = useState([]);
   const [showCityDrop, setShowCityDrop] = useState(false);
-  const [selCity,      setSelCity]      = useState(null);
+  const [selCity,      setSelCity]      = useState(null); // { name, lat, lng }
+
   const [areaInput,    setAreaInput]    = useState("");
   const [areaPreds,    setAreaPreds]    = useState([]);
   const [showAreaDrop, setShowAreaDrop] = useState(false);
   const [selArea,      setSelArea]      = useState(null);
+
   const [minRating,    setMinRating]    = useState("");
 
   // ── results ───────────────────────────────────────────────────────────────
@@ -82,43 +64,44 @@ export default function VenueSearch() {
   const [searching, setSearching] = useState(false);
   const [mapCenter, setMapCenter] = useState(DEFAULT_CENTER);
 
-  // ── map load callback ─────────────────────────────────────────────────────
+  // ── map load ──────────────────────────────────────────────────────────────
   const onMapLoad = useCallback((map) => {
     mapRef.current      = map;
     geocoderRef.current = new window.google.maps.Geocoder();
   }, []);
 
-  // ── NEW AutocompleteSuggestion API ────────────────────────────────────────
-  // Uses window.google.maps.places.AutocompleteSuggestion (new, not deprecated)
-  const fetchSuggestions = useCallback(async (input, types, locationBias) => {
-    if (!isLoaded || !input.trim()) return [];
+  // ── new AutocompleteSuggestion API ────────────────────────────────────────
+  const fetchSuggestions = useCallback(async (input, options = {}) => {
+    if (!input.trim()) return [];
     try {
-      // dynamically import the new Places library
-      const placesLib = await window.google.maps.importLibrary("places");
-      const { AutocompleteSuggestion } = placesLib;
-
-      const request = { input };
-
-      // includedPrimaryTypes is optional — if empty array causes no results, omit it
-      if (types && types.length > 0) {
-        request.includedPrimaryTypes = types;
-      }
-
-      if (locationBias) {
-        request.locationBias = locationBias;
-      }
-
       const { suggestions } =
-        await AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+        await window.google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+          input, ...options,
+        });
+      return suggestions || [];
+    } catch { return []; }
+  }, []);
 
-      return suggestions ?? [];
-    } catch (err) {
-      console.warn("AutocompleteSuggestion failed:", err?.message ?? err);
-      return [];
-    }
-  }, [isLoaded]);
+  const getLabel = (s) => {
+    const pp = s.placePrediction;
+    return {
+      main:    pp?.structuredFormat?.mainText?.text      || pp?.text?.text || "",
+      sub:     pp?.structuredFormat?.secondaryText?.text || "",
+      placeId: pp?.placeId || "",
+    };
+  };
 
-  // ── Geocoder helpers ──────────────────────────────────────────────────────
+  // ── geocoder helpers ──────────────────────────────────────────────────────
+  const resolvePlaceId = useCallback((placeId, cb) => {
+    if (!geocoderRef.current) return;
+    geocoderRef.current.geocode({ placeId }, (res, status) => {
+      if (status === "OK" && res[0]) {
+        const l = res[0].geometry.location;
+        cb({ lat: l.lat(), lng: l.lng() }, res[0].formatted_address);
+      }
+    });
+  }, []);
+
   const reverseGeocode = useCallback((lat, lng, cb) => {
     if (!geocoderRef.current) { cb(`${lat.toFixed(5)}, ${lng.toFixed(5)}`); return; }
     geocoderRef.current.geocode({ location: { lat, lng } }, (res, status) => {
@@ -126,48 +109,39 @@ export default function VenueSearch() {
     });
   }, []);
 
-  const resolvePlaceId = useCallback((placeId, cb) => {
-    if (!geocoderRef.current) return;
-    geocoderRef.current.geocode({ placeId }, (res, status) => {
-      if (status === "OK" && res[0]) {
-        const loc = res[0].geometry.location;
-        cb({ lat: loc.lat(), lng: loc.lng() }, res[0].formatted_address);
-      }
-    });
-  }, []);
-
-  // ── Suggestion effects ────────────────────────────────────────────────────
+  // ── autocomplete effects ──────────────────────────────────────────────────
   useEffect(() => {
     if (!isLoaded || !keyword.trim()) { setKwPreds([]); return; }
     const c = userCoords || mapCenter;
-    fetchSuggestions(keyword, ["establishment"], {
-      circle: { center: { lat: c.lat, lng: c.lng }, radius: 15000 },
+    fetchSuggestions(keyword, {
+      includedPrimaryTypes: ["establishment"],
+      locationBias: { circle: { center: { latitude: c.lat, longitude: c.lng }, radius: 15000 } },
     }).then(setKwPreds);
   }, [keyword, isLoaded, userCoords, mapCenter, fetchSuggestions]);
 
   useEffect(() => {
     if (!isLoaded || !cityInput.trim()) { setCityPreds([]); return; }
-    // use empty types to get broader results (cities + regions)
-    fetchSuggestions(cityInput, [], null).then(setCityPreds);
+    fetchSuggestions(cityInput, {
+      includedPrimaryTypes: ["locality", "administrative_area_level_1"],
+    }).then(setCityPreds);
   }, [cityInput, isLoaded, fetchSuggestions]);
 
   useEffect(() => {
     if (!isLoaded || !areaInput.trim() || !selCity) { setAreaPreds([]); return; }
-    fetchSuggestions(
-      areaInput,
-      [],
-      selCity?.lat
-        ? { circle: { center: { lat: selCity.lat, lng: selCity.lng }, radius: 50000 } }
-        : null
-    ).then(setAreaPreds);
+    fetchSuggestions(areaInput, {
+      includedPrimaryTypes: ["sublocality", "neighborhood"],
+      ...(selCity?.lat ? {
+        locationBias: { circle: { center: { latitude: selCity.lat, longitude: selCity.lng }, radius: 50000 } },
+      } : {}),
+    }).then(setAreaPreds);
   }, [areaInput, isLoaded, selCity, fetchSuggestions]);
 
   useEffect(() => {
     if (!isLoaded || !manualInput.trim()) { setManualPreds([]); return; }
-    fetchSuggestions(manualInput, [], null).then(setManualPreds);
+    fetchSuggestions(manualInput, {}).then(setManualPreds);
   }, [manualInput, isLoaded, fetchSuggestions]);
 
-  // ── Location modes ────────────────────────────────────────────────────────
+  // ── location handlers ─────────────────────────────────────────────────────
   const handleGPS = () => {
     if (!navigator.geolocation) { alert("Geolocation not supported"); return; }
     setGpsLoading(true);
@@ -188,8 +162,7 @@ export default function VenueSearch() {
 
   const handleMapClick = useCallback((e) => {
     if (!pinMode) return;
-    const lat = e.latLng.lat();
-    const lng = e.latLng.lng();
+    const lat = e.latLng.lat(), lng = e.latLng.lng();
     reverseGeocode(lat, lng, (addr) => {
       setUserCoords({ lat, lng });
       setLocLabel(addr);
@@ -204,39 +177,18 @@ export default function VenueSearch() {
     setPinMode(false); setManualInput(""); setManualPreds([]);
   };
 
-  // ── Pick handlers ─────────────────────────────────────────────────────────
-  const pickCity = (s) => {
-    setCityInput(sMain(s)); setShowCityDrop(false); setCityPreds([]);
-    setSelArea(null); setAreaInput("");
-    resolvePlaceId(sId(s), (coords) => { setSelCity({ name: sMain(s), ...coords }); setMapCenter(coords); });
-  };
-  const pickArea = (s) => {
-    setAreaInput(sMain(s)); setShowAreaDrop(false); setAreaPreds([]);
-    resolvePlaceId(sId(s), (coords) => { setSelArea({ name: sMain(s), ...coords }); setMapCenter(coords); });
-  };
-  const pickManual = (s) => {
-    const txt = s?.placePrediction?.text?.text || sMain(s);
-    setManualInput(txt); setShowManual(false);
-    resolvePlaceId(sId(s), (coords, addr) => {
-      setUserCoords(coords); setLocLabel(addr || txt);
-      setLocMode("manual"); setMapCenter(coords);
-    });
-  };
-
-  // ── Search ────────────────────────────────────────────────────────────────
+  // ── search ────────────────────────────────────────────────────────────────
   const doSearch = () => {
     if (!mapRef.current) return;
     setSearching(true); setVenues([]); setSelVenue(null);
-
+    const service = new window.google.maps.places.PlacesService(mapRef.current);
     const center =
-      selArea?.lat    ? { lat: selArea.lat,    lng: selArea.lng    } :
-      selCity?.lat    ? { lat: selCity.lat,    lng: selCity.lng    } :
-      userCoords      ? { lat: userCoords.lat, lng: userCoords.lng } :
+      selArea?.lat  ? { lat: selArea.lat,    lng: selArea.lng    } :
+      selCity?.lat  ? { lat: selCity.lat,    lng: selCity.lng    } :
+      userCoords    ? { lat: userCoords.lat, lng: userCoords.lng } :
       mapCenter;
-
     const radius = selArea ? 3000 : selCity ? 10000 : 5000;
 
-    const service = new window.google.maps.places.PlacesService(mapRef.current);
     service.nearbySearch(
       {
         location: new window.google.maps.LatLng(center.lat, center.lng),
@@ -258,7 +210,9 @@ export default function VenueSearch() {
             types:       p.types || [],
             openNow:     p.opening_hours?.open_now,
             priceLevel:  p.price_level,
-            image:       p.photos?.[0]?.getUrl({ maxWidth: 320, maxHeight: 220 }) ?? null,
+            image:       p.photos?.length
+              ? p.photos[0].getUrl({ maxWidth: 320, maxHeight: 220 })
+              : null,
           })));
           setMapCenter(center);
         } else {
@@ -268,414 +222,444 @@ export default function VenueSearch() {
     );
   };
 
-  const filtered = venues.filter((v) => minRating ? v.rating >= Number(minRating) : true);
-
-  // ── Error / Loading ───────────────────────────────────────────────────────
-  if (loadError) return (
-    <div style={css.errWrap}>
-      <p style={css.errTitle}>⚠ Google Maps failed to load</p>
-      <p style={css.errMsg}>
-        Check your <code>VITE_GOOGLE_MAPS_API_KEY</code> in <code>.env</code> and ensure
-        <strong> Maps JavaScript API</strong> + <strong>Places API (New)</strong> are enabled
-        in Google Cloud Console.
-      </p>
-      <code style={css.errDetail}>{loadError.message}</code>
-    </div>
+  const filtered = venues.filter((v) =>
+    minRating ? v.rating >= Number(minRating) : true
   );
 
-  if (!isLoaded) return (
-    <div style={css.loaderWrap}>
-      <div style={css.spinner} />
-      <p style={css.loaderTxt}>Loading Google Maps…</p>
-    </div>
-  );
+  // ─── error / loading ──────────────────────────────────────────────────────
+  if (loadError)
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-50 p-8 text-center">
+        <p className="text-xl font-bold text-red-500 mb-2">⚠️ Google Maps failed to load</p>
+        <p className="text-sm text-gray-500 max-w-md">
+          Check that <code className="bg-gray-100 px-1 rounded">VITE_GOOGLE_MAPS_API_KEY</code> is
+          correct and that <strong>Maps JavaScript API</strong> + <strong>Places API (New)</strong> are
+          enabled in Google Cloud Console.
+        </p>
+        <pre className="mt-3 text-xs text-gray-400 bg-gray-100 px-3 py-2 rounded max-w-md break-all">
+          {loadError.message}
+        </pre>
+      </div>
+    );
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  if (!isLoaded)
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin" />
+          <p className="text-sm text-gray-400">Loading Google Maps…</p>
+        </div>
+      </div>
+    );
+
+  // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div style={css.root}>
-      <div style={css.header}>
-        <h1 style={css.title}><span style={css.accent}>Venue</span> Finder</h1>
-        <p style={css.sub}>Live · GPS · Map Pin · Address Search</p>
+    <div className="p-4 bg-white min-h-screen">
+
+      {/* ── HEADER ── */}
+      <div className="mb-4">
+        <h2 className="text-2xl font-bold text-gray-800">🏨 Venue Finder</h2>
+        <p className="text-sm text-gray-400">Live search from Google Maps</p>
       </div>
 
-      <div style={css.body}>
-        {/* ════ PANEL ════ */}
-        <div style={css.panel}>
+      <div className="flex flex-col lg:flex-row gap-6">
 
-          {/* Location Card */}
-          <div style={css.card2}>
-            <div style={css.cardHead}>
-              <span>📍</span>
-              <span style={css.cardHeadTitle}>Your Location</span>
-              {locMode !== "none" && <button style={css.clearBtn} onClick={clearLoc}>✕ Clear</button>}
-            </div>
+        {/* ═══════════ LEFT — LIST ═══════════ */}
+        <div className="lg:w-1/2 max-h-[520px] overflow-y-auto border-r pr-4 space-y-4">
 
-            {locMode !== "none" && locLabel && (
-              <div style={css.locPill}>
-                <span>{locMode === "gps" ? "🛰" : locMode === "pin" ? "📌" : "🔤"}</span>
-                <span style={css.locPillTxt}>{locLabel}</span>
-              </div>
-            )}
+          {/* ── STICKY SEARCH + FILTERS ── */}
+          <div className="sticky top-0 bg-white pb-3 z-10 space-y-3">
 
-            <div style={css.modeRow}>
-              <button style={{ ...css.modeBtn, ...(locMode === "gps" ? css.modeBtnGps : {}) }}
-                onClick={handleGPS} disabled={gpsLoading}>
-                <span style={{ fontSize: 18 }}>{gpsLoading ? "⏳" : "🛰"}</span>
-                <span>{gpsLoading ? "Locating…" : "Use GPS"}</span>
-              </button>
-
-              <button style={{ ...css.modeBtn, ...(pinMode ? css.modeBtnPinOn : locMode === "pin" ? css.modeBtnPin : {}) }}
-                onClick={() => setPinMode((v) => !v)}>
-                <span style={{ fontSize: 18 }}>📌</span>
-                <span>{pinMode ? "Click map ▶" : "Pin on Map"}</span>
-              </button>
-
-              <button style={{ ...css.modeBtn, ...(locMode === "manual" ? css.modeBtnManual : {}) }}
-                onClick={() => { setLocMode("manual"); setManualInput(""); }}>
-                <span style={{ fontSize: 18 }}>🔤</span>
-                <span>Type Address</span>
-              </button>
-            </div>
-
-            {pinMode && (
-              <div style={css.pinHint}>
-                ☝ Click anywhere on the map to drop a pin
-                <button style={css.pinCancelBtn} onClick={() => setPinMode(false)}>Cancel</button>
-              </div>
-            )}
-
-            {locMode === "manual" && (
-              <div style={{ ...css.inputWrap, marginTop: 10 }}>
-                <input style={css.input} autoFocus
-                  placeholder="Type any address or landmark…"
-                  value={manualInput}
-                  onChange={(e) => { setManualInput(e.target.value); setShowManual(true); }}
-                  onBlur={() => setTimeout(() => setShowManual(false), 160)}
-                  onFocus={() => manualInput && setShowManual(true)}
-                />
-                {showManual && manualPreds.length > 0 && (
-                  <div style={css.dropdown}>
-                    {manualPreds.map((s, i) => (
-                      <div key={i} style={css.dropItem} onMouseDown={() => pickManual(s)}>
-                        <span style={css.dropMain}>{sMain(s)}</span>
-                        <span style={css.dropSub}>{sSec(s)}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Search Card */}
-          <div style={css.card2}>
-            <div style={css.cardHead}>
-              <span>🔍</span>
-              <span style={css.cardHeadTitle}>Search Venues</span>
-            </div>
-
-            <label style={css.label}>What are you looking for?</label>
-            <div style={{ ...css.inputWrap, marginBottom: 10 }}>
-              <input style={css.input}
-                placeholder="Hotels, resorts, banquet halls, restaurants…"
+            {/* Row 1 — keyword search */}
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search venues, hotels, restaurants…"
                 value={keyword}
                 onChange={(e) => { setKeyword(e.target.value); setShowKwDrop(true); }}
                 onKeyDown={(e) => { if (e.key === "Enter") { setShowKwDrop(false); doSearch(); } }}
                 onBlur={() => setTimeout(() => setShowKwDrop(false), 160)}
                 onFocus={() => keyword && setShowKwDrop(true)}
+                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
               />
               {showKwDrop && kwPreds.length > 0 && (
-                <div style={css.dropdown}>
-                  {kwPreds.map((s, i) => (
-                    <div key={i} style={css.dropItem}
-                      onMouseDown={() => { setKeyword(sMain(s)); setShowKwDrop(false); }}>
-                      <span style={css.dropMain}>{sMain(s)}</span>
-                      <span style={css.dropSub}>{sSec(s)}</span>
-                    </div>
-                  ))}
+                <div className="absolute top-full left-0 right-0 bg-white border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto mt-1">
+                  {kwPreds.map((s, i) => {
+                    const { main, sub } = getLabel(s);
+                    return (
+                      <div key={i}
+                        className="px-3 py-2 hover:bg-gray-50 cursor-pointer border-b last:border-b-0"
+                        onMouseDown={() => { setKeyword(main); setShowKwDrop(false); }}>
+                        <p className="text-sm font-medium text-gray-800">{main}</p>
+                        {sub && <p className="text-xs text-gray-400">{sub}</p>}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
 
-            <label style={css.label}>City</label>
-            <div style={{ ...css.inputWrap, marginBottom: 10 }}>
-              <input style={css.input} placeholder="Search any city…"
-                value={cityInput}
-                onChange={(e) => { setCityInput(e.target.value); setShowCityDrop(true); if (!e.target.value) setSelCity(null); }}
-                onBlur={() => setTimeout(() => setShowCityDrop(false), 160)}
-                onFocus={() => cityInput && setShowCityDrop(true)}
-              />
-              {showCityDrop && cityPreds.length > 0 && (
-                <div style={css.dropdown}>
-                  {cityPreds.map((s, i) => (
-                    <div key={i} style={css.dropItem} onMouseDown={() => pickCity(s)}>
-                      <span style={css.dropMain}>{sMain(s)}</span>
-                      <span style={css.dropSub}>{sSec(s)}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+            {/* Row 2 — location + city + area + rating filters */}
+            <div className="flex flex-wrap gap-2">
+
+              {/* Location mode buttons */}
+              <button
+                onClick={handleGPS}
+                disabled={gpsLoading}
+                className={`flex items-center gap-1 px-3 py-2 rounded-lg border text-sm font-medium transition
+                  ${locMode === "gps"
+                    ? "bg-green-500 text-white border-green-500"
+                    : "bg-white text-gray-600 border-gray-300 hover:border-green-400 hover:text-green-600"}`}
+              >
+                {gpsLoading ? "⏳" : "🛰"} {gpsLoading ? "Locating…" : "GPS"}
+              </button>
+
+              <button
+                onClick={() => setPinMode((v) => !v)}
+                className={`flex items-center gap-1 px-3 py-2 rounded-lg border text-sm font-medium transition
+                  ${pinMode
+                    ? "bg-orange-500 text-white border-orange-500 animate-pulse"
+                    : locMode === "pin"
+                    ? "bg-orange-100 text-orange-600 border-orange-400"
+                    : "bg-white text-gray-600 border-gray-300 hover:border-orange-400 hover:text-orange-500"}`}
+              >
+                📌 {pinMode ? "Click map ▶" : "Pin Map"}
+              </button>
+
+              <button
+                onClick={() => { setLocMode("manual"); setManualInput(""); }}
+                className={`flex items-center gap-1 px-3 py-2 rounded-lg border text-sm font-medium transition
+                  ${locMode === "manual"
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "bg-white text-gray-600 border-gray-300 hover:border-blue-400 hover:text-blue-500"}`}
+              >
+                🔤 Address
+              </button>
+
+              {/* City autocomplete */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="City…"
+                  value={cityInput}
+                  onChange={(e) => { setCityInput(e.target.value); setShowCityDrop(true); if (!e.target.value) setSelCity(null); }}
+                  onBlur={() => setTimeout(() => setShowCityDrop(false), 160)}
+                  onFocus={() => cityInput && setShowCityDrop(true)}
+                  className="border rounded-lg px-2 py-2 text-sm w-28 focus:outline-none focus:border-blue-400"
+                />
+                {showCityDrop && cityPreds.length > 0 && (
+                  <div className="absolute top-full left-0 bg-white border rounded-lg shadow-lg z-50 w-56 max-h-48 overflow-y-auto mt-1">
+                    {cityPreds.map((s, i) => {
+                      const { main, sub } = getLabel(s);
+                      return (
+                        <div key={i}
+                          className="px-3 py-2 hover:bg-gray-50 cursor-pointer border-b last:border-b-0"
+                          onMouseDown={() => {
+                            setCityInput(main); setShowCityDrop(false); setCityPreds([]);
+                            setSelArea(null); setAreaInput("");
+                            resolvePlaceId(getLabel(s).placeId, (coords) => {
+                              setSelCity({ name: main, ...coords });
+                              setMapCenter(coords);
+                            });
+                          }}>
+                          <p className="text-sm font-medium text-gray-800">{main}</p>
+                          {sub && <p className="text-xs text-gray-400">{sub}</p>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Area autocomplete */}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder={selCity ? "Area…" : "Select city first"}
+                  value={areaInput}
+                  disabled={!selCity}
+                  onChange={(e) => { setAreaInput(e.target.value); setShowAreaDrop(true); if (!e.target.value) setSelArea(null); }}
+                  onBlur={() => setTimeout(() => setShowAreaDrop(false), 160)}
+                  onFocus={() => areaInput && setShowAreaDrop(true)}
+                  className={`border rounded-lg px-2 py-2 text-sm w-28 focus:outline-none focus:border-blue-400
+                    ${!selCity ? "bg-gray-50 text-gray-400 cursor-not-allowed" : ""}`}
+                />
+                {showAreaDrop && areaPreds.length > 0 && (
+                  <div className="absolute top-full left-0 bg-white border rounded-lg shadow-lg z-50 w-56 max-h-48 overflow-y-auto mt-1">
+                    {areaPreds.map((s, i) => {
+                      const { main, sub } = getLabel(s);
+                      return (
+                        <div key={i}
+                          className="px-3 py-2 hover:bg-gray-50 cursor-pointer border-b last:border-b-0"
+                          onMouseDown={() => {
+                            setAreaInput(main); setShowAreaDrop(false); setAreaPreds([]);
+                            resolvePlaceId(getLabel(s).placeId, (coords) => {
+                              setSelArea({ name: main, ...coords });
+                              setMapCenter(coords);
+                            });
+                          }}>
+                          <p className="text-sm font-medium text-gray-800">{main}</p>
+                          {sub && <p className="text-xs text-gray-400">{sub}</p>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Rating filter */}
+              <select
+                value={minRating}
+                onChange={(e) => setMinRating(e.target.value)}
+                className="border rounded-lg px-2 py-2 text-sm focus:outline-none focus:border-blue-400"
+              >
+                <option value="">All Ratings</option>
+                <option value="3">3★ +</option>
+                <option value="4">4★ +</option>
+                <option value="4.5">4.5★ +</option>
+              </select>
+
+              {/* Search button */}
+              <button
+                onClick={doSearch}
+                disabled={searching}
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-semibold transition disabled:opacity-60"
+              >
+                {searching ? "…" : "Search"}
+              </button>
+
             </div>
 
-            <label style={{ ...css.label, opacity: selCity ? 1 : 0.4 }}>Area / Neighbourhood</label>
-            <div style={{ ...css.inputWrap, marginBottom: 12 }}>
-              <input
-                style={{ ...css.input, opacity: selCity ? 1 : 0.4, cursor: selCity ? "text" : "not-allowed" }}
-                placeholder={selCity ? `Areas in ${selCity.name}…` : "Pick a city first"}
-                value={areaInput} disabled={!selCity}
-                onChange={(e) => { setAreaInput(e.target.value); setShowAreaDrop(true); if (!e.target.value) setSelArea(null); }}
-                onBlur={() => setTimeout(() => setShowAreaDrop(false), 160)}
-                onFocus={() => areaInput && setShowAreaDrop(true)}
-              />
-              {showAreaDrop && areaPreds.length > 0 && (
-                <div style={css.dropdown}>
-                  {areaPreds.map((s, i) => (
-                    <div key={i} style={css.dropItem} onMouseDown={() => pickArea(s)}>
-                      <span style={css.dropMain}>{sMain(s)}</span>
-                      <span style={css.dropSub}>{sSec(s)}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <label style={css.label}>Min Rating</label>
-            <div style={{ ...css.ratingRow, marginBottom: 14 }}>
-              {[["", "Any"], ["3", "3★+"], ["4", "4★+"], ["4.5", "4.5★+"]].map(([v, l]) => (
-                <button key={v}
-                  style={{ ...css.ratingBtn, ...(minRating === v ? css.ratingBtnOn : {}) }}
-                  onClick={() => setMinRating(v)}>{l}
-                </button>
-              ))}
-            </div>
-
-            <button style={{ ...css.searchBtn, opacity: searching ? 0.65 : 1 }}
-              onClick={doSearch} disabled={searching}>
-              {searching ? "Searching…" : "Search Venues"}
-            </button>
-          </div>
-
-          {/* Chips */}
-          {(keyword || selCity || selArea || locMode !== "none") && (
-            <div style={css.chips}>
-              {locMode !== "none" && <span style={{ ...css.chip, borderColor: "#22c55e50", color: "#22c55e" }}>📍 {locMode}</span>}
-              {keyword   && <span style={css.chip}>🔍 {keyword}</span>}
-              {selCity   && <span style={css.chip}>🏙 {selCity.name}</span>}
-              {selArea   && <span style={css.chip}>📌 {selArea.name}</span>}
-              {minRating && <span style={css.chip}>⭐ {minRating}+</span>}
-            </div>
-          )}
-
-          {(searching || venues.length > 0) && (
-            <p style={css.countTxt}>
-              {searching ? "Fetching live results…" : `${filtered.length} of ${venues.length} venues`}
-            </p>
-          )}
-
-          {/* Venue list */}
-          <div style={css.venueList}>
-            {!searching && filtered.length === 0 && (
-              <div style={css.empty}>
-                <p style={{ fontSize: 32, margin: "0 0 8px" }}>🏨</p>
-                <p style={css.emptyTxt}>
-                  {venues.length > 0 ? "No match for rating filter" : "Set a location & search to see venues"}
-                </p>
+            {/* Manual address input row */}
+            {locMode === "manual" && (
+              <div className="relative">
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Type any address or landmark…"
+                  value={manualInput}
+                  onChange={(e) => { setManualInput(e.target.value); setShowManual(true); }}
+                  onBlur={() => setTimeout(() => setShowManual(false), 160)}
+                  onFocus={() => manualInput && setShowManual(true)}
+                  className="w-full border border-blue-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+                />
+                {showManual && manualPreds.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 bg-white border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto mt-1">
+                    {manualPreds.map((s, i) => {
+                      const { main, sub, placeId } = getLabel(s);
+                      return (
+                        <div key={i}
+                          className="px-3 py-2 hover:bg-gray-50 cursor-pointer border-b last:border-b-0"
+                          onMouseDown={() => {
+                            const display = sub ? `${main}, ${sub}` : main;
+                            setManualInput(display); setShowManual(false);
+                            resolvePlaceId(placeId, (coords, addr) => {
+                              setUserCoords(coords);
+                              setLocLabel(addr || display);
+                              setLocMode("manual");
+                              setMapCenter(coords);
+                            });
+                          }}>
+                          <p className="text-sm font-medium text-gray-800">{main}</p>
+                          {sub && <p className="text-xs text-gray-400">{sub}</p>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
-            {filtered.map((v) => (
-              <div key={v.id}
-                style={{ ...css.venueCard, ...(selVenue?.id === v.id ? css.venueCardOn : {}) }}
-                onClick={() => { setSelVenue(v); setMapCenter({ lat: v.lat, lng: v.lng }); }}>
-                <div style={{ position: "relative", flexShrink: 0 }}>
-                  {v.image
-                    ? <img src={v.image} alt={v.name} style={css.venueImg} />
-                    : <div style={css.venueImgPh}>{v.name[0]}</div>}
-                  {v.openNow != null && (
-                    <span style={{ ...css.openBadge, background: v.openNow ? "#16a34a" : "#dc2626" }}>
-                      {v.openNow ? "Open" : "Closed"}
+
+            {/* Active location pill */}
+            {locMode !== "none" && locLabel && (
+              <div className="flex items-start gap-2 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                <span className="text-sm">{locMode === "gps" ? "🛰" : locMode === "pin" ? "📌" : "🔤"}</span>
+                <span className="text-xs text-green-700 flex-1 leading-relaxed">{locLabel}</span>
+                <button onClick={clearLoc} className="text-xs text-red-400 hover:text-red-600 font-semibold flex-shrink-0">✕</button>
+              </div>
+            )}
+
+            {/* Pin mode hint */}
+            {pinMode && (
+              <div className="flex items-center justify-between bg-orange-50 border border-orange-200 rounded-lg px-3 py-2">
+                <span className="text-xs text-orange-600 font-medium">☝ Click anywhere on the map to drop a pin</span>
+                <button onClick={() => setPinMode(false)} className="text-xs text-orange-500 font-bold hover:text-orange-700">Cancel</button>
+              </div>
+            )}
+
+            {/* Result count */}
+            {(searching || venues.length > 0) && (
+              <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">
+                {searching ? "Fetching from Google Maps…" : `${filtered.length} of ${venues.length} venues`}
+              </p>
+            )}
+
+          </div>{/* end sticky */}
+
+          {/* ── VENUE LIST ── */}
+          {!searching && filtered.length === 0 && (
+            <div className="text-center py-10">
+              <p className="text-4xl mb-2">🏨</p>
+              <p className="text-sm text-gray-400">
+                {venues.length > 0 ? "No venues match your filters" : "Search to discover venues"}
+              </p>
+            </div>
+          )}
+
+          {filtered.map((venue) => (
+            <div
+              key={venue.id}
+              onClick={() => { setSelVenue(venue); setMapCenter({ lat: venue.lat, lng: venue.lng }); }}
+              className={`flex gap-4 p-4 border rounded-xl cursor-pointer transition shadow-sm
+                ${selVenue?.id === venue.id
+                  ? "bg-blue-50 border-blue-400"
+                  : "hover:bg-gray-50 border-gray-200"}`}
+            >
+              {/* Image */}
+              {venue.image
+                ? <img src={venue.image} alt={venue.name} className="w-24 h-24 object-cover rounded-lg flex-shrink-0" />
+                : <div className="w-24 h-24 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 text-2xl font-bold text-gray-400">
+                    {venue.name[0]}
+                  </div>
+              }
+
+              {/* Info */}
+              <div className="flex flex-col justify-between min-w-0 flex-1">
+                <div>
+                  <h4 className="font-semibold text-gray-800">{venue.name}</h4>
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    {typeLabel(venue.types)}
+                    {venue.priceLevel != null && <span className="ml-1 text-gray-400">· {"₹".repeat(venue.priceLevel + 1)}</span>}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5 truncate">{venue.address}</p>
+                </div>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-yellow-400 text-sm">
+                    {"★".repeat(venue.stars)}{"☆".repeat(5 - venue.stars)}
+                  </span>
+                  {venue.rating > 0 && (
+                    <span className="text-xs font-semibold text-gray-600">{venue.rating.toFixed(1)}</span>
+                  )}
+                  {venue.ratingCount > 0 && (
+                    <span className="text-xs text-gray-400">({venue.ratingCount.toLocaleString()})</span>
+                  )}
+                  {venue.openNow != null && (
+                    <span className={`text-xs font-semibold ml-1 ${venue.openNow ? "text-green-500" : "text-red-400"}`}>
+                      {venue.openNow ? "Open" : "Closed"}
                     </span>
                   )}
                 </div>
-                <div style={css.venueInfo}>
-                  <div style={css.venueName}>{v.name}</div>
-                  <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-                    <span style={css.typeBadge}>{typeLabel(v.types)}</span>
-                    {v.priceLevel != null && <span style={css.priceTag}>{priceLabel(v.priceLevel)}</span>}
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    {[1,2,3,4,5].map((i) => (
-                      <span key={i} style={{ fontSize: 11, color: i <= v.stars ? "#f59e0b" : "#2a2a4a" }}>★</span>
-                    ))}
-                    {v.rating > 0 && <span style={css.ratingVal}>{v.rating.toFixed(1)}</span>}
-                    {v.ratingCount > 0 && <span style={css.ratingCnt}>({v.ratingCount.toLocaleString()})</span>}
-                  </div>
-                  <div style={css.venueAddr}>{v.address}</div>
-                </div>
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          ))}
 
-        {/* ════ MAP ════ */}
-        <div style={css.mapWrap}>
+        </div>{/* end left */}
+
+        {/* ═══════════ RIGHT — MAP ═══════════ */}
+        <div className="lg:w-1/2 relative">
+
+          {/* Pin banner over map */}
           {pinMode && (
-            <div style={css.pinBanner}>
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 bg-orange-500 text-white text-sm font-bold px-4 py-2 rounded-xl shadow-lg flex items-center gap-3 whitespace-nowrap pointer-events-none">
               📌 Click anywhere on the map to drop a pin
-              <button style={css.pinCancelBtn2} onClick={() => setPinMode(false)}>✕ Cancel</button>
             </div>
           )}
 
           <GoogleMap
-            mapContainerStyle={MAP_CONTAINER_STYLE}
-            center={mapCenter}
             zoom={selArea ? 14 : selCity ? 12 : 13}
+            center={mapCenter}
             onLoad={onMapLoad}
             onClick={handleMapClick}
+            mapContainerStyle={{
+              ...MAP_STYLE,
+              cursor: pinMode ? "crosshair" : undefined,
+            }}
             options={{
-              styles: DARK_MAP,
               streetViewControl: false,
               mapTypeControl: false,
               fullscreenControl: true,
-              zoomControl: true,
             }}
           >
+            {/* User location marker */}
             {userCoords && (
-              <Marker position={userCoords} zIndex={1000}
+              <Marker
+                position={userCoords}
+                zIndex={1000}
                 icon={{
                   path: window.google.maps.SymbolPath.CIRCLE,
                   scale: 10,
                   fillColor: locMode === "pin" ? "#f97316" : "#22c55e",
                   fillOpacity: 1,
-                  strokeColor: "#fff",
+                  strokeColor: "#ffffff",
                   strokeWeight: 3,
                 }}
               />
             )}
 
-            {filtered.map((v) => (
-              <Marker key={v.id} position={{ lat: v.lat, lng: v.lng }}
-                onClick={() => { setSelVenue(v); setMapCenter({ lat: v.lat, lng: v.lng }); }}
-                icon={{
-                  path: window.google.maps.SymbolPath.CIRCLE,
-                  scale: selVenue?.id === v.id ? 11 : 7,
-                  fillColor: selVenue?.id === v.id ? "#f59e0b" : "#7c6af7",
-                  fillOpacity: 1,
-                  strokeColor: "#fff",
-                  strokeWeight: 2,
-                }}
+            {/* Venue markers */}
+            {filtered.map((venue) => (
+              <Marker
+                key={venue.id}
+                position={{ lat: venue.lat, lng: venue.lng }}
+                onClick={() => { setSelVenue(venue); setMapCenter({ lat: venue.lat, lng: venue.lng }); }}
               />
             ))}
 
+            {/* Venue info window */}
             {selVenue && (
-              <InfoWindow position={{ lat: selVenue.lat, lng: selVenue.lng }} onCloseClick={() => setSelVenue(null)}>
-                <div style={{ fontFamily: "sans-serif", maxWidth: 200 }}>
-                  {selVenue.image && <img src={selVenue.image} alt={selVenue.name}
-                    style={{ width: "100%", height: 100, objectFit: "cover", borderRadius: 6, marginBottom: 6 }} />}
-                  <div style={{ fontWeight: 700, fontSize: 13, color: "#111", marginBottom: 2 }}>{selVenue.name}</div>
-                  <div style={{ fontSize: 10, color: "#888", marginBottom: 4, textTransform: "uppercase" }}>{typeLabel(selVenue.types)}</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 1, marginBottom: 4 }}>
-                    {[1,2,3,4,5].map((i) => (
-                      <span key={i} style={{ color: i <= selVenue.stars ? "#f59e0b" : "#ccc", fontSize: 13 }}>★</span>
-                    ))}
-                    {selVenue.rating > 0 && <span style={{ fontSize: 11, color: "#f59e0b", fontWeight: 700, marginLeft: 4 }}>{selVenue.rating.toFixed(1)}</span>}
+              <InfoWindow
+                position={{ lat: selVenue.lat, lng: selVenue.lng }}
+                onCloseClick={() => setSelVenue(null)}
+              >
+                <div className="font-sans max-w-[180px]">
+                  {selVenue.image && (
+                    <img src={selVenue.image} alt={selVenue.name}
+                      className="w-full h-24 object-cover rounded mb-2" />
+                  )}
+                  <p className="font-bold text-sm text-gray-800">{selVenue.name}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{typeLabel(selVenue.types)}</p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <span className="text-yellow-400 text-xs">{"★".repeat(selVenue.stars)}{"☆".repeat(5 - selVenue.stars)}</span>
+                    {selVenue.rating > 0 && <span className="text-xs font-bold text-gray-600">{selVenue.rating.toFixed(1)}</span>}
                   </div>
-                  <div style={{ fontSize: 11, color: "#555", marginBottom: 4 }}>{selVenue.address}</div>
+                  <p className="text-xs text-gray-400 mt-1">{selVenue.address}</p>
                   {selVenue.openNow != null && (
-                    <div style={{ fontSize: 11, fontWeight: 700, color: selVenue.openNow ? "#16a34a" : "#dc2626" }}>
+                    <p className={`text-xs font-bold mt-1 ${selVenue.openNow ? "text-green-600" : "text-red-500"}`}>
                       {selVenue.openNow ? "✓ Open Now" : "✗ Closed"}
-                    </div>
+                    </p>
                   )}
                 </div>
               </InfoWindow>
             )}
 
+            {/* Location info window */}
             {userCoords && locMode !== "none" && !pinMode && (
-              <InfoWindow position={userCoords} options={{ disableAutoPan: true }} onCloseClick={clearLoc}>
-                <div style={{ fontFamily: "sans-serif", maxWidth: 220 }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, color: "#111", marginBottom: 3 }}>
-                    {locMode === "gps" ? "🛰 GPS Location" : locMode === "pin" ? "📌 Pinned" : "🔤 Address"}
-                  </div>
-                  <div style={{ fontSize: 11, color: "#555" }}>{locLabel}</div>
+              <InfoWindow
+                position={userCoords}
+                options={{ disableAutoPan: true }}
+                onCloseClick={clearLoc}
+              >
+                <div className="font-sans max-w-[200px]">
+                  <p className="font-bold text-xs text-gray-800 mb-1">
+                    {locMode === "gps" ? "🛰 Your GPS Location" : locMode === "pin" ? "📌 Pinned Location" : "🔤 Address"}
+                  </p>
+                  <p className="text-xs text-gray-500">{locLabel}</p>
                 </div>
               </InfoWindow>
             )}
+
           </GoogleMap>
 
-          <div style={css.legend}>
-            <div style={css.legendItem}><div style={{ ...css.dot, background: "#22c55e" }} />GPS</div>
-            <div style={css.legendItem}><div style={{ ...css.dot, background: "#f97316" }} />Pin</div>
-            <div style={css.legendItem}><div style={{ ...css.dot, background: "#7c6af7" }} />Venue</div>
-            <div style={css.legendItem}><div style={{ ...css.dot, background: "#f59e0b" }} />Selected</div>
+          {/* Map legend */}
+          <div className="flex gap-4 mt-2 px-1">
+            <span className="flex items-center gap-1 text-xs text-gray-400"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />GPS</span>
+            <span className="flex items-center gap-1 text-xs text-gray-400"><span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />Pin</span>
+            <span className="flex items-center gap-1 text-xs text-gray-400"><span className="w-2 h-2 rounded-full bg-red-500 inline-block" />Venue</span>
+            <span className="flex items-center gap-1 text-xs text-gray-400"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />Selected</span>
           </div>
-        </div>
+        </div>{/* end right */}
+
       </div>
     </div>
   );
 }
-
-// ─── STYLES ──────────────────────────────────────────────────────────────────
-const css = {
-  root:          { fontFamily: "'DM Sans','Segoe UI',sans-serif", background: "#0c0c1d", minHeight: "100vh", color: "#e2e2f0", display: "flex", flexDirection: "column" },
-  loaderWrap:    { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", gap: 14, background: "#0c0c1d" },
-  spinner:       { width: 32, height: 32, border: "3px solid #1e1e3a", borderTop: "3px solid #7c6af7", borderRadius: "50%", animation: "spin 0.9s linear infinite" },
-  loaderTxt:     { color: "#5a5a8a", fontSize: 13, margin: 0 },
-  errWrap:       { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", padding: 32, textAlign: "center", background: "#0c0c1d" },
-  errTitle:      { fontSize: 20, fontWeight: 700, color: "#f87171", marginBottom: 12 },
-  errMsg:        { fontSize: 14, color: "#9090c0", maxWidth: 480, lineHeight: 1.7 },
-  errDetail:     { fontSize: 12, color: "#4a4a7a", marginTop: 8, display: "block" },
-  header:        { padding: "16px 24px", borderBottom: "1px solid #1a1a30", flexShrink: 0 },
-  title:         { margin: 0, fontSize: 22, fontWeight: 700, letterSpacing: "-0.4px" },
-  accent:        { color: "#f59e0b" },
-  sub:           { margin: "2px 0 0", fontSize: 11, color: "#4a4a7a" },
-  body:          { display: "flex", flex: 1, height: "calc(100vh - 65px)", overflow: "hidden" },
-  panel:         { width: 370, minWidth: 330, display: "flex", flexDirection: "column", gap: 10, overflowY: "auto", padding: 12, borderRight: "1px solid #1a1a30" },
-  card2:         { background: "#111128", border: "1px solid #1e1e38", borderRadius: 12, padding: "14px 13px 12px" },
-  cardHead:      { display: "flex", alignItems: "center", gap: 7, marginBottom: 10, fontSize: 14 },
-  cardHeadTitle: { flex: 1, fontWeight: 700, fontSize: 13, color: "#b0b0d0" },
-  clearBtn:      { fontSize: 11, color: "#f87171", background: "none", border: "none", cursor: "pointer", padding: "2px 6px" },
-  locPill:       { display: "flex", gap: 8, background: "#0c0c1d", border: "1px solid #1e1e38", borderRadius: 8, padding: "8px 10px", marginBottom: 10, alignItems: "flex-start" },
-  locPillTxt:    { fontSize: 11, color: "#8080b0", lineHeight: 1.5, wordBreak: "break-word" },
-  modeRow:       { display: "flex", gap: 7 },
-  modeBtn:       { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "10px 4px 8px", borderRadius: 10, border: "1px solid #1e1e38", background: "#0c0c1d", color: "#5a5a8a", fontSize: 11, fontWeight: 600, cursor: "pointer", lineHeight: 1.2 },
-  modeBtnGps:    { border: "1px solid #22c55e", background: "#071a0e", color: "#22c55e" },
-  modeBtnPin:    { border: "1px solid #f97316", background: "#1a0800", color: "#f97316" },
-  modeBtnPinOn:  { border: "1px solid #f97316", background: "#2a1000", color: "#f97316", boxShadow: "0 0 0 2px #f9731630" },
-  modeBtnManual: { border: "1px solid #7c6af7", background: "#0e0d1f", color: "#7c6af7" },
-  pinHint:       { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: 9, fontSize: 11, color: "#f97316", background: "#1a080030", border: "1px dashed #f9731650", borderRadius: 7, padding: "7px 10px" },
-  pinCancelBtn:  { fontSize: 11, background: "rgba(249,115,22,0.2)", border: "none", color: "#f97316", borderRadius: 5, padding: "3px 8px", cursor: "pointer", fontWeight: 700 },
-  label:         { display: "block", fontSize: 10, fontWeight: 700, color: "#4a4a7a", textTransform: "uppercase", letterSpacing: "0.7px", marginBottom: 5 },
-  inputWrap:     { position: "relative" },
-  input:         { width: "100%", background: "#0c0c1d", border: "1px solid #1e1e38", borderRadius: 8, padding: "9px 12px", color: "#e2e2f0", fontSize: 13, outline: "none", boxSizing: "border-box" },
-  dropdown:      { position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: "#13132a", border: "1px solid #22223a", borderRadius: 9, zIndex: 9999, boxShadow: "0 10px 30px rgba(0,0,0,0.7)", overflow: "hidden", maxHeight: 230, overflowY: "auto" },
-  dropItem:      { padding: "9px 12px", cursor: "pointer", borderBottom: "1px solid #1a1a30", display: "flex", flexDirection: "column", gap: 2 },
-  dropMain:      { fontSize: 13, color: "#e2e2f0", fontWeight: 500 },
-  dropSub:       { fontSize: 11, color: "#4a4a7a" },
-  ratingRow:     { display: "flex", gap: 6 },
-  ratingBtn:     { flex: 1, padding: "7px 0", borderRadius: 7, border: "1px solid #1e1e38", background: "#0c0c1d", color: "#5a5a8a", fontSize: 12, fontWeight: 600, cursor: "pointer" },
-  ratingBtnOn:   { background: "#f59e0b", borderColor: "#f59e0b", color: "#000" },
-  searchBtn:     { width: "100%", padding: "11px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#7c6af7,#5540e0)", color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer" },
-  chips:         { display: "flex", flexWrap: "wrap", gap: 5 },
-  chip:          { fontSize: 11, background: "#1a1a32", border: "1px solid #2a2a50", borderRadius: 20, padding: "3px 10px", color: "#7070b0" },
-  countTxt:      { fontSize: 11, color: "#4a4a7a", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.4px", margin: 0 },
-  venueList:     { display: "flex", flexDirection: "column", gap: 8, paddingBottom: 20 },
-  empty:         { textAlign: "center", padding: "40px 0" },
-  emptyTxt:      { fontSize: 12, color: "#2e2e5e", margin: 0 },
-  venueCard:     { display: "flex", gap: 10, padding: 11, borderRadius: 12, border: "1px solid #1a1a30", background: "#0e0e22", cursor: "pointer" },
-  venueCardOn:   { border: "1px solid #7c6af7", background: "#181836", boxShadow: "0 0 0 3px rgba(124,106,247,0.12)" },
-  venueImg:      { width: 74, height: 74, borderRadius: 8, objectFit: "cover", display: "block" },
-  venueImgPh:    { width: 74, height: 74, borderRadius: 8, background: "#1e1e3a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, color: "#7c6af7", fontWeight: 700 },
-  openBadge:     { position: "absolute", bottom: 4, left: 4, fontSize: 9, fontWeight: 700, color: "#fff", borderRadius: 4, padding: "2px 5px", textTransform: "uppercase" },
-  venueInfo:     { flex: 1, display: "flex", flexDirection: "column", gap: 3, minWidth: 0 },
-  venueName:     { fontWeight: 600, fontSize: 13, color: "#e2e2f0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
-  typeBadge:     { fontSize: 9, background: "#7c6af712", color: "#9d90f7", border: "1px solid #7c6af728", padding: "2px 6px", borderRadius: 4, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.4px" },
-  priceTag:      { fontSize: 11, color: "#4a4a7a", fontWeight: 600 },
-  ratingVal:     { fontSize: 11, color: "#f59e0b", fontWeight: 700, marginLeft: 4 },
-  ratingCnt:     { fontSize: 10, color: "#333360", marginLeft: 2 },
-  venueAddr:     { fontSize: 10, color: "#333360", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
-  mapWrap:       { flex: 1, position: "relative" },
-  pinBanner:     { position: "absolute", top: 14, left: "50%", transform: "translateX(-50%)", zIndex: 10, background: "#f97316", color: "#fff", fontWeight: 700, fontSize: 13, padding: "10px 16px", borderRadius: 10, display: "flex", alignItems: "center", gap: 12, boxShadow: "0 4px 20px rgba(249,115,22,0.45)", whiteSpace: "nowrap" },
-  pinCancelBtn2: { background: "rgba(255,255,255,0.25)", border: "none", color: "#fff", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 12, fontWeight: 700 },
-  legend:        { position: "absolute", bottom: 16, right: 16, background: "rgba(12,12,29,0.9)", border: "1px solid #1a1a30", borderRadius: 8, padding: "8px 12px", display: "flex", gap: 12, backdropFilter: "blur(6px)" },
-  legendItem:    { display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#6060a0", fontWeight: 600 },
-  dot:           { width: 9, height: 9, borderRadius: "50%", flexShrink: 0 },
-};
