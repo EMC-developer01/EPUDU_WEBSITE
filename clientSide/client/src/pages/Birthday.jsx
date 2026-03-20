@@ -40,6 +40,21 @@ const geocodeAddress = async (address) => {
   });
 };
 
+const computeTotal = (venue, mode, days, startTime, endTime) => {
+  if (!venue) return { base: 0, service: 0, total: 0 };
+  let base = 0;
+  if (mode === "day") {
+    base = (venue.cost || 0) * (Number(days) || 1);
+  } else {
+    const [sh, sm] = (startTime || "10:00").split(":").map(Number);
+    const [eh, em] = (endTime || "14:00").split(":").map(Number);
+    const hrs = Math.max(1, (eh * 60 + em - (sh * 60 + sm)) / 60);
+    base = Math.round((venue.hourlyRate || Math.round(venue.cost / 8)) * hrs);
+  }
+  const service = Math.round(base * 0.05);
+  return { base, service, total: base + service };
+};
+
 const getDistanceKm = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -103,6 +118,31 @@ export default function Birthday() {
     setCurrentBg(0);
   }, [cards]);
 
+  const [venueBookingStep, setVenueBookingStep] = useState(1);
+  const [selectedEventType, setSelectedEventType] = useState("Birthday Party");
+  const [bookingMode, setBookingMode] = useState("day");
+  const [bookingDate, setBookingDate] = useState("");
+  const [bookingDays, setBookingDays] = useState(1);
+  const [bookingStartTime, setBookingStartTime] = useState("10:00");
+  const [bookingEndTime, setBookingEndTime] = useState("14:00");
+  const [bookingGuests, setBookingGuests] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [clientPhone, setClientPhone] = useState("");
+  const [clientEmail, setClientEmail] = useState("");
+  const [bookingRef, setBookingRef] = useState("");
+  const [locationChoice, setLocationChoice] = useState(null);
+  const [customAddress, setCustomAddress] = useState({ flat: "", landmark: "", street: "", city: "", state: "Telangana", pin: "", notes: "" });
+
+  const EVENT_TYPES = [
+    { icon: "🎂", label: "Birthday Party" },
+    { icon: "💍", label: "Wedding" },
+    { icon: "🎉", label: "Anniversary" },
+    { icon: "💼", label: "Corporate Event" },
+    { icon: "🎓", label: "Graduation" },
+    { icon: "🥳", label: "Get Together" },
+    { icon: "🍽️", label: "Private Dining" },
+    { icon: "✨", label: "Other Function" },
+  ];
   let [step, setStep] = useState(1);
   let [birthdayId, setBirthdayId] = useState(null);
   let [userId, setUserId] = useState(null);
@@ -1036,163 +1076,873 @@ export default function Birthday() {
               </h5>
               <div className="flex flex-col lg:flex-row gap-6">
 
-                {/* LEFT SIDE — VENUE LIST */}
+                <div className="w-full border-2 border-gray-200 rounded-2xl overflow-hidden">
 
-                <div className="lg:w-1/2 max-h-[520px] overflow-y-auto border-r pr-4 space-y-4">
-
-                  ```
-                  {/* SEARCH + FILTER */}
-                  <div className="sticky top-0 bg-white pb-3 z-10 space-y-3">
-
-                    {/* SEARCH */}
-                    <input
-                      type="text"
-                      placeholder="Search venues or location..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      className="w-full border rounded-lg px-3 py-2"
-                    />
-
-                    {/* FILTER OPTIONS */}
-                    <div className="flex flex-wrap gap-2">
-
-                      {/* CITY FILTER */}
-                      <select
-                        value={filterLocation}
-                        onChange={(e) => {
-                          setFilterLocation(e.target.value);
-                          setFilterArea("");
-                        }}
-                        className="border rounded-lg px-2 py-2"
-                      >
-                        <option value="">All Cities</option>
-                        <option value="Hyderabad">Hyderabad</option>
-                        <option value="Bangalore">Bangalore</option>
-                      </select>
-
-                      {/* AREA FILTER */}
-                      <select
-                        value={filterArea}
-                        onChange={(e) => setFilterArea(e.target.value)}
-                        className="border rounded-lg px-2 py-2"
-                      >
-                        <option value="">All Areas</option>
-
-                        {filterLocation &&
-                          cityAreas[filterLocation]?.map((area) => (
-                            <option key={area} value={area}>
-                              {area}
-                            </option>
-                          ))}
-                      </select>
-
-                      {/* RATING FILTER */}
-                      <select
-                        value={filterRating}
-                        onChange={(e) => setFilterRating(e.target.value)}
-                        className="border rounded-lg px-2 py-2"
-                      >
-                        <option value="">All Ratings</option>
-                        <option value="3">3★ +</option>
-                        <option value="4">4★ +</option>
-                        <option value="5">5★</option>
-                      </select>
-
-                    </div>
+                  {/* ── STEP INDICATOR ── */}
+                  <div className="flex items-center justify-center gap-0 bg-white border-b border-gray-200 px-4 py-4 flex-wrap gap-y-2">
+                    {[
+                      { n: 1, label: "Choose Type" },
+                      { n: 2, label: "Location / Venue" },
+                      { n: 3, label: "Select & Book" },
+                      { n: 4, label: "Confirm" },
+                    ].map(({ n, label }, i, arr) => (
+                      <React.Fragment key={n}>
+                        <div className="flex items-center gap-2">
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all
+            ${venueBookingStep > n
+                              ? "bg-green-500 text-white"
+                              : venueBookingStep === n
+                                ? "bg-yellow-500 text-white"
+                                : "bg-gray-100 text-gray-400 border border-gray-300"
+                            }`}>
+                            {venueBookingStep > n ? "✓" : n}
+                          </div>
+                          <span className={`text-sm font-medium hidden sm:inline
+            ${venueBookingStep === n ? "text-yellow-700" : venueBookingStep > n ? "text-green-700" : "text-gray-400"}`}>
+                            {label}
+                          </span>
+                        </div>
+                        {i < arr.length - 1 && (
+                          <div className={`w-8 h-px mx-2 ${venueBookingStep > n ? "bg-green-400" : "bg-gray-200"}`} />
+                        )}
+                      </React.Fragment>
+                    ))}
                   </div>
 
-                  {/* VENUE LIST */}
-                  {filteredVenues.length === 0 && (
-                    <p className="text-gray-500 text-sm">No venues found.</p>
-                  )}
+                  <div className="p-6 md:p-8">
 
-                  {filteredVenues.map((venue) => (
-                    <div
-                      key={venue.id}
-                      onClick={() => {
-                        setSelectedVenue(venue);
-                      }}
-                      className={`flex gap-4 p-4 border rounded-xl cursor-pointer transition shadow-sm
-    ${selectedVenue?.id === venue.id
-                          ? "bg-blue-50 border-blue-400"
-                          : "hover:bg-gray-50"
-                        }`}
-                    >
+                    {/* ════════════════════════════════════════════════════
+        STEP 1 — Event Type + Route Choice
+    ════════════════════════════════════════════════════ */}
+                    {venueBookingStep === 1 && (
+                      <div className="space-y-8 animate-fadeIn">
 
-                      {/* IMAGE */}
-                      <img
-                        src={venue.image}
-                        alt={venue.name}
-                        className="w-24 h-24 object-cover rounded-lg"
-                      />
-
-                      {/* INFO */}
-                      <div className="flex flex-col justify-between">
-
-                        <h4 className="font-semibold text-lg">
-                          {venue.name}
-                        </h4>
-
-                        <p className="text-sm text-gray-600">
-                          {venue.type} • {venue.area}, {venue.location}
-                        </p>
-
-                        <p className="text-yellow-500 text-sm">
-                          {"★".repeat(venue.stars)}
-                          {"☆".repeat(5 - venue.stars)}
-                        </p>
-
-                      </div>
-
-                    </div>
-                  ))}
-                  ```
-
-                </div>
-
-                {/* RIGHT SIDE — GOOGLE MAP */}
-
-                <div className="lg:w-1/2">
-
-                  <GoogleMap
-                    zoom={13}
-                    center={
-                      selectedVenue
-                        ? { lat: selectedVenue.lat, lng: selectedVenue.lng }
-                        : { lat: 17.385, lng: 78.4867 }
-                    }
-                    mapContainerStyle={{
-                      width: "100%",
-                      height: "520px",
-                      borderRadius: "12px"
-                    }}
-                  >
-
-                    {/* MAP MARKERS */}
-                    {filteredVenues.map((venue) => (
-                      <Marker
-                        key={venue.id}
-                        position={{ lat: venue.lat, lng: venue.lng }}
-                        onClick={() => setSelectedVenue(venue)}
-                      />
-                    ))}
-
-                    {/* INFO WINDOW */}
-                    {selectedVenue && (
-                      <InfoWindow
-                        position={{
-                          lat: selectedVenue.lat,
-                          lng: selectedVenue.lng
-                        }}
-                        onCloseClick={() => setSelectedVenue(null)}
-                      >
-                        <div className="font-semibold">
-                          {selectedVenue.name}
+                        {/* Event type chips */}
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-800 mb-1">What are you celebrating?</h3>
+                          <p className="text-sm text-gray-500 mb-4">Choose your event type to get personalised venue recommendations.</p>
+                          <div className="flex flex-wrap gap-3">
+                            {EVENT_TYPES.map(({ icon, label }) => (
+                              <button
+                                key={label}
+                                type="button"
+                                onClick={() => setSelectedEventType(label)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-all
+                  ${selectedEventType === label
+                                    ? "bg-gray-900 border-gray-900 text-white"
+                                    : "bg-white border-gray-300 text-gray-700 hover:border-yellow-500"
+                                  }`}
+                              >
+                                <span>{icon}</span> {label}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </InfoWindow>
+
+                        {/* Route choice */}
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-800 mb-1">How would you like to proceed?</h3>
+                          <p className="text-sm text-gray-500 mb-4">Pick your preferred way to host the event.</p>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+                            {/* Custom Location */}
+                            <button
+                              type="button"
+                              onClick={() => { setLocationChoice("custom"); setVenueBookingStep(2); }}
+                              className={`relative text-left p-6 rounded-2xl border-2 transition-all hover:-translate-y-1 hover:shadow-lg
+                ${locationChoice === "custom" ? "border-yellow-500 bg-yellow-50" : "border-gray-200 bg-white hover:border-yellow-400"}`}
+                            >
+                              <span className="absolute top-3 right-3 text-xs font-semibold px-3 py-1 rounded-full bg-yellow-100 text-yellow-700">Flexible</span>
+                              <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center text-2xl mb-4">📍</div>
+                              <h4 className="font-bold text-gray-800 text-lg mb-2">My Preferred Location</h4>
+                              <p className="text-sm text-gray-500 leading-relaxed">Pin your location on the map or enter the address manually. We'll coordinate everything at your chosen spot.</p>
+                            </button>
+
+                            {/* Select Venue */}
+                            <button
+                              type="button"
+                              onClick={() => { setLocationChoice("venue"); setVenueBookingStep(2); }}
+                              className={`relative text-left p-6 rounded-2xl border-2 transition-all hover:-translate-y-1 hover:shadow-lg
+                ${locationChoice === "venue" ? "border-yellow-500 bg-yellow-50" : "border-gray-200 bg-white hover:border-yellow-400"}`}
+                            >
+                              <span className="absolute top-3 right-3 text-xs font-semibold px-3 py-1 rounded-full bg-green-100 text-green-700">Recommended</span>
+                              <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center text-2xl mb-4">🏛️</div>
+                              <h4 className="font-bold text-gray-800 text-lg mb-2">Select a Venue</h4>
+                              <p className="text-sm text-gray-500 leading-relaxed">Browse hotels, banquet halls, resorts and outdoor venues. Filter by city, type, star rating and capacity.</p>
+                            </button>
+
+                          </div>
+                        </div>
+                      </div>
                     )}
 
-                  </GoogleMap>
+                    {/* ════════════════════════════════════════════════════
+        STEP 2A — Custom Location
+    ════════════════════════════════════════════════════ */}
+                    {venueBookingStep === 2 && locationChoice === "custom" && (
+                      <div className="space-y-6 animate-fadeIn">
+                        <button type="button" onClick={() => setVenueBookingStep(1)}
+                          className="flex items-center gap-1 text-sm text-gray-500 hover:text-yellow-700 transition-colors mb-2">
+                          ← Back
+                        </button>
+                        <h3 className="text-xl font-bold text-gray-800 mb-1">Pin Your Location</h3>
+                        <p className="text-sm text-gray-500 mb-4">Search for your address on the map, or fill in the details manually below.</p>
+
+                        {/* Map search */}
+                        <div className="flex gap-2 flex-wrap">
+                          <input
+                            type="text"
+                            id="customMapSearch"
+                            placeholder="Search address, landmark or area..."
+                            className="flex-1 min-w-48 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 outline-none text-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const q = document.getElementById("customMapSearch")?.value;
+                              if (!q) return;
+                              // Update the map via geocode
+                              const geocoder = new window.google.maps.Geocoder();
+                              geocoder.geocode({ address: q }, (results, status) => {
+                                if (status === "OK" && results[0]) {
+                                  const loc = results[0].geometry.location;
+                                  setCustomAddress(prev => ({
+                                    ...prev,
+                                    city: results[0].address_components?.find(c => c.types.includes("locality"))?.long_name || prev.city,
+                                  }));
+                                  // Pan map — store in state for centering
+                                  window._customMapCenter = { lat: loc.lat(), lng: loc.lng() };
+                                }
+                              });
+                            }}
+                            className="px-4 py-3 bg-yellow-500 text-white rounded-xl text-sm font-semibold hover:bg-yellow-600 transition-colors"
+                          >
+                            🔍 Search
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (navigator.geolocation) {
+                                navigator.geolocation.getCurrentPosition(pos => {
+                                  window._customMapCenter = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                                });
+                              }
+                            }}
+                            className="px-4 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl text-sm font-semibold hover:border-yellow-500 transition-colors"
+                          >
+                            📡 My Location
+                          </button>
+                        </div>
+
+                        {/* Google Map for custom location */}
+                        {isLoaded && (
+                          <GoogleMap
+                            zoom={13}
+                            center={window._customMapCenter || { lat: 17.385, lng: 78.4867 }}
+                            mapContainerStyle={{ width: "100%", height: "320px", borderRadius: "12px" }}
+                            onClick={(e) => {
+                              window._customMapCenter = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+                              setCustomAddress(prev => ({ ...prev, pin: "" }));
+                            }}
+                          >
+                            {window._customMapCenter && (
+                              <Marker position={window._customMapCenter} />
+                            )}
+                          </GoogleMap>
+                        )}
+
+                        {/* Manual address — Blinkit style */}
+                        <div className="bg-gray-50 rounded-2xl p-5 border border-gray-200">
+                          <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                            📋 Address Details
+                            <span className="text-xs font-normal text-gray-400">— Fill manually like Blinkit / Swiggy style</span>
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {[
+                              { label: "House / Flat / Building", key: "flat", placeholder: "e.g. Villa 12, Green Acres" },
+                              { label: "Landmark / Nearby Area", key: "landmark", placeholder: "e.g. Near City Mall" },
+                              { label: "Street / Colony", key: "street", placeholder: "e.g. MG Road, Sector 5" },
+                              { label: "City", key: "city", placeholder: "e.g. Hyderabad" },
+                            ].map(({ label, key, placeholder }) => (
+                              <div key={key} className="flex flex-col gap-1">
+                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</label>
+                                <input
+                                  type="text"
+                                  value={customAddress[key]}
+                                  onChange={e => setCustomAddress(prev => ({ ...prev, [key]: e.target.value }))}
+                                  placeholder={placeholder}
+                                  className="p-3 border border-gray-200 rounded-xl bg-white text-sm focus:ring-2 focus:ring-yellow-400 outline-none"
+                                />
+                              </div>
+                            ))}
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">State</label>
+                              <select
+                                value={customAddress.state}
+                                onChange={e => setCustomAddress(prev => ({ ...prev, state: e.target.value }))}
+                                className="p-3 border border-gray-200 rounded-xl bg-white text-sm focus:ring-2 focus:ring-yellow-400 outline-none"
+                              >
+                                {["Telangana", "Maharashtra", "Karnataka", "Tamil Nadu", "Delhi", "Gujarat", "Rajasthan"].map(s => (
+                                  <option key={s}>{s}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">PIN Code</label>
+                              <input
+                                type="text"
+                                maxLength={6}
+                                value={customAddress.pin}
+                                onChange={e => setCustomAddress(prev => ({ ...prev, pin: e.target.value }))}
+                                placeholder="e.g. 500032"
+                                className="p-3 border border-gray-200 rounded-xl bg-white text-sm focus:ring-2 focus:ring-yellow-400 outline-none"
+                              />
+                            </div>
+                            <div className="sm:col-span-2 flex flex-col gap-1">
+                              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Additional Instructions for our team</label>
+                              <textarea
+                                value={customAddress.notes}
+                                onChange={e => setCustomAddress(prev => ({ ...prev, notes: e.target.value }))}
+                                placeholder="e.g. Enter from the back gate. Parking available inside."
+                                rows={3}
+                                className="p-3 border border-gray-200 rounded-xl bg-white text-sm focus:ring-2 focus:ring-yellow-400 outline-none resize-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between pt-2">
+                          <button type="button" onClick={() => setVenueBookingStep(1)}
+                            className="px-6 py-3 border border-gray-300 rounded-xl text-sm font-semibold text-gray-600 hover:border-gray-500 transition-colors">
+                            ← Back
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFormData(prev => ({
+                                ...prev,
+                                venue: {
+                                  name: "Custom Location",
+                                  address: `${customAddress.flat}, ${customAddress.street}, ${customAddress.landmark}`,
+                                  city: customAddress.city,
+                                }
+                              }));
+                              setVenueBookingStep(3);
+                            }}
+                            className="px-8 py-3 bg-yellow-500 text-white rounded-xl text-sm font-bold hover:bg-yellow-600 transition-colors"
+                          >
+                            Confirm Location →
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ════════════════════════════════════════════════════
+        STEP 2B — Venue Selection with Map
+    ════════════════════════════════════════════════════ */}
+                    {venueBookingStep === 2 && locationChoice === "venue" && (
+                      <div className="animate-fadeIn">
+                        <button type="button" onClick={() => setVenueBookingStep(1)}
+                          className="flex items-center gap-1 text-sm text-gray-500 hover:text-yellow-700 transition-colors mb-4">
+                          ← Back
+                        </button>
+                        <h3 className="text-xl font-bold text-gray-800 mb-1">Explore Venues</h3>
+                        <p className="text-sm text-gray-500 mb-5">Browse and select from our curated venues. The map highlights your selection.</p>
+
+                        {/* ── FILTERS ── */}
+                        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 mb-5">
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Filter Venues</p>
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            <span className="text-xs font-semibold text-gray-500 self-center">City:</span>
+                            <select
+                              value={filterLocation}
+                              onChange={e => { setFilterLocation(e.target.value); setFilterArea(""); }}
+                              className="border border-gray-200 rounded-full px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-yellow-400 outline-none"
+                            >
+                              <option value="">All Cities</option>
+                              <option value="Hyderabad">Hyderabad</option>
+                              <option value="Bangalore">Bangalore</option>
+                            </select>
+                            <select
+                              value={filterArea}
+                              onChange={e => setFilterArea(e.target.value)}
+                              className="border border-gray-200 rounded-full px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-yellow-400 outline-none"
+                            >
+                              <option value="">All Areas</option>
+                              {filterLocation && cityAreas[filterLocation]?.map(area => (
+                                <option key={area} value={area}>{area}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            <span className="text-xs font-semibold text-gray-500 self-center">Stars:</span>
+                            {["", "3", "4", "5"].map(v => (
+                              <button
+                                key={v}
+                                type="button"
+                                onClick={() => setFilterRating(v)}
+                                className={`px-3 py-2 rounded-full border text-xs font-semibold transition-all
+                  ${filterRating === v
+                                    ? "bg-yellow-500 border-yellow-500 text-white"
+                                    : "bg-white border-gray-200 text-gray-600 hover:border-yellow-400"
+                                  }`}
+                              >
+                                {v === "" ? "All" : `${"★".repeat(Number(v))} ${v}+`}
+                              </button>
+                            ))}
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <span className="text-xs font-semibold text-gray-500 self-center">Type:</span>
+                            {["", "Banquet", "Outdoor", "Resort", "Farm"].map(v => (
+                              <button
+                                key={v}
+                                type="button"
+                                onClick={() => setFilterType?.(v)}
+                                className={`px-3 py-2 rounded-full border text-xs font-semibold transition-all
+                  ${(filterType || "") === v
+                                    ? "bg-gray-900 border-gray-900 text-white"
+                                    : "bg-white border-gray-200 text-gray-600 hover:border-gray-400"
+                                  }`}
+                              >
+                                {v === "" ? "All Types" : v}
+                              </button>
+                            ))}
+                            <input
+                              type="text"
+                              placeholder="Search venues..."
+                              value={search}
+                              onChange={e => setSearch(e.target.value)}
+                              className="border border-gray-200 rounded-full px-4 py-2 text-sm bg-white focus:ring-2 focus:ring-yellow-400 outline-none ml-auto"
+                            />
+                          </div>
+                        </div>
+
+                        {/* ── VENUE LIST + MAP ── */}
+                        <div className="flex flex-col lg:flex-row gap-5">
+
+                          {/* LEFT — venue list */}
+                          <div className="lg:w-5/12 max-h-[520px] overflow-y-auto space-y-3 pr-1">
+                            <p className="text-xs text-gray-400 font-medium">
+                              Showing <strong>{filteredVenues.length}</strong> venue{filteredVenues.length !== 1 ? "s" : ""}
+                            </p>
+
+                            {filteredVenues.length === 0 && (
+                              <div className="text-center py-10 text-gray-400 text-sm">No venues match your filters.</div>
+                            )}
+
+                            {filteredVenues.map((venue) => (
+                              <div
+                                key={venue.id}
+                                onClick={() => setSelectedVenue(venue)}
+                                className={`flex gap-3 p-4 border-2 rounded-2xl cursor-pointer transition-all
+                  ${selectedVenue?.id === venue.id
+                                    ? "border-yellow-500 bg-yellow-50 shadow-md"
+                                    : "border-gray-100 bg-white hover:border-yellow-300 hover:shadow-sm"
+                                  }`}
+                              >
+                                {/* venue image */}
+                                <div className="w-20 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center text-3xl">
+                                  {venue.image
+                                    ? <img src={venue.image} alt={venue.name} className="w-full h-full object-cover" />
+                                    : "🏛️"}
+                                </div>
+
+                                <div className="flex flex-col justify-between flex-1 min-w-0">
+                                  <div>
+                                    <h4 className="font-bold text-gray-800 text-sm truncate">{venue.name}</h4>
+                                    <p className="text-xs text-gray-500 truncate">{venue.type} · {venue.area}, {venue.location}</p>
+                                  </div>
+                                  <div className="flex items-center justify-between mt-1">
+                                    <span className="text-yellow-500 text-xs">
+                                      {"★".repeat(venue.stars)}{"☆".repeat(5 - venue.stars)}
+                                    </span>
+                                    <span className="text-xs font-bold text-gray-800">
+                                      ₹{venue.cost?.toLocaleString("en-IN")}
+                                      <span className="text-gray-400 font-normal">/day</span>
+                                    </span>
+                                  </div>
+                                  {selectedVenue?.id === venue.id && (
+                                    <button
+                                      type="button"
+                                      onClick={e => { e.stopPropagation(); setVenueBookingStep(3); }}
+                                      className="mt-2 w-full py-2 bg-yellow-500 text-white text-xs font-bold rounded-xl hover:bg-yellow-600 transition-colors"
+                                    >
+                                      Select This Venue →
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* RIGHT — Google Map */}
+                          <div className="lg:w-7/12">
+                            {isLoaded ? (
+                              <GoogleMap
+                                zoom={selectedVenue ? 15 : 12}
+                                center={
+                                  selectedVenue
+                                    ? { lat: selectedVenue.lat, lng: selectedVenue.lng }
+                                    : { lat: 17.385, lng: 78.4867 }
+                                }
+                                mapContainerStyle={{
+                                  width: "100%",
+                                  height: "520px",
+                                  borderRadius: "16px",
+                                }}
+                                options={{
+                                  zoomControl: true,
+                                  streetViewControl: false,
+                                  mapTypeControl: false,
+                                  fullscreenControl: true,
+                                }}
+                              >
+                                {/* All venue markers */}
+                                {filteredVenues.map((venue) => (
+                                  <Marker
+                                    key={venue.id}
+                                    position={{ lat: venue.lat, lng: venue.lng }}
+                                    onClick={() => setSelectedVenue(venue)}
+                                    icon={
+                                      selectedVenue?.id === venue.id
+                                        ? {
+                                          url:
+                                            "data:image/svg+xml;charset=UTF-8," +
+                                            encodeURIComponent(`
+                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="50" viewBox="0 0 40 50">
+                                  <ellipse cx="20" cy="47" rx="8" ry="3" fill="rgba(0,0,0,0.2)"/>
+                                  <path d="M20 0 C9 0 0 9 0 20 C0 34 20 50 20 50 C20 50 40 34 40 20 C40 9 31 0 20 0Z" fill="#EAB308"/>
+                                  <circle cx="20" cy="20" r="9" fill="white"/>
+                                </svg>
+                              `),
+                                          scaledSize: { width: 40, height: 50 },
+                                          anchor: { x: 20, y: 50 },
+                                        }
+                                        : undefined
+                                    }
+                                  />
+                                ))}
+
+                                {/* Info window for selected venue */}
+                                {selectedVenue && (
+                                  <InfoWindow
+                                    position={{ lat: selectedVenue.lat, lng: selectedVenue.lng }}
+                                    onCloseClick={() => setSelectedVenue(null)}
+                                    options={{ pixelOffset: { width: 0, height: -50 } }}
+                                  >
+                                    <div className="min-w-[180px]">
+                                      <p className="font-bold text-sm text-gray-800">{selectedVenue.name}</p>
+                                      <p className="text-xs text-gray-500 mt-0.5">{selectedVenue.type} · {selectedVenue.area}</p>
+                                      <p className="text-yellow-500 text-xs mt-1">
+                                        {"★".repeat(selectedVenue.stars)}{"☆".repeat(5 - selectedVenue.stars)}
+                                      </p>
+                                      <p className="text-xs font-semibold text-gray-700 mt-1">
+                                        ₹{selectedVenue.cost?.toLocaleString("en-IN")} / day
+                                      </p>
+                                      <button
+                                        type="button"
+                                        onClick={() => setVenueBookingStep(3)}
+                                        className="mt-2 w-full py-1.5 bg-yellow-500 text-white text-xs font-bold rounded-lg hover:bg-yellow-600 transition-colors"
+                                      >
+                                        Book This Venue →
+                                      </button>
+                                    </div>
+                                  </InfoWindow>
+                                )}
+                              </GoogleMap>
+                            ) : (
+                              <div className="w-full h-[520px] bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400 text-sm">
+                                Loading map…
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between mt-5">
+                          <button type="button" onClick={() => setVenueBookingStep(1)}
+                            className="px-6 py-3 border border-gray-300 rounded-xl text-sm font-semibold text-gray-600 hover:border-gray-500 transition-colors">
+                            ← Back
+                          </button>
+                          {selectedVenue && (
+                            <button type="button" onClick={() => setVenueBookingStep(3)}
+                              className="px-8 py-3 bg-yellow-500 text-white rounded-xl text-sm font-bold hover:bg-yellow-600 transition-colors">
+                              Continue with {selectedVenue.name} →
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ════════════════════════════════════════════════════
+        STEP 3 — Venue Detail + Booking
+    ════════════════════════════════════════════════════ */}
+                    {venueBookingStep === 3 && (
+                      <div className="animate-fadeIn">
+                        <button type="button" onClick={() => setVenueBookingStep(2)}
+                          className="flex items-center gap-1 text-sm text-gray-500 hover:text-yellow-700 transition-colors mb-4">
+                          ← Back
+                        </button>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                          {/* LEFT — Venue detail */}
+                          <div>
+                            {/* Venue hero */}
+                            <div className="w-full h-52 bg-gray-100 rounded-2xl flex items-center justify-center text-6xl mb-5 overflow-hidden border border-gray-200">
+                              {selectedVenue?.image && locationChoice === "venue"
+                                ? <img src={selectedVenue.image} alt={selectedVenue.name} className="w-full h-full object-cover" />
+                                : locationChoice === "venue" ? "🏛️" : "📍"}
+                            </div>
+
+                            <h2 className="text-2xl font-bold text-gray-800 mb-1">
+                              {locationChoice === "custom"
+                                ? "Your Custom Location"
+                                : selectedVenue?.name || "Selected Venue"}
+                            </h2>
+                            <p className="text-sm text-gray-500 mb-4">
+                              📍 {locationChoice === "custom"
+                                ? `${customAddress.flat ? customAddress.flat + ", " : ""}${customAddress.street ? customAddress.street + ", " : ""}${customAddress.city}`
+                                : selectedVenue
+                                  ? `${selectedVenue.area}, ${selectedVenue.location}`
+                                  : ""}
+                            </p>
+
+                            {/* Badges */}
+                            {locationChoice === "venue" && selectedVenue && (
+                              <div className="flex flex-wrap gap-2 mb-5">
+                                <span className="px-3 py-1.5 border border-gray-200 rounded-full text-xs font-semibold text-gray-600">
+                                  ⭐ {selectedVenue.stars}-Star
+                                </span>
+                                <span className="px-3 py-1.5 border border-gray-200 rounded-full text-xs font-semibold text-gray-600">
+                                  {selectedVenue.type}
+                                </span>
+                                <span className="px-3 py-1.5 border border-gray-200 rounded-full text-xs font-semibold text-gray-600">
+                                  📍 {selectedVenue.address}
+                                </span>
+                              </div>
+                            )}
+
+                            {/* Map preview for venue */}
+                            {locationChoice === "venue" && selectedVenue && isLoaded && (
+                              <div className="rounded-2xl overflow-hidden border border-gray-200" style={{ height: "220px" }}>
+                                <GoogleMap
+                                  zoom={15}
+                                  center={{ lat: selectedVenue.lat, lng: selectedVenue.lng }}
+                                  mapContainerStyle={{ width: "100%", height: "220px" }}
+                                  options={{ zoomControl: false, streetViewControl: false, mapTypeControl: false, fullscreenControl: false }}
+                                >
+                                  <Marker position={{ lat: selectedVenue.lat, lng: selectedVenue.lng }} />
+                                </GoogleMap>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* RIGHT — Booking form */}
+                          <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-sm">
+
+                            {/* Price display */}
+                            <div className="mb-5 pb-4 border-b border-gray-100">
+                              <p className="text-xs text-gray-400 mb-1">Starting from</p>
+                              <div className="flex items-baseline gap-1">
+                                <span className="text-3xl font-bold text-gray-900">
+                                  {locationChoice === "venue" && selectedVenue
+                                    ? `₹${selectedVenue.cost?.toLocaleString("en-IN")}`
+                                    : "Contact us"}
+                                </span>
+                                {locationChoice === "venue" && selectedVenue && (
+                                  <span className="text-sm text-gray-400">
+                                    / {bookingMode === "day" ? "day" : "hour"}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Day / Hour toggle */}
+                            {locationChoice === "venue" && (
+                              <>
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Booking Mode</p>
+                                <div className="flex bg-gray-100 rounded-xl p-1 mb-4">
+                                  {[{ key: "day", label: "📅 Day Wise" }, { key: "hour", label: "⏰ Hourly" }].map(({ key, label }) => (
+                                    <button
+                                      key={key}
+                                      type="button"
+                                      onClick={() => setBookingMode(key)}
+                                      className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all
+                        ${bookingMode === key
+                                          ? "bg-white text-yellow-700 shadow-sm"
+                                          : "text-gray-500 hover:text-gray-700"
+                                        }`}
+                                    >
+                                      {label}
+                                    </button>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+
+                            {/* Date */}
+                            <div className="mb-4">
+                              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Event Date</label>
+                              <input
+                                type="date"
+                                value={bookingDate}
+                                onChange={e => setBookingDate(e.target.value)}
+                                className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:ring-2 focus:ring-yellow-400 outline-none"
+                              />
+                            </div>
+
+                            {bookingMode === "day" && locationChoice === "venue" ? (
+                              <div className="mb-4">
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Number of Days</label>
+                                <input
+                                  type="number"
+                                  value={bookingDays}
+                                  min={1}
+                                  max={7}
+                                  onChange={e => setBookingDays(Number(e.target.value))}
+                                  className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:ring-2 focus:ring-yellow-400 outline-none"
+                                />
+                              </div>
+                            ) : locationChoice === "venue" ? (
+                              <div className="grid grid-cols-2 gap-3 mb-4">
+                                <div>
+                                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Start Time</label>
+                                  <input
+                                    type="time"
+                                    value={bookingStartTime}
+                                    onChange={e => setBookingStartTime(e.target.value)}
+                                    className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:ring-2 focus:ring-yellow-400 outline-none"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">End Time</label>
+                                  <input
+                                    type="time"
+                                    value={bookingEndTime}
+                                    onChange={e => setBookingEndTime(e.target.value)}
+                                    className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:ring-2 focus:ring-yellow-400 outline-none"
+                                  />
+                                </div>
+                              </div>
+                            ) : null}
+
+                            {/* Guests */}
+                            <div className="mb-5">
+                              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Number of Guests</label>
+                              <input
+                                type="number"
+                                value={bookingGuests}
+                                placeholder="e.g. 150"
+                                min={1}
+                                onChange={e => setBookingGuests(e.target.value)}
+                                className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-sm focus:ring-2 focus:ring-yellow-400 outline-none"
+                              />
+                            </div>
+
+                            {/* Price breakdown — only for venue mode */}
+                            {locationChoice === "venue" && selectedVenue && (() => {
+                              const { base, service, total } = computeTotal(
+                                selectedVenue, bookingMode, bookingDays, bookingStartTime, bookingEndTime
+                              );
+                              return (
+                                <div className="bg-gray-50 rounded-xl p-4 mb-5">
+                                  <div className="flex justify-between text-sm text-gray-600 mb-2">
+                                    <span>Venue ({bookingMode === "day" ? `${bookingDays} day${bookingDays > 1 ? "s" : ""}` : "hourly"})</span>
+                                    <span>₹{base.toLocaleString("en-IN")}</span>
+                                  </div>
+                                  <div className="flex justify-between text-sm text-gray-600 mb-2">
+                                    <span>Service Fee (5%)</span>
+                                    <span>₹{service.toLocaleString("en-IN")}</span>
+                                  </div>
+                                  <hr className="border-gray-200 my-2" />
+                                  <div className="flex justify-between font-bold text-gray-900">
+                                    <span>Total</span>
+                                    <span>₹{total.toLocaleString("en-IN")}</span>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (locationChoice === "venue" && selectedVenue) {
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    venue: {
+                                      name: selectedVenue.name,
+                                      address: selectedVenue.address,
+                                      city: selectedVenue.location,
+                                    },
+                                    timings: {
+                                      ...prev.timings,
+                                      date: bookingDate,
+                                      time: bookingStartTime,
+                                      capacity: bookingGuests,
+                                    }
+                                  }));
+                                }
+                                setVenueBookingStep(4);
+                              }}
+                              className="w-full py-4 bg-yellow-500 text-white rounded-xl font-bold text-base hover:bg-yellow-600 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                            >
+                              Reserve This Venue →
+                            </button>
+                            <p className="text-center text-xs text-gray-400 mt-3">No payment now. Confirm with our team first.</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ════════════════════════════════════════════════════
+        STEP 4 — Client Details + Confirm
+    ════════════════════════════════════════════════════ */}
+                    {venueBookingStep === 4 && (
+                      <div className="animate-fadeIn">
+                        <button type="button" onClick={() => setVenueBookingStep(3)}
+                          className="flex items-center gap-1 text-sm text-gray-500 hover:text-yellow-700 transition-colors mb-4">
+                          ← Back
+                        </button>
+                        <h3 className="text-xl font-bold text-gray-800 mb-1">Complete Your Booking</h3>
+                        <p className="text-sm text-gray-500 mb-6">Fill in your contact details. Our team will call you within 2 hours to confirm.</p>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                          {/* LEFT — contact form */}
+                          <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200 space-y-4">
+                            <h4 className="font-bold text-gray-700 mb-2 flex items-center gap-2">👤 Your Details</h4>
+                            <div>
+                              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Full Name</label>
+                              <input
+                                type="text"
+                                value={clientName}
+                                onChange={e => setClientName(e.target.value)}
+                                placeholder="e.g. Aditya Sharma"
+                                className="w-full p-3 border border-gray-200 rounded-xl bg-white text-sm focus:ring-2 focus:ring-yellow-400 outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Phone Number</label>
+                              <input
+                                type="tel"
+                                value={clientPhone}
+                                onChange={e => setClientPhone(e.target.value)}
+                                placeholder="+91 9876543210"
+                                className="w-full p-3 border border-gray-200 rounded-xl bg-white text-sm focus:ring-2 focus:ring-yellow-400 outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Email Address</label>
+                              <input
+                                type="email"
+                                value={clientEmail}
+                                onChange={e => setClientEmail(e.target.value)}
+                                placeholder="you@example.com"
+                                className="w-full p-3 border border-gray-200 rounded-xl bg-white text-sm focus:ring-2 focus:ring-yellow-400 outline-none"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">Special Requests</label>
+                              <textarea
+                                rows={3}
+                                placeholder="Décor theme, dietary requirements, special arrangements..."
+                                className="w-full p-3 border border-gray-200 rounded-xl bg-white text-sm focus:ring-2 focus:ring-yellow-400 outline-none resize-none"
+                              />
+                            </div>
+                          </div>
+
+                          {/* RIGHT — summary + confirm */}
+                          <div>
+                            <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-sm mb-4">
+                              <h4 className="font-bold text-gray-700 mb-4 flex items-center gap-2">📋 Booking Summary</h4>
+                              {[
+                                ["Venue", locationChoice === "custom" ? "Custom Location" : selectedVenue?.name || "—"],
+                                ["Event Type", selectedEventType],
+                                ["Date", bookingDate
+                                  ? new Date(bookingDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
+                                  : "—"],
+                                ["Mode", locationChoice === "venue" ? (bookingMode === "day" ? "Day-wise" : "Hourly") : "Flexible"],
+                                ["Guests", bookingGuests ? `${bookingGuests} guests` : "—"],
+                              ].map(([k, v]) => (
+                                <div key={k} className="flex justify-between text-sm py-2 border-b border-gray-50 last:border-0">
+                                  <span className="text-gray-500">{k}</span>
+                                  <span className="font-semibold text-gray-800 text-right max-w-[55%] truncate">{v}</span>
+                                </div>
+                              ))}
+                              {locationChoice === "venue" && selectedVenue && (() => {
+                                const { total } = computeTotal(
+                                  selectedVenue, bookingMode, bookingDays, bookingStartTime, bookingEndTime
+                                );
+                                return (
+                                  <div className="flex justify-between text-base font-bold text-gray-900 mt-3 pt-3 border-t border-gray-200">
+                                    <span>Total Payable</span>
+                                    <span className="text-yellow-600">₹{total.toLocaleString("en-IN")}</span>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!clientName || !clientPhone) {
+                                  toast.error("Please fill in your name and phone number.");
+                                  return;
+                                }
+                                const ref = "BK-" + new Date().getFullYear() + "-" + String(Math.floor(Math.random() * 90000) + 10000);
+                                setBookingRef(ref);
+                                setVenueBookingStep(5);
+                              }}
+                              className="w-full py-4 bg-yellow-500 text-white rounded-xl font-bold text-base hover:bg-yellow-600 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                            >
+                              Confirm Booking Request ✓
+                            </button>
+                            <p className="text-center text-xs text-gray-400 mt-3">
+                              By confirming, you agree to our cancellation policy. Payment will be collected at the venue.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ════════════════════════════════════════════════════
+        STEP 5 — Success
+    ════════════════════════════════════════════════════ */}
+                    {venueBookingStep === 5 && (
+                      <div className="text-center py-12 px-4 animate-fadeIn">
+                        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">✅</div>
+                        <h2 className="text-3xl font-bold text-gray-800 mb-3">Booking Request Sent!</h2>
+                        <p className="text-gray-500 text-base max-w-md mx-auto mb-6 leading-relaxed">
+                          Fantastic! Your venue booking request has been received. Our event specialist will call you within 2 hours to confirm all details.
+                        </p>
+                        <div className="inline-block bg-yellow-50 border border-yellow-200 text-yellow-700 font-mono font-bold text-xl px-8 py-3 rounded-xl mb-8 tracking-widest">
+                          {bookingRef}
+                        </div>
+                        <div className="flex gap-3 justify-center flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setVenueBookingStep(1);
+                              setLocationChoice(null);
+                              setSelectedVenue(null);
+                              setBookingRef("");
+                            }}
+                            className="px-6 py-3 bg-yellow-500 text-white rounded-xl text-sm font-bold hover:bg-yellow-600 transition-colors"
+                          >
+                            Book Another Event
+                          </button>
+                          <button
+                            type="button"
+                            className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl text-sm font-semibold hover:border-gray-500 transition-colors"
+                          >
+                            Download Confirmation
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                  </div>
                 </div>
 
               </div>
