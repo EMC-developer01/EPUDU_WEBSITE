@@ -88,35 +88,76 @@ const ratingBar = (r) => {
 };
 
 /* ── Map Pin ─────────────────────────────────────────────────────────────── */
-function MapPin({ place, isSelected, isHovered, onClick }) {
-  const pl     = parsePriceLevel(place.price_level);
-  const label  = RUPEE_SIGN[pl] || "•";
-  const active = isSelected || isHovered;
+// States:
+//   isSelected → large gold bubble (only one at a time)
+//   isHovered  → dark fill, slightly enlarged
+//   isDimmed   → faded to 0.18 opacity (another pin is selected)
+//   default    → white bubble, dark border, full opacity — ALL pins visible
+function MapPin({ place, isSelected, isHovered, isDimmed, onClick }) {
+  const pl    = parsePriceLevel(place.price_level);
+  const label = RUPEE_SIGN[pl] || "₹";
+
+  const bg     = isSelected ? "#e2b96f" : isHovered ? "#1a1a2e" : "#fff";
+  const fg     = isSelected ? "#1a1a2e" : isHovered ? "#e2b96f" : "#1a1a2e";
+  const border = isSelected ? "#1a1a2e" : isHovered ? "#e2b96f" : "#1a1a2e";
+
+  const scale  = isSelected ? 1.4 : isHovered ? 1.15 : 1;
+  const yShift = isSelected ? -6  : isHovered ? -3   : 0;
+
   return (
-    <div onClick={onClick} style={{
-      cursor: "pointer", userSelect: "none",
-      transform: active ? "scale(1.3) translateY(-5px)" : "scale(1)",
-      transition: "transform 0.18s cubic-bezier(.34,1.56,.64,1)",
-      transformOrigin: "bottom center",
-      zIndex: active ? 99 : 1, position: "relative",
-    }}>
+    <div
+      onClick={onClick}
+      style={{
+        cursor: "pointer",
+        userSelect: "none",
+        position: "relative",
+        transform: `scale(${scale}) translateY(${yShift}px)`,
+        transition: "transform 0.18s cubic-bezier(.34,1.56,.64,1), opacity 0.25s ease",
+        transformOrigin: "bottom center",
+        opacity: isDimmed ? 0.18 : 1,
+        zIndex: isSelected ? 100 : isHovered ? 50 : 1,
+      }}
+    >
+      {/* Pulse ring — only when selected */}
+      {isSelected && (
+        <div style={{
+          position: "absolute",
+          top: "50%", left: "50%",
+          transform: "translate(-50%, -60%)",
+          width: "46px", height: "30px",
+          borderRadius: "15px",
+          border: "2.5px solid rgba(226,185,111,0.55)",
+          pointerEvents: "none",
+          animation: "pinPulse 1.8s ease-out infinite",
+        }}/>
+      )}
+      {/* Bubble */}
       <div style={{
-        background: active ? "#1a1a2e" : "#fff",
-        color: active ? "#e2b96f" : "#1a1a2e",
-        border: `2.5px solid ${active ? "#e2b96f" : "#1a1a2e"}`,
-        borderRadius: "18px", padding: "5px 10px",
-        fontSize: "11px", fontWeight: 800,
-        whiteSpace: "nowrap", lineHeight: 1,
-        boxShadow: active
-          ? "0 6px 18px rgba(226,185,111,0.4)"
-          : "0 2px 8px rgba(0,0,0,0.22)",
-      }}>{label}</div>
+        background: bg,
+        color: fg,
+        border: `2.5px solid ${border}`,
+        borderRadius: "18px",
+        padding: "5px 11px",
+        fontSize: "11px",
+        fontWeight: 800,
+        whiteSpace: "nowrap",
+        lineHeight: 1,
+        boxShadow: isSelected
+          ? "0 8px 24px rgba(226,185,111,0.6)"
+          : isHovered
+            ? "0 4px 14px rgba(26,26,46,0.28)"
+            : "0 2px 8px rgba(0,0,0,0.22)",
+      }}>
+        {label}
+      </div>
+      {/* Tail */}
       <div style={{
         width: 0, height: 0,
         borderLeft: "5px solid transparent",
         borderRight: "5px solid transparent",
-        borderTop: `7px solid ${active ? "#e2b96f" : "#1a1a2e"}`,
-        margin: "0 auto", marginTop: "-1px",
+        borderTop: `7px solid ${border}`,
+        margin: "0 auto",
+        marginTop: "-1px",
       }}/>
     </div>
   );
@@ -696,9 +737,16 @@ export default function VenueBookingSection({ googleMapsApiKey, onVenueCostChang
                   isSelected={selectedPlace?.place_id === place.place_id}
                   isHovered={hoveredId === place.place_id}
                   onClick={() => {
-                    setSelectedPlace(place);
-                    const loc = place.geometry?.location;
-                    if (loc) { setMapCenter({ lat: loc.lat(), lng: loc.lng() }); setMapZoom(15); }
+                    if (selectedPlace?.place_id === place.place_id) {
+                      // Deselect — zoom back out to show all pins
+                      setSelectedPlace(null);
+                      setMapCenter(activeCity.center);
+                      setMapZoom(12);
+                    } else {
+                      setSelectedPlace(place);
+                      const loc = place.geometry?.location;
+                      if (loc) { setMapCenter({ lat: loc.lat(), lng: loc.lng() }); setMapZoom(15); }
+                    }
                   }}
                   onMouseEnter={() => setHoveredId(place.place_id)}
                   onMouseLeave={() => setHoveredId(null)}
@@ -726,10 +774,12 @@ export default function VenueBookingSection({ googleMapsApiKey, onVenueCostChang
               clickableIcons: false,
             }}
           >
-            {/* Venue pins */}
+            {/* Venue pins — ALL shown; dimmed when another is selected */}
             {mode === "select" && places.map((place) => {
               const loc = place.geometry?.location;
               if (!loc) return null;
+              const isSelected = selectedPlace?.place_id === place.place_id;
+              const isDimmed   = !!selectedPlace && !isSelected;
               return (
                 <OverlayView
                   key={place.place_id}
@@ -738,12 +788,20 @@ export default function VenueBookingSection({ googleMapsApiKey, onVenueCostChang
                 >
                   <MapPin
                     place={place}
-                    isSelected={selectedPlace?.place_id === place.place_id}
+                    isSelected={isSelected}
                     isHovered={hoveredId === place.place_id}
+                    isDimmed={isDimmed}
                     onClick={() => {
-                      setSelectedPlace(place);
-                      setMapCenter({ lat: loc.lat(), lng: loc.lng() });
-                      setMapZoom(15);
+                      if (isSelected) {
+                        // Deselect → all pins come back
+                        setSelectedPlace(null);
+                        setMapCenter(activeCity.center);
+                        setMapZoom(12);
+                      } else {
+                        setSelectedPlace(place);
+                        setMapCenter({ lat: loc.lat(), lng: loc.lng() });
+                        setMapZoom(15);
+                      }
                     }}
                   />
                 </OverlayView>
@@ -779,17 +837,30 @@ export default function VenueBookingSection({ googleMapsApiKey, onVenueCostChang
             )}
           </GoogleMap>
 
-          {/* Detail panel */}
+          {/* Detail panel — close restores all pins */}
           {mode === "select" && selectedPlace && (
             <DetailPanel
               place={selectedPlace}
-              onClose={() => setSelectedPlace(null)}
+              onClose={() => {
+                setSelectedPlace(null);
+                setMapCenter(activeCity.center);
+                setMapZoom(12);
+              }}
               onBook={handleBook}
               bookingType={bookingType} setBookingType={setBookingType}
               hours={hours} setHours={setHours}
               days={days}  setDays={setDays}
             />
           )}
+
+          {/* Pulse keyframe injected once */}
+          <style>{`
+            @keyframes pinPulse {
+              0%   { transform: translate(-50%,-60%) scale(1);   opacity: 0.7; }
+              70%  { transform: translate(-50%,-60%) scale(1.7); opacity: 0;   }
+              100% { transform: translate(-50%,-60%) scale(1.7); opacity: 0;   }
+            }
+          `}</style>
 
           {/* Preferred cost badge */}
           {mode === "preferred" && prefPin && (
