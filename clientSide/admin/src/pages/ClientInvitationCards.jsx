@@ -22,6 +22,7 @@ const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
 const API = `${API_URL}/api/admin/client-invitation`;
 const IMAGE_BASE = `${MEDIA_URL}/uploads/`;
+const S3_BASE = `https://${import.meta.env.VITE_AWS_BUCKET_NAME}.s3.${import.meta.env.VITE_AWS_REGION}.amazonaws.com/`;
 
 export default function ClientInvitationCards() {
     const [cards, setCards] = useState([]);
@@ -86,7 +87,7 @@ export default function ClientInvitationCards() {
             description: item.description,
             isActive: item.isActive,
         });
-        setPreview(`${IMAGE_BASE}${item.image}`);
+        setPreview(`${S3_BASE}${item.image}`);
     };
 
     const toggleStatus = async (id, status) => {
@@ -123,7 +124,7 @@ export default function ClientInvitationCards() {
 
                             <form onSubmit={handleSubmit} className="space-y-3">
                                 <input type="file" name="image" accept="image/*" onChange={handleChange} className="border rounded-lg p-2 w-full" required={!editingId} />
-                                {preview && <img src={preview} className="w-full h-40 object-cover rounded-lg border" />}
+                                {preview && <img src={`${S3_BASE}${item.image}`} className="w-full h-40 object-cover rounded-lg border" />}
 
                                 <input name="cardName" value={form.cardName} onChange={handleChange} placeholder="Card Name" className="border rounded-lg p-2 w-full" required />
                                 <select name="eventName" value={form.eventName} onChange={handleChange} className="border rounded-lg p-2 w-full" required>
@@ -182,7 +183,7 @@ export default function ClientInvitationCards() {
                                     {filteredCards.length ? filteredCards.map((item, index) => (
                                         <TableRow key={item._id}>
                                             <TableCell>{index + 1}</TableCell>
-                                            <TableCell><img src={`${IMAGE_BASE}${encodeURI(item.image)}`} className="w-16 h-16 rounded-lg object-cover" /></TableCell>
+                                            <TableCell><img src={`${S3_BASE}${encodeURI(item.image)}`} className="w-16 h-16 rounded-lg object-cover" /></TableCell>
                                             <TableCell>{item.cardName}</TableCell>
                                             <TableCell>{item.eventName}</TableCell>
                                             <TableCell className="max-w-xs truncate">{item.description || "-"}</TableCell>
