@@ -1,49 +1,30 @@
 import AWS from "aws-sdk";
-import multer from "multer";
-import mime from "mime-types";
-import { S3Client } from "@aws-sdk/client-s3";
 
-
-// const s3 = new AWS.S3({
-//   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-//   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-//   region: process.env.AWS_REGION,
-// });
-
-export const s3 = new S3Client({
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  },
 });
 
-const upload = multer({
-  storage: multer.memoryStorage(),
-});
-
-export const uploadImage = async (req, res) => {
+export const getUploadUrl = async (req, res) => {
   try {
-    const file = req.file;
+    const { fileName, fileType } = req.body;
 
-    const key = `uploads/${Date.now()}-${file.originalname}`;
+    const key = `uploads/${Date.now()}-${fileName}`;
 
-    const result = await s3
-      .upload({
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Key: key,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-        ACL: "public-read",
-      })
-      .promise();
+    const uploadUrl = s3.getSignedUrl("putObject", {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: key,
+      Expires: 60,
+      ContentType: fileType,
+      ACL: "public-read",
+    });
 
     res.json({
-      success: true,
-      url: result.Location,
+      uploadUrl,
+      key, // ✅ IMPORTANT: send key only
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Upload failed" });
+    res.status(500).json({ message: "Error generating upload URL" });
   }
 };

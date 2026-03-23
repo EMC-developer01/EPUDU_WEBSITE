@@ -34,6 +34,31 @@ export default function ClientInvitationCards() {
     const [eventFilter, setEventFilter] = useState("all");
     const [search, setSearch] = useState("");
 
+    const uploadFile = async (file) => {
+        const res = await fetch(`${API_URL}/api/get-upload-url`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                fileName: file.name,
+                fileType: file.type,
+            }),
+        });
+
+        const { uploadUrl, key } = await res.json(); // ✅ use key
+
+        await fetch(uploadUrl, {
+            method: "PUT",
+            headers: {
+                "Content-Type": file.type,
+            },
+            body: file,
+        });
+
+        return key; // ✅ return full key like uploads/xxx.jpg
+    };
+
     const [form, setForm] = useState({
         image: null,
         cardName: "",
@@ -65,13 +90,25 @@ export default function ClientInvitationCards() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const formData = new FormData();
-        Object.keys(form).forEach(key => formData.append(key, form[key]));
+        let imageKey = form.image;
+
+        // Upload only if new file
+        if (form.image instanceof File) {
+            imageKey = await uploadFile(form.image);
+        }
+
+        const payload = {
+            cardName: form.cardName,
+            eventName: form.eventName,
+            description: form.description,
+            isActive: form.isActive,
+            image: imageKey, // ✅ directly store key
+        };
 
         if (editingId) {
-            await axios.put(`${API}/update/${editingId}`, formData);
+            await axios.put(`${API}/update/${editingId}`, payload);
         } else {
-            await axios.post(`${API}/add`, formData);
+            await axios.post(`${API}/add`, payload);
         }
 
         resetForm();
