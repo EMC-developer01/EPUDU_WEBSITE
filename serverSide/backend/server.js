@@ -15,14 +15,7 @@ dotenv.config();
 connectDB();
 initMailer()
 
-// mongoose.connect(process.env.MONGO_URI, {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-// })
-//   .then(() => console.log("✅ MongoDB Connected"))
-//   .catch((err) => console.error("❌ MongoDB Connection Failed:", err));
-
-const otpStore = new Map(); // mobile -> otp
+const otpStore = new Map(); 
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -88,47 +81,7 @@ app.get(/^\/vendor\/.*/, (req, res) => {
   );
 });
 
-// app.post("/api/send-otp", async (req, res) => {
-//   const { mobile } = req.body;
-
-//   if (!/^[6-9]\d{9}$/.test(mobile)) {
-//     return res.status(400).json({ message: "Invalid mobile number" });
-//   }
-//   const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
-
-//   try {
-//     const response = await axios.get(
-//       `https://2factor.in/API/V1/${process.env.TWO_FACTOR_API_KEY}/SMS/${mobile}/AUTOGEN/SLVTECH`
-//     );
-
-//     res.json({
-//       success: true,
-//       sessionId: response.data.Details, // IMPORTANT
-//     });
-//   } catch (err) {
-//     console.error(err.response?.data || err.message);
-//     res.status(500).json({ message: "Failed to send OTP" });
-//   }
-// });
-startAutoSync(30000); // auto sync every 60s
-// app.post("/api/verify-otp", async (req, res) => {
-//   const { otp, sessionId } = req.body;
-
-//   try {
-//     const response = await axios.get(
-//       `https://2factor.in/API/V1/${process.env.TWO_FACTOR_API_KEY}/SMS/VERIFY/${sessionId}/${otp}`
-//     );
-
-//     if (response.data.Status === "Success") {
-//       res.json({ verified: true });
-//     } else {
-//       res.status(400).json({ verified: false });
-//     }
-//   } catch (err) {
-//     console.error(err.response?.data || err.message);
-//     res.status(500).json({ message: "OTP verification failed" });
-//   }
-// });
+startAutoSync(30000);
 
 app.post("/api/send-otp", (req, res) => {
   const { mobile } = req.body;
