@@ -35,12 +35,14 @@ app.use(cors({
     "http://localhost:3001",
     "http://localhost:3002",
     "https://epudu.com",
+    "https://www.epudu.com",
     "http://43.205.46.167",
     "http://43.205.46.167",
   ],
 
   credentials: true
 }));
+app.options("*", cors());
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }))
