@@ -9,6 +9,7 @@ import { startAutoSync } from "./controllers/vendor/vendor-orderListController.j
 import path from "path";
 import { fileURLToPath } from "url";
 import { initMailer } from "./testMail.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -46,6 +47,8 @@ app.options(/.*/, cors());
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }))
+
+app.use("/api", uploadRoutes);
 
 app.use(
   "/uploads/homepageVideos",
