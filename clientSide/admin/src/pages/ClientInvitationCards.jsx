@@ -22,7 +22,7 @@ const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
 const API = `${API_URL}/api/admin/client-invitation`;
 const IMAGE_BASE = `${MEDIA_URL}/uploads/`;
-const S3_BASE = `https://${import.meta.env.VITE_AWS_BUCKET_NAME}.s3.${import.meta.env.VITE_AWS_REGION}.amazonaws.com/uploads/`;
+const S3_BASE = `https://${import.meta.env.VITE_AWS_BUCKET_NAME}.s3.${import.meta.env.VITE_AWS_REGION}.amazonaws.com/`;
 
 export default function ClientInvitationCards() {
     const [cards, setCards] = useState([]);
