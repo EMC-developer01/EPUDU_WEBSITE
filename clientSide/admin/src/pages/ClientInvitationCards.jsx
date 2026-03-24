@@ -47,7 +47,10 @@ export default function ClientInvitationCards() {
         });
 
         const { uploadUrl, key } = await res.json(); // ✅ use key
-
+        if (!key) {
+            throw new Error("Key not received from backend");
+        }
+        
         await fetch(uploadUrl, {
             method: "PUT",
             headers: {
