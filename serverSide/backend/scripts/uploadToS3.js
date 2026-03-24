@@ -6,7 +6,7 @@ const s3 = new AWS.S3({
   region: process.env.AWS_REGION,
 });
 
-export const getUploadUrl = async (req, res) => {
+export const getUploadUrls = async (req, res) => {
   try {
     const { fileName, fileType } = req.body;
 
