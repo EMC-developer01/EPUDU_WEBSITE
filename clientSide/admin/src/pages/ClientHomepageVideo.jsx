@@ -15,12 +15,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Edit, Power, Video } from "lucide-react";
-const API_URL = import.meta.env.VITE_API_URL;
-const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
+const API_URL = import.meta.env.VITE_API_URL;
 
 const API = `${API_URL}/api/admin/client-homepage-videos`;
-const VIDEO_BASE = `${MEDIA_URL}/uploads/homepageVideos`;
+const S3_BASE = `https://${import.meta.env.VITE_AWS_BUCKET_NAME}.s3.${import.meta.env.VITE_AWS_REGION}.amazonaws.com/`;
 
 function ClientHomepageVideo() {
   const [videos, setVideos] = useState([]);
@@ -37,7 +36,35 @@ function ClientHomepageVideo() {
     isActive: true,
   });
 
-  /* fetch videos */
+  // ✅ S3 Upload (same as invitation cards)
+  const uploadFile = async (file) => {
+    const res = await fetch(`${API_URL}/api/get-upload-url/homepageVideos`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        fileName: file.name,
+        fileType: file.type,
+      }),
+    });
+
+    const { uploadUrl, key } = await res.json();
+
+    if (!key) throw new Error("No key from backend");
+
+    await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type,
+      },
+      body: file,
+    });
+
+    return key;
+  };
+
+  // fetch
   const fetchVideos = async () => {
     const res = await axios.get(`${API}/all`);
     setVideos(res.data);
@@ -47,7 +74,7 @@ function ClientHomepageVideo() {
     fetchVideos();
   }, []);
 
-  /* handlers */
+  // handle change
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
@@ -59,20 +86,36 @@ function ClientHomepageVideo() {
     }
   };
 
+  // ✅ UPDATED SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = new FormData();
-    Object.keys(form).forEach((k) => formData.append(k, form[k]));
+    let videoKey = form.video;
 
-    editingId
-      ? await axios.put(`${API}/update/${editingId}`, formData)
-      : await axios.post(`${API}/add`, formData);
+    // upload only if new file
+    if (form.video instanceof File) {
+      videoKey = await uploadFile(form.video);
+    }
+
+    const payload = {
+      title: form.title,
+      isActive: form.isActive,
+      video: videoKey,
+    };
+
+    console.log("Payload:", payload); // debug
+
+    if (editingId) {
+      await axios.put(`${API}/update/${editingId}`, payload);
+    } else {
+      await axios.post(`${API}/add`, payload);
+    }
 
     resetForm();
     fetchVideos();
   };
 
+  // edit
   const handleEdit = (item) => {
     setEditingId(item._id);
     setForm({
@@ -80,11 +123,13 @@ function ClientHomepageVideo() {
       title: item.title,
       isActive: item.isActive,
     });
-    setPreview(`${VIDEO_BASE}/${item.video}`);
+
+    setPreview(`${S3_BASE}${item.video}`);
   };
 
-  const toggleStatus = async (id, status) => {
-    await axios.patch(`${API}/status/${id}`, { isActive: !status });
+  // toggle
+  const toggleStatus = async (id) => {
+    await axios.patch(`${API}/status/${id}`);
     fetchVideos();
   };
 
@@ -94,7 +139,7 @@ function ClientHomepageVideo() {
     setPreview(null);
   };
 
-  /* filters */
+  // filters
   const filteredVideos = videos
     .filter((v) =>
       statusFilter === "all"
@@ -117,7 +162,7 @@ function ClientHomepageVideo() {
         <main className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            {/* LEFT FORM */}
+            {/* FORM */}
             <div className="bg-white rounded-xl shadow-md border p-6">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <Video size={18} />
@@ -163,39 +208,15 @@ function ClientHomepageVideo() {
                   <option value="false">Inactive</option>
                 </select>
 
-                <Button className="w-full" style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}>
+                <Button className="w-full bg-indigo-600 text-white">
                   {editingId ? "Update Video" : "Add Video"}
                 </Button>
               </form>
             </div>
 
-            {/* RIGHT TABLE */}
+            {/* TABLE */}
             <div className="lg:col-span-2 bg-white rounded-xl shadow-md border overflow-x-auto">
-              <div className="p-4 border-b flex flex-wrap justify-between gap-3">
-                <h2 className="text-lg font-semibold">Homepage Videos</h2>
-
-                <div className="flex gap-2">
-                  <input
-                    placeholder="Search..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="border rounded-lg px-3 py-2"
-                  />
-
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="border rounded-lg px-3 py-2"
-                  >
-                    <option value="all">All</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </div>
-              </div>
-
               <Table>
-                <TableCaption>Client homepage videos</TableCaption>
                 <TableHeader>
                   <TableRow>
                     <TableHead>#</TableHead>
@@ -207,65 +228,33 @@ function ClientHomepageVideo() {
                 </TableHeader>
 
                 <TableBody>
-                  {filteredVideos.length ? (
-                    filteredVideos.map((item, i) => (
-                      <TableRow key={item._id}>
-                        <TableCell>{i + 1}</TableCell>
+                  {filteredVideos.map((item, i) => (
+                    <TableRow key={item._id}>
+                      <TableCell>{i + 1}</TableCell>
 
-                        <TableCell>
-                          <video autoPlay muted loop playsInline className="w-16 h-12 rounded-lg object-cover">
-                            <source src={`${VIDEO_BASE}/${encodeURI(item.video)}`} type="video/mp4" />
-                          </video>
-                        </TableCell>
+                      <TableCell>
+                        <video className="w-16 h-12 rounded-lg object-cover" autoPlay muted loop>
+                          <source src={`${S3_BASE}${encodeURI(item.video)}`} />
+                        </video>
+                      </TableCell>
 
-                        <TableCell>{item.title}</TableCell>
+                      <TableCell>{item.title}</TableCell>
 
-                        <TableCell>
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs ${item.isActive
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                              }`}
-                          >
-                            {item.isActive ? "Active" : "Inactive"}
-                          </span>
-                        </TableCell>
+                      <TableCell>
+                        {item.isActive ? "Active" : "Inactive"}
+                      </TableCell>
 
-                        <TableCell className="text-center">
-                          <div className="flex justify-center gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleEdit(item)}
-                              style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
-                            >
-                              <Edit size={14} />
-                            </Button>
+                      <TableCell className="flex justify-center gap-2">
+                        <Button size="sm" onClick={() => handleEdit(item)}>
+                          <Edit size={14} />
+                        </Button>
 
-                            <Button
-                              size="sm"
-                              variant={item.isActive ? "destructive" : "default"}
-                              onClick={() =>
-                                toggleStatus(item._id, item.isActive)
-                              }
-                              style={{ backgroundColor: "#4f46e5", color: "#ffffff" }}
-                            >
-                              <Power size={14} />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={5}
-                        className="text-center py-6 text-gray-500"
-                      >
-                        No videos found 😕
+                        <Button size="sm" onClick={() => toggleStatus(item._id)}>
+                          <Power size={14} />
+                        </Button>
                       </TableCell>
                     </TableRow>
-                  )}
+                  ))}
                 </TableBody>
               </Table>
             </div>
