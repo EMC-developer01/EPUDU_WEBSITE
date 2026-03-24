@@ -9,32 +9,40 @@ const s3 = new AWS.S3({
 export const getUploadUrl = async (req, res) => {
     try {
         const { fileName, fileType } = req.body;
+        const { type } = req.params;
 
-        // ✅ clean filename (avoid spaces issue)
-        const cleanFileName = fileName.replace(/\s+/g, "-");
+        const allowedTypes = [
+            "banners",
+            "homepageImages",
+            "homepageServices",
+            "homepageVideos",
+            "invitationCards",
+            "vendorItems",
+            "vendorAgreements"
+        ];
 
-        // ✅ correct folder structure
-        const key = `uploads/invitationCards/${Date.now()}-${cleanFileName}`;
+        if (!allowedTypes.includes(type)) {
+            return res.status(400).json({ message: "Invalid upload type" });
+        }
 
-        const uploadUrl = s3.getSignedUrl("putObject", {
+        const cleanFileName = fileName.replace(/\s/g, "_");
+
+        const key = `${type}/${Date.now()}-${cleanFileName}`;
+
+        const params = {
             Bucket: process.env.AWS_BUCKET_NAME,
             Key: key,
-            Expires: 60,
             ContentType: fileType,
-            ACL: "public-read",
-        });
+        };
 
-        res.status(200).json({
-            success: true,
+        const uploadUrl = await s3.getSignedUrlPromise("putObject", params);
+
+        res.json({
             uploadUrl,
-            key,
+            fileUrl: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${key}`
         });
 
     } catch (error) {
-        console.error("S3 Upload URL Error:", error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to generate upload URL",
-        });
+        res.status(500).json({ error: error.message });
     }
 };

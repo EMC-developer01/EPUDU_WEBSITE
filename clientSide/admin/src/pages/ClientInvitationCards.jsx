@@ -35,7 +35,7 @@ export default function ClientInvitationCards() {
     const [search, setSearch] = useState("");
 
     const uploadFile = async (file) => {
-        const res = await fetch(`${API_URL}/api/get-upload-url`, {
+        const res = await fetch(`${API_URL}/api/get-upload-url/invitationCards`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
