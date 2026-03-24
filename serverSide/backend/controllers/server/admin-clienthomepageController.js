@@ -12,33 +12,20 @@ const s3 = new AWS.S3({
 /* ADD */
 export const addVideo = async (req, res) => {
     try {
-        const file = req.file;
+        const { title, video, isActive } = req.body;
 
-        if (!file) {
-            return res.status(400).json({ message: "Video file is required" });
+        if (!video) {
+            return res.status(400).json({ message: "Video key is required" });
         }
 
-        const key = `uploads/homepageVideos/${Date.now()}-${file.originalname}`;
-
-        const uploadResult = await s3
-            .upload({
-                Bucket: process.env.AWS_BUCKET_NAME,
-                Key: key,
-                Body: file.buffer,
-                ContentType: file.mimetype,
-                ACL: "public-read",
-            })
-            .promise();
-
-        const video = await ClientHomepageVideo.create({
-            title: req.body.title,
-            video: key, // save S3 key
-            isActive: req.body.isActive === "true",
+        const newVideo = await ClientHomepageVideo.create({
+            title,
+            video, // ✅ already S3 key
+            isActive,
         });
 
-        res.status(201).json(video);
+        res.status(201).json(newVideo);
     } catch (err) {
-        console.error(err);
         res.status(500).json({ error: err.message });
     }
 };
@@ -56,36 +43,19 @@ export const getAllVideos = async (req, res) => {
 /* UPDATE */
 export const updateVideo = async (req, res) => {
     try {
-        const data = {
-            title: req.body.title,
-            isActive: req.body.isActive === "true",
-        };
+        const { title, video, isActive } = req.body;
 
-        if (req.file) {
-            const file = req.file;
-
-            const key = `uploads/homepageVideos/${Date.now()}-${file.originalname}`;
-
-            await s3
-                .upload({
-                    Bucket: process.env.AWS_BUCKET_NAME,
-                    Key: key,
-                    Body: file.buffer,
-                    ContentType: file.mimetype,
-                    ACL: "public-read",
-                })
-                .promise();
-
-            data.video = key;
-        }
-
-        const video = await ClientHomepageVideo.findByIdAndUpdate(
+        const updated = await ClientHomepageVideo.findByIdAndUpdate(
             req.params.id,
-            data,
+            {
+                title,
+                isActive,
+                ...(video && { video }), // only update if new video
+            },
             { new: true }
         );
 
-        res.json(video);
+        res.json(updated);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
