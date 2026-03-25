@@ -220,7 +220,7 @@ export default function ClientBanner() {
 
                                                 <TableCell>
                                                     <img
-                                                        src={`${item.image}`}
+                                                        src={`${IMAGE_BASE}/${item.image}`}
                                                         className="w-20 h-12 rounded object-cover"
                                                     />
                                                 </TableCell>
