@@ -38,6 +38,21 @@ export default function ClientBanner() {
         isActive: true,
     });
 
+    const uploadToS3 = async (file) => {
+        const { data } = await axios.post(
+            `${API_URL}/api/get-upload-url/banners`, // 👈 matches your backend route
+            {
+                fileName: file.name,
+                fileType: file.type,
+            }
+        );
+
+        await axios.put(data.uploadUrl, file, {
+            headers: { "Content-Type": file.type },
+        });
+
+        return data.fileUrl; // 👈 THIS is what goes to DB
+    };
     /* ---------------- FETCH ---------------- */
     const fetchBanners = async () => {
         const res = await axios.get(`${API}/all`);
@@ -63,14 +78,20 @@ export default function ClientBanner() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const formData = new FormData();
-        Object.keys(form).forEach((key) =>
-            formData.append(key, form[key])
-        );
+        let imageUrl = form.image;
+
+        if (form.image instanceof File) {
+            imageUrl = await uploadToS3(form.image);
+        }
+
+        const payload = {
+            ...form,
+            image: imageUrl,
+        };
 
         editingId
-            ? await axios.put(`${API}/update/${editingId}`, formData)
-            : await axios.post(`${API}/add`, formData);
+            ? await axios.put(`${API}/update/${editingId}`, payload)
+            : await axios.post(`${API}/add`, payload);
 
         resetForm();
         fetchBanners();

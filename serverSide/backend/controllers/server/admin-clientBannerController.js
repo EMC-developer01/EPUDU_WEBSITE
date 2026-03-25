@@ -3,8 +3,9 @@ import ClientBanner from "../../models/server/admin-clientbannerModel.js";
 export const addBanner = async (req, res) => {
     const banner = await ClientBanner.create({
         ...req.body,
-        image: req.file.filename,
+        image: req.body.image, // 👈 URL from frontend (S3)
     });
+
     res.json(banner);
 };
 
