@@ -714,6 +714,7 @@ export default function Birthday() {
       matchesPrice
     );
   });
+  const GOOGLE_LIBRARIES = ["places"];
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
@@ -1040,7 +1041,7 @@ export default function Birthday() {
               <div className="flex flex-col lg:flex-row gap-6">
                 <LoadScript
                   googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
-                  libraries={["places"]}
+                  libraries={GOOGLE_LIBRARIES}
                 >
                   <VenueBookingSection
                     googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
