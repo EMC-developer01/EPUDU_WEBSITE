@@ -1,739 +1,1459 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
-// ─── Static Venue Data (Google Maps integrated) ───────────────────────────────
-const STATIC_VENUES = [
-  {
-    id: 1,
-    name: "The Grand Pavilion",
-    type: ["wedding", "function", "corporate"],
-    city: "Hyderabad",
-    area: "Banjara Hills",
-    rating: 4.8,
-    reviews: 312,
-    lat: 17.4126,
-    lng: 78.4482,
-    address: "Road No. 12, Banjara Hills, Hyderabad, Telangana 500034",
-    photos: [
-      "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=400&q=80",
-      "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400&q=80",
-      "https://images.unsplash.com/photo-1478146059778-26028b07395a?w=400&q=80",
-    ],
-    capacity: 800,
-    pricePerHour: 15000,
-    pricePerDay: 95000,
-    amenities: ["Parking", "Catering", "AC", "Stage", "Garden"],
-    description: "Luxurious banquet hall with panoramic city views and world-class facilities.",
-  },
-  {
-    id: 2,
-    name: "Serene Garden Resort",
-    type: ["wedding", "birthday", "reception"],
-    city: "Hyderabad",
-    area: "Jubilee Hills",
-    rating: 4.6,
-    reviews: 187,
-    lat: 17.4315,
-    lng: 78.4085,
-    address: "Plot 45, Jubilee Hills Check Post, Hyderabad, Telangana 500033",
-    photos: [
-      "https://images.unsplash.com/photo-1591604466107-ec97de577aff?w=400&q=80",
-      "https://images.unsplash.com/photo-1510076857177-7470076d4098?w=400&q=80",
-      "https://images.unsplash.com/photo-1505236858219-8359eb29e329?w=400&q=80",
-    ],
-    capacity: 400,
-    pricePerHour: 8000,
-    pricePerDay: 55000,
-    amenities: ["Garden", "Parking", "DJ", "Decor", "Catering"],
-    description: "Elegant garden venue perfect for intimate celebrations and outdoor weddings.",
-  },
-  {
-    id: 3,
-    name: "Skyline Convention Center",
-    type: ["corporate", "function", "seminar"],
-    city: "Hyderabad",
-    area: "HITEC City",
-    rating: 4.5,
-    reviews: 425,
-    lat: 17.4477,
-    lng: 78.3803,
-    address: "Cyber Towers, HITEC City, Hyderabad, Telangana 500081",
-    photos: [
-      "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80",
-      "https://images.unsplash.com/photo-1431540015161-0bf868a2d407?w=400&q=80",
-      "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&q=80",
-    ],
-    capacity: 1200,
-    pricePerHour: 25000,
-    pricePerDay: 150000,
-    amenities: ["AV System", "WiFi", "Catering", "Parking", "Breakout Rooms"],
-    description: "State-of-the-art convention center for large-scale corporate events.",
-  },
-  {
-    id: 4,
-    name: "Bloom Terrace",
-    type: ["birthday", "reception", "party"],
-    city: "Hyderabad",
-    area: "Kondapur",
-    rating: 4.3,
-    reviews: 98,
-    lat: 17.4598,
-    lng: 78.3568,
-    address: "Survey No. 78, Kondapur Main Road, Hyderabad, Telangana 500084",
-    photos: [
-      "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&q=80",
-      "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=400&q=80",
-      "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=400&q=80",
-    ],
-    capacity: 200,
-    pricePerHour: 5000,
-    pricePerDay: 32000,
-    amenities: ["Rooftop", "DJ", "Bar", "Catering", "Photo Booth"],
-    description: "Chic rooftop venue with stunning sunset views for parties and celebrations.",
-  },
-  {
-    id: 5,
-    name: "The Heritage Hall",
-    type: ["wedding", "function", "cultural"],
-    city: "Hyderabad",
-    area: "Secunderabad",
-    rating: 4.7,
-    reviews: 234,
-    lat: 17.4402,
-    lng: 78.4979,
-    address: "MG Road, Secunderabad, Hyderabad, Telangana 500003",
-    photos: [
-      "https://images.unsplash.com/photo-1519741497674-611481863552?w=400&q=80",
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
-      "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400&q=80",
-    ],
-    capacity: 600,
-    pricePerHour: 12000,
-    pricePerDay: 75000,
-    amenities: ["Heritage Architecture", "Parking", "Catering", "Stage", "Dressing Rooms"],
-    description: "Colonial-era heritage building offering timeless elegance for grand celebrations.",
-  },
-  {
-    id: 6,
-    name: "Fusion Fiesta",
-    type: ["birthday", "party", "reception"],
-    city: "Hyderabad",
-    area: "Gachibowli",
-    rating: 4.4,
-    reviews: 156,
-    lat: 17.4401,
-    lng: 78.3489,
-    address: "DLF Cyber City, Gachibowli, Hyderabad, Telangana 500032",
-    photos: [
-      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&q=80",
-      "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400&q=80",
-      "https://images.unsplash.com/photo-1541532713592-79a0317b6b77?w=400&q=80",
-    ],
-    capacity: 300,
-    pricePerHour: 7000,
-    pricePerDay: 45000,
-    amenities: ["LED Stage", "DJ", "Bar", "Catering", "VIP Lounge"],
-    description: "Modern entertainment venue with cutting-edge sound and lighting systems.",
-  },
-];
+// ─── Google Maps Loader ───────────────────────────────────────────────────────
+const loadGoogleMaps = (() => {
+  let promise = null;
+  return () => {
+    if (!promise) {
+      promise = new Promise((resolve, reject) => {
+        if (window.google?.maps) return resolve(window.google.maps);
+        const script = document.createElement("script");
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=places,geometry`;
+        script.async = true;
+        script.onload = () => resolve(window.google.maps);
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+    return promise;
+  };
+})();
 
+// ─── Event Types ─────────────────────────────────────────────────────────────
 const EVENT_TYPES = [
-  { id: "wedding", label: "Wedding", icon: "💍" },
-  { id: "birthday", label: "Birthday", icon: "🎂" },
-  { id: "function", label: "Function", icon: "🎉" },
-  { id: "corporate", label: "Corporate", icon: "💼" },
-  { id: "reception", label: "Reception", icon: "🥂" },
-  { id: "party", label: "Party", icon: "🎊" },
-  { id: "cultural", label: "Cultural", icon: "🎭" },
-  { id: "seminar", label: "Seminar", icon: "📋" },
+  { id: "birthday", label: "Birthday", icon: "🎂", query: "birthday party venue" },
+  { id: "wedding", label: "Wedding", icon: "💍", query: "wedding venue banquet hall" },
+  { id: "corporate", label: "Corporate", icon: "💼", query: "corporate event space conference hall" },
+  { id: "function", label: "Function", icon: "🎊", query: "function hall event venue" },
+  { id: "reception", label: "Reception", icon: "🥂", query: "reception hall banquet" },
+  { id: "conference", label: "Conference", icon: "🎤", query: "conference center meeting hall" },
+  { id: "concert", label: "Concert", icon: "🎵", query: "concert hall auditorium event space" },
+  { id: "exhibition", label: "Exhibition", icon: "🖼️", query: "exhibition hall gallery space" },
 ];
 
-const CITIES = ["All Cities", "Hyderabad", "Mumbai", "Delhi", "Bangalore", "Chennai"];
+const CITY_FILTERS = ["All Cities", "Hyderabad", "Mumbai", "Delhi", "Bangalore", "Chennai", "Pune", "Kolkata"];
+const RATING_FILTERS = ["All Ratings", "4.5+", "4.0+", "3.5+", "3.0+"];
 
-// ─── Google Maps Loader ────────────────────────────────────────────────────────
-let mapsLoaded = false;
-let mapsLoading = false;
-const mapsCallbacks = [];
+// ─── Styles ───────────────────────────────────────────────────────────────────
+const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
 
-function loadGoogleMaps(apiKey) {
-  return new Promise((resolve, reject) => {
-    if (mapsLoaded && window.google?.maps) { resolve(window.google.maps); return; }
-    mapsCallbacks.push({ resolve, reject });
-    if (mapsLoading) return;
-    mapsLoading = true;
-    window.__googleMapsReady = () => {
-      mapsLoaded = true;
-      mapsLoading = false;
-      mapsCallbacks.forEach((cb) => cb.resolve(window.google.maps));
-      mapsCallbacks.length = 0;
-    };
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=__googleMapsReady`;
-    script.async = true;
-    script.onerror = () => {
-      mapsLoading = false;
-      mapsCallbacks.forEach((cb) => cb.reject(new Error("Maps failed to load")));
-      mapsCallbacks.length = 0;
-    };
-    document.head.appendChild(script);
-  });
+  :root {
+    --bg: #0d0f14;
+    --surface: #161a22;
+    --surface2: #1e2330;
+    --surface3: #252d3d;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --gold: #c9a84c;
+    --gold-light: #e8c96a;
+    --gold-dim: rgba(201,168,76,0.15);
+    --text: #f0ede8;
+    --text-muted: #8a8fa0;
+    --text-dim: #5a5f70;
+    --accent: #3d7bf5;
+    --accent-dim: rgba(61,123,245,0.15);
+    --green: #22c55e;
+    --red: #ef4444;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-gold: 0 4px 24px rgba(201,168,76,0.2);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .vbs-root {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  .vbs-header {
+    padding: 28px 40px 20px;
+    background: linear-gradient(180deg, rgba(201,168,76,0.06) 0%, transparent 100%);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .vbs-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: -0.5px;
+  }
+  .vbs-logo span { color: var(--text); font-weight: 400; }
+  .vbs-tagline {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-left: auto;
+  }
+
+  /* ── Mode Toggle ── */
+  .vbs-mode-bar {
+    padding: 20px 40px 0;
+    display: flex;
+    gap: 12px;
+  }
+  .vbs-mode-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border-radius: 50px;
+    border: 1.5px solid var(--border2);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .vbs-mode-btn:hover { border-color: var(--gold); color: var(--text); }
+  .vbs-mode-btn.active {
+    background: var(--gold-dim);
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .vbs-mode-btn svg { width: 18px; height: 18px; }
+
+  /* ── Event Type Selector ── */
+  .vbs-event-section {
+    padding: 24px 40px 0;
+  }
+  .vbs-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .vbs-event-grid {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .vbs-event-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    border-radius: 50px;
+    border: 1.5px solid var(--border2);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .vbs-event-chip:hover { border-color: var(--gold-light); color: var(--text); background: var(--surface2); }
+  .vbs-event-chip.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #0d0f14;
+    font-weight: 600;
+    box-shadow: var(--shadow-gold);
+  }
+  .vbs-event-chip .chip-icon { font-size: 16px; }
+
+  /* ── Main Content ── */
+  .vbs-main {
+    flex: 1;
+    display: flex;
+    gap: 0;
+    padding: 20px 40px 28px;
+    height: calc(100vh - 240px);
+    min-height: 580px;
+  }
+
+  /* ── Left Panel ── */
+  .vbs-left {
+    width: 400px;
+    min-width: 340px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-right: 20px;
+  }
+
+  /* ── Search + Filters ── */
+  .vbs-search-box {
+    position: relative;
+  }
+  .vbs-search-input {
+    width: 100%;
+    padding: 13px 18px 13px 46px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border2);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .vbs-search-input:focus { border-color: var(--gold); }
+  .vbs-search-input::placeholder { color: var(--text-dim); }
+  .vbs-search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    width: 18px;
+    height: 18px;
+  }
+
+  .vbs-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .vbs-filter-select {
+    padding: 8px 14px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border2);
+    border-radius: 50px;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+    padding-right: 28px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8fa0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+  .vbs-filter-select:focus, .vbs-filter-select:hover { border-color: var(--gold); color: var(--text); }
+  .vbs-filter-select option { background: #1e2330; }
+
+  .vbs-results-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2px;
+  }
+  .vbs-results-count {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .vbs-results-count strong { color: var(--gold); }
+  .vbs-map-area-badge {
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--accent-dim);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  /* ── Venue List ── */
+  .vbs-venue-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 4px;
+  }
+  .vbs-venue-list::-webkit-scrollbar { width: 4px; }
+  .vbs-venue-list::-webkit-scrollbar-track { background: transparent; }
+  .vbs-venue-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+  .vbs-venue-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .vbs-venue-card:hover { border-color: var(--gold); transform: translateY(-1px); box-shadow: var(--shadow); }
+  .vbs-venue-card.selected { border-color: var(--gold); background: var(--surface2); box-shadow: var(--shadow-gold); }
+  .vbs-venue-card.selected::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--gold);
+    border-radius: 3px 0 0 3px;
+  }
+
+  .vbs-card-photos {
+    position: relative;
+    height: 140px;
+    overflow: hidden;
+    background: var(--surface3);
+  }
+  .vbs-card-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.4s;
+    position: absolute;
+    top: 0; left: 0;
+  }
+  .vbs-photo-dots {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+  }
+  .vbs-photo-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .vbs-photo-dot.active { background: white; }
+  .vbs-card-badge {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gold-light);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .vbs-no-photo {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    font-size: 36px;
+  }
+
+  .vbs-card-body {
+    padding: 12px 14px 14px;
+  }
+  .vbs-card-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .vbs-card-addr {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .vbs-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .vbs-card-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gold-light);
+  }
+  .vbs-card-reviews {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .vbs-card-open {
+    margin-left: auto;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .vbs-card-open.open { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .vbs-card-open.closed { background: rgba(239,68,68,0.12); color: #ef4444; }
+
+  /* Pricing strip on selected */
+  .vbs-card-pricing {
+    display: flex;
+    gap: 0;
+    border-top: 1px solid var(--border);
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+  .vbs-pricing-item {
+    flex: 1;
+    text-align: center;
+    padding: 0 6px;
+  }
+  .vbs-pricing-item + .vbs-pricing-item { border-left: 1px solid var(--border); }
+  .vbs-pricing-label { font-size: 10px; color: var(--text-dim); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .vbs-pricing-value { font-size: 14px; font-weight: 600; color: var(--gold); }
+  .vbs-pricing-unit { font-size: 10px; color: var(--text-muted); }
+
+  /* ── Loading / Empty states ── */
+  .vbs-loading-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .vbs-skeleton {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .vbs-skeleton-img { height: 110px; background: var(--surface3); }
+  .vbs-skeleton-body { padding: 12px 14px; }
+  .vbs-skeleton-line { height: 10px; background: var(--surface3); border-radius: 4px; margin-bottom: 8px; }
+
+  .vbs-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dim);
+  }
+  .vbs-empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .vbs-empty-title { font-size: 15px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+  .vbs-empty-sub { font-size: 13px; }
+
+  /* ── Map Panel ── */
+  .vbs-map-panel {
+    flex: 1;
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+    border: 1.5px solid var(--border2);
+    background: var(--surface3);
+  }
+  .vbs-map-container {
+    width: 100%;
+    height: 100%;
+  }
+
+  .vbs-map-overlay-top {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .vbs-map-pill {
+    pointer-events: all;
+    background: rgba(13,15,20,0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border2);
+    border-radius: 50px;
+    padding: 7px 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .vbs-map-pill-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .vbs-map-pill-dot.red { background: var(--red); }
+  .vbs-map-pill-dot.green { background: var(--green); }
+
+  .vbs-map-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface3);
+    z-index: 5;
+    gap: 16px;
+  }
+  .vbs-spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border2);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .vbs-map-loading-text { color: var(--text-muted); font-size: 13px; }
+
+  /* ── Location Mode ── */
+  .vbs-location-panel {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .vbs-location-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border2);
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+  }
+  .vbs-location-icon { font-size: 48px; margin-bottom: 20px; }
+  .vbs-location-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .vbs-location-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+  .vbs-loc-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .vbs-loc-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border2);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+  .vbs-loc-btn:hover { border-color: var(--gold); background: var(--surface3); }
+  .vbs-loc-btn .loc-icon { font-size: 20px; }
+  .vbs-loc-btn .loc-text { flex: 1; }
+  .vbs-loc-btn .loc-sub { font-size: 11px; color: var(--text-muted); font-weight: 400; margin-top: 1px; }
+
+  .vbs-divider { display: flex; align-items: center; gap: 12px; color: var(--text-dim); font-size: 12px; margin: 4px 0; }
+  .vbs-divider::before, .vbs-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .vbs-manual-input-wrap { position: relative; }
+  .vbs-manual-input {
+    width: 100%;
+    padding: 13px 50px 13px 18px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border2);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .vbs-manual-input:focus { border-color: var(--gold); }
+  .vbs-manual-input::placeholder { color: var(--text-dim); }
+  .vbs-manual-submit {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--gold);
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: #0d0f14;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .vbs-manual-submit:hover { background: var(--gold-light); }
+
+  /* ── Event selector prompt ── */
+  .vbs-prompt-overlay {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 40px;
+  }
+  .vbs-prompt-icon { font-size: 52px; margin-bottom: 8px; }
+  .vbs-prompt-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .vbs-prompt-sub { font-size: 14px; line-height: 1.7; max-width: 360px; }
+
+  /* ── Venue Detail Modal ── */
+  .vbs-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .vbs-modal {
+    background: var(--surface);
+    border: 1.5px solid var(--border2);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  .vbs-modal::-webkit-scrollbar { width: 4px; }
+  .vbs-modal::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+  .vbs-modal-photos {
+    height: 240px;
+    position: relative;
+    background: var(--surface3);
+    overflow: hidden;
+  }
+  .vbs-modal-photo { width: 100%; height: 100%; object-fit: cover; }
+  .vbs-modal-photo-nav {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+  }
+  .vbs-modal-photo-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .vbs-modal-photo-dot.active { background: white; width: 20px; border-radius: 4px; }
+  .vbs-modal-prev, .vbs-modal-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.5);
+    border: none;
+    color: white;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: background 0.2s;
+  }
+  .vbs-modal-prev { left: 10px; }
+  .vbs-modal-next { right: 10px; }
+  .vbs-modal-prev:hover, .vbs-modal-next:hover { background: rgba(0,0,0,0.8); }
+
+  .vbs-modal-body { padding: 24px; }
+  .vbs-modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .vbs-modal-addr {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .vbs-modal-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .vbs-modal-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .vbs-modal-stat strong { color: var(--text); }
+
+  .vbs-pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .vbs-pricing-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+  }
+  .vbs-pricing-box-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .vbs-pricing-box-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gold);
+  }
+  .vbs-pricing-box-unit { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .vbs-modal-close {
+    position: absolute;
+    top: 14px; right: 14px;
+    background: rgba(0,0,0,0.5);
+    border: none;
+    color: white;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    z-index: 5;
+  }
+  .vbs-book-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--gold);
+    border: none;
+    border-radius: var(--radius);
+    color: #0d0f14;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .vbs-book-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
+  .vbs-book-btn:active { transform: translateY(0); }
+
+  /* scrollbar for modal */
+  .vbs-modal::-webkit-scrollbar { width: 5px; }
+  .vbs-modal::-webkit-scrollbar-track { background: transparent; }
+  .vbs-modal::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 5px; }
+`;
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const priceMap = {
+  hourly: [1500, 2000, 2500, 3000, 4000, 5000, 7500, 10000, 15000],
+  daily: [15000, 20000, 25000, 35000, 50000, 75000, 100000],
+};
+function mockPricing(placeId) {
+  const h = priceMap.hourly[(placeId.charCodeAt(3) || 0) % priceMap.hourly.length];
+  const d = priceMap.daily[(placeId.charCodeAt(4) || 0) % priceMap.daily.length];
+  return { hourly: h, daily: d };
+}
+function formatINR(n) {
+  return "₹" + n.toLocaleString("en-IN");
+}
+function getRatingStars(r) {
+  const full = Math.floor(r);
+  return "★".repeat(full) + (r % 1 >= 0.5 ? "½" : "") + "☆".repeat(5 - Math.ceil(r));
 }
 
-// ─── Sub-components ────────────────────────────────────────────────────────────
-
-function StarRating({ rating }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
-      {[1, 2, 3, 4, 5].map((s) => (
-        <span key={s} style={{ color: s <= Math.round(rating) ? "#f59e0b" : "#d1d5db", fontSize: 12 }}>★</span>
-      ))}
-      <span style={{ fontSize: 12, color: "#6b7280", marginLeft: 3 }}>{rating}</span>
-    </div>
-  );
-}
-
-function PhotoSlider({ photos, name }) {
+// ─── Photo Slideshow ──────────────────────────────────────────────────────────
+function PhotoSlide({ photos, height = 140 }) {
   const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    if (!photos?.length) return;
+    const t = setInterval(() => setIdx((i) => (i + 1) % photos.length), 3000);
+    return () => clearInterval(t);
+  }, [photos]);
+  if (!photos?.length) return <div className="vbs-no-photo">🏛️</div>;
   return (
-    <div style={{ position: "relative", width: "100%", height: 160, borderRadius: "12px 12px 0 0", overflow: "hidden", background: "#f3f4f6" }}>
-      <img
-        src={photos[idx]}
-        alt={name}
-        style={{ width: "100%", height: "100%", objectFit: "cover", transition: "opacity 0.3s" }}
-        onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=400&q=80"; }}
-      />
+    <>
+      {photos.map((p, i) => (
+        <img
+          key={i}
+          src={p}
+          className="vbs-card-photo"
+          style={{ opacity: i === idx ? 1 : 0 }}
+          alt=""
+          onError={(e) => { e.target.style.display = "none"; }}
+        />
+      ))}
       {photos.length > 1 && (
-        <>
-          <button onClick={(e) => { e.stopPropagation(); setIdx((idx - 1 + photos.length) % photos.length); }}
-            style={{ position: "absolute", left: 6, top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.5)", color: "#fff", border: "none", borderRadius: "50%", width: 24, height: 24, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>‹</button>
-          <button onClick={(e) => { e.stopPropagation(); setIdx((idx + 1) % photos.length); }}
-            style={{ position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", background: "rgba(0,0,0,0.5)", color: "#fff", border: "none", borderRadius: "50%", width: 24, height: 24, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center" }}>›</button>
-          <div style={{ position: "absolute", bottom: 6, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 4 }}>
-            {photos.map((_, i) => (
-              <div key={i} onClick={(e) => { e.stopPropagation(); setIdx(i); }}
-                style={{ width: i === idx ? 16 : 6, height: 6, borderRadius: 3, background: i === idx ? "#fff" : "rgba(255,255,255,0.5)", transition: "all 0.2s", cursor: "pointer" }} />
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-function VenueCard({ venue, selected, onClick }) {
-  return (
-    <div onClick={() => onClick(venue)}
-      style={{
-        background: "#fff", borderRadius: 14, overflow: "hidden", cursor: "pointer",
-        border: selected ? "2px solid #6366f1" : "2px solid transparent",
-        boxShadow: selected ? "0 0 0 3px rgba(99,102,241,0.15), 0 4px 20px rgba(0,0,0,0.1)" : "0 2px 12px rgba(0,0,0,0.07)",
-        transition: "all 0.2s", marginBottom: 12,
-        transform: selected ? "scale(1.01)" : "scale(1)",
-      }}>
-      <PhotoSlider photos={venue.photos} name={venue.name} />
-      <div style={{ padding: "12px 14px 14px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
-          <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#111827", fontFamily: "'Playfair Display', serif" }}>{venue.name}</h3>
-          <span style={{ background: "#f0fdf4", color: "#16a34a", fontSize: 11, fontWeight: 700, padding: "2px 7px", borderRadius: 20 }}>★ {venue.rating}</span>
-        </div>
-        <p style={{ margin: "0 0 6px", fontSize: 12, color: "#6b7280" }}>📍 {venue.area}, {venue.city}</p>
-        <StarRating rating={venue.rating} />
-        <p style={{ margin: "6px 0 0", fontSize: 11, color: "#9ca3af" }}>{venue.reviews} reviews • Up to {venue.capacity} guests</p>
-        <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-          <div style={{ flex: 1, background: "#f8faff", borderRadius: 8, padding: "6px 10px", textAlign: "center" }}>
-            <div style={{ fontSize: 11, color: "#6b7280" }}>Per Hour</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#6366f1" }}>₹{(venue.pricePerHour / 1000).toFixed(0)}K</div>
-          </div>
-          <div style={{ flex: 1, background: "#f8faff", borderRadius: 8, padding: "6px 10px", textAlign: "center" }}>
-            <div style={{ fontSize: 11, color: "#6b7280" }}>Per Day</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#6366f1" }}>₹{(venue.pricePerDay / 1000).toFixed(0)}K</div>
-          </div>
-        </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 8 }}>
-          {venue.amenities.slice(0, 3).map((a) => (
-            <span key={a} style={{ fontSize: 10, background: "#f3f4f6", color: "#374151", padding: "2px 7px", borderRadius: 20 }}>{a}</span>
+        <div className="vbs-photo-dots">
+          {photos.map((_, i) => (
+            <div
+              key={i}
+              className={`vbs-photo-dot${i === idx ? " active" : ""}`}
+              onClick={(e) => { e.stopPropagation(); setIdx(i); }}
+            />
           ))}
-          {venue.amenities.length > 3 && <span style={{ fontSize: 10, color: "#9ca3af" }}>+{venue.amenities.length - 3} more</span>}
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
 
-function VenueDetailModal({ venue, onClose }) {
-  const [activeTab, setActiveTab] = useState("hourly");
-  const hours = [2, 4, 6, 8, 12];
-  if (!venue) return null;
-  return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
-      onClick={onClose}>
-      <div style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 560, maxHeight: "85vh", overflowY: "auto", boxShadow: "0 25px 60px rgba(0,0,0,0.3)" }}
-        onClick={(e) => e.stopPropagation()}>
-        <PhotoSlider photos={venue.photos} name={venue.name} />
-        <div style={{ padding: "20px 24px 24px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-            <div>
-              <h2 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 800, fontFamily: "'Playfair Display', serif", color: "#111827" }}>{venue.name}</h2>
-              <p style={{ margin: 0, color: "#6b7280", fontSize: 13 }}>📍 {venue.address}</p>
-            </div>
-            <button onClick={onClose} style={{ background: "#f3f4f6", border: "none", borderRadius: "50%", width: 34, height: 34, cursor: "pointer", fontSize: 18, color: "#374151" }}>×</button>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "12px 0" }}>
-            <StarRating rating={venue.rating} />
-            <span style={{ fontSize: 12, color: "#9ca3af" }}>{venue.reviews} reviews</span>
-            <span style={{ fontSize: 12, color: "#9ca3af" }}>• {venue.capacity} guests max</span>
-          </div>
-          <p style={{ fontSize: 14, color: "#4b5563", lineHeight: 1.6, margin: "0 0 16px" }}>{venue.description}</p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20 }}>
-            {venue.amenities.map((a) => (
-              <span key={a} style={{ fontSize: 12, background: "#eef2ff", color: "#6366f1", padding: "4px 10px", borderRadius: 20, fontWeight: 500 }}>{a}</span>
-            ))}
-          </div>
+// ─── Venue Detail Modal ───────────────────────────────────────────────────────
+function VenueModal({ venue, onClose }) {
+  const [photoIdx, setPhotoIdx] = useState(0);
+  const photos = venue.photos || [];
+  const pricing = mockPricing(venue.place_id);
 
-          {/* Pricing Tabs */}
-          <div style={{ background: "#f9fafb", borderRadius: 14, padding: 16 }}>
-            <h3 style={{ margin: "0 0 12px", fontSize: 15, fontWeight: 700, color: "#111827" }}>💰 Venue Pricing</h3>
-            <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-              {["hourly", "daily"].map((t) => (
-                <button key={t} onClick={() => setActiveTab(t)}
-                  style={{
-                    flex: 1, padding: "8px 0", border: "none", borderRadius: 10, cursor: "pointer", fontWeight: 600, fontSize: 13,
-                    background: activeTab === t ? "#6366f1" : "#e5e7eb", color: activeTab === t ? "#fff" : "#6b7280", transition: "all 0.2s"
-                  }}>
-                  {t === "hourly" ? "⏱ Hourly" : "📅 Daily"}
-                </button>
-              ))}
-            </div>
-            {activeTab === "hourly" ? (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                {hours.map((h) => (
-                  <div key={h} style={{ background: "#fff", borderRadius: 10, padding: "10px 14px", border: "1px solid #e5e7eb" }}>
-                    <div style={{ fontSize: 12, color: "#9ca3af" }}>{h} Hours</div>
-                    <div style={{ fontSize: 18, fontWeight: 800, color: "#6366f1" }}>₹{((venue.pricePerHour * h) / 1000).toFixed(0)}K</div>
-                    <div style={{ fontSize: 11, color: "#d1d5db" }}>₹{venue.pricePerHour.toLocaleString()}/hr</div>
+  return (
+    <div className="vbs-modal-backdrop" onClick={onClose}>
+      <div className="vbs-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="vbs-modal-close" onClick={onClose}>✕</button>
+        <div className="vbs-modal-photos">
+          {photos.length > 0 ? (
+            <>
+              <img src={photos[photoIdx]} className="vbs-modal-photo" alt={venue.name} onError={(e) => e.target.style.display = "none"} />
+              {photos.length > 1 && (
+                <>
+                  <button className="vbs-modal-prev" onClick={() => setPhotoIdx((i) => (i - 1 + photos.length) % photos.length)}>‹</button>
+                  <button className="vbs-modal-next" onClick={() => setPhotoIdx((i) => (i + 1) % photos.length)}>›</button>
+                  <div className="vbs-modal-photo-nav">
+                    {photos.map((_, i) => (
+                      <div key={i} className={`vbs-modal-photo-dot${i === photoIdx ? " active" : ""}`} onClick={() => setPhotoIdx(i)} />
+                    ))}
                   </div>
-                ))}
+                </>
+              )}
+            </>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontSize: 60 }}>🏛️</div>
+          )}
+        </div>
+        <div className="vbs-modal-body">
+          <div className="vbs-modal-title">{venue.name}</div>
+          <div className="vbs-modal-addr">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
+            {venue.vicinity || venue.formatted_address || "Address not available"}
+          </div>
+          <div className="vbs-modal-stats">
+            {venue.rating && (
+              <div className="vbs-modal-stat">
+                <span style={{ color: "#f59e0b" }}>★</span>
+                <strong>{venue.rating}</strong>
+                <span>({venue.user_ratings_total?.toLocaleString() || "0"} reviews)</span>
               </div>
-            ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                {[1, 2, 3, 7].map((d) => (
-                  <div key={d} style={{ background: "#fff", borderRadius: 10, padding: "10px 14px", border: "1px solid #e5e7eb" }}>
-                    <div style={{ fontSize: 12, color: "#9ca3af" }}>{d} {d === 1 ? "Day" : "Days"}</div>
-                    <div style={{ fontSize: 18, fontWeight: 800, color: "#6366f1" }}>₹{((venue.pricePerDay * d) / 1000).toFixed(0)}K</div>
-                    <div style={{ fontSize: 11, color: "#d1d5db" }}>₹{venue.pricePerDay.toLocaleString()}/day</div>
-                  </div>
-                ))}
+            )}
+            <div className="vbs-modal-stat">
+              <span>🕐</span>
+              <span className={venue.opening_hours?.open_now ? "vbs-card-open open" : "vbs-card-open closed"}>
+                {venue.opening_hours?.open_now ? "Open Now" : "Closed"}
+              </span>
+            </div>
+            {venue.price_level && (
+              <div className="vbs-modal-stat">
+                <span>💰</span>
+                <strong>{"₹".repeat(venue.price_level)}</strong>
               </div>
             )}
           </div>
 
-          <button style={{ width: "100%", marginTop: 16, padding: "14px 0", background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "#fff", border: "none", borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: "pointer", letterSpacing: 0.5 }}>
-            Book This Venue →
-          </button>
+          <div style={{ fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--gold)", fontWeight: 600, marginBottom: 12 }}>
+            Estimated Pricing
+          </div>
+          <div className="vbs-pricing-grid">
+            <div className="vbs-pricing-box">
+              <div className="vbs-pricing-box-label">Per Hour</div>
+              <div className="vbs-pricing-box-val">{formatINR(pricing.hourly)}</div>
+              <div className="vbs-pricing-box-unit">+ taxes</div>
+            </div>
+            <div className="vbs-pricing-box">
+              <div className="vbs-pricing-box-label">Full Day</div>
+              <div className="vbs-pricing-box-val">{formatINR(pricing.daily)}</div>
+              <div className="vbs-pricing-box-unit">+ taxes</div>
+            </div>
+          </div>
+
+          <button className="vbs-book-btn">Request Booking →</button>
         </div>
       </div>
     </div>
   );
 }
 
-// ─── Map Component ─────────────────────────────────────────────────────────────
-function GoogleMapView({ venues, selectedVenue, onVenueSelect, centerLat, centerLng, apiKey }) {
-  const mapRef = useRef(null);
-  const mapInstanceRef = useRef(null);
-  const markersRef = useRef([]);
-  const infoWindowRef = useRef(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    loadGoogleMaps(apiKey).then((maps) => {
-      if (cancelled || !mapRef.current) return;
-      if (!mapInstanceRef.current) {
-        mapInstanceRef.current = new maps.Map(mapRef.current, {
-          center: { lat: centerLat || 17.4126, lng: centerLng || 78.4482 },
-          zoom: 12,
-          mapTypeId: "roadmap",
-          styles: [
-            { featureType: "poi.business", stylers: [{ visibility: "simplified" }] },
-            { featureType: "transit", stylers: [{ visibility: "off" }] },
-            { elementType: "labels.icon", featureType: "poi", stylers: [{ visibility: "off" }] },
-          ],
-          disableDefaultUI: false,
-          zoomControl: true,
-          mapTypeControl: false,
-          streetViewControl: false,
-          fullscreenControl: true,
-        });
-      } else if (centerLat && centerLng) {
-        mapInstanceRef.current.setCenter({ lat: centerLat, lng: centerLng });
-        mapInstanceRef.current.setZoom(14);
-      }
-
-      // Clear old markers
-      markersRef.current.forEach((m) => m.setMap(null));
-      markersRef.current = [];
-      if (infoWindowRef.current) { infoWindowRef.current.close(); }
-      infoWindowRef.current = new maps.InfoWindow();
-
-      venues.forEach((venue) => {
-        const isSelected = selectedVenue?.id === venue.id;
-        const marker = new maps.Marker({
-          position: { lat: venue.lat, lng: venue.lng },
-          map: mapInstanceRef.current,
-          title: venue.name,
-          animation: isSelected ? maps.Animation.BOUNCE : null,
-          icon: {
-            path: maps.SymbolPath.CIRCLE,
-            scale: isSelected ? 14 : 10,
-            fillColor: isSelected ? "#6366f1" : "#f59e0b",
-            fillOpacity: 1,
-            strokeColor: "#fff",
-            strokeWeight: 2,
-          },
-        });
-
-        marker.addListener("click", () => {
-          onVenueSelect(venue);
-          infoWindowRef.current.setContent(`
-            <div style="font-family:'Segoe UI',sans-serif;padding:8px 4px;min-width:160px">
-              <b style="font-size:14px;color:#111">${venue.name}</b><br/>
-              <span style="font-size:12px;color:#6b7280">📍 ${venue.area}</span><br/>
-              <span style="font-size:12px;color:#f59e0b">★ ${venue.rating}</span>
-              <span style="font-size:12px;color:#9ca3af"> • ${venue.reviews} reviews</span><br/>
-              <span style="font-size:13px;font-weight:700;color:#6366f1">₹${(venue.pricePerHour / 1000).toFixed(0)}K/hr</span>
-            </div>
-          `);
-          infoWindowRef.current.open(mapInstanceRef.current, marker);
-        });
-
-        markersRef.current.push(marker);
-      });
-
-      if (selectedVenue) {
-        mapInstanceRef.current.panTo({ lat: selectedVenue.lat, lng: selectedVenue.lng });
-      }
-    }).catch(() => { });
-
-    return () => { cancelled = true; };
-  }, [venues, selectedVenue, centerLat, centerLng, apiKey]);
+// ─── Venue Card ───────────────────────────────────────────────────────────────
+function VenueCard({ venue, selected, onClick, mapsApi }) {
+  const photos = venue.photos || [];
+  const pricing = mockPricing(venue.place_id);
 
   return (
-    <div ref={mapRef} style={{ width: "100%", height: "100%", borderRadius: 16 }} />
-  );
-}
-
-// ─── Location Tab ──────────────────────────────────────────────────────────────
-function LocationTab({ apiKey }) {
-  const [mode, setMode] = useState("current"); // "current" | "pin" | "manual"
-  const [address, setAddress] = useState("");
-  const [pinLat, setPinLat] = useState(17.4126);
-  const [pinLng, setPinLng] = useState(78.4482);
-  const [confirmed, setConfirmed] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const pinMapRef = useRef(null);
-  const pinMapInstance = useRef(null);
-  const pinMarkerRef = useRef(null);
-
-  const getCurrentLocation = () => {
-    setLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => { setPinLat(pos.coords.latitude); setPinLng(pos.coords.longitude); setConfirmed(true); setLoading(false); },
-      () => { setLoading(false); alert("Could not get location. Please allow location access."); }
-    );
-  };
-
-  useEffect(() => {
-    if (mode !== "pin" || !pinMapRef.current) return;
-    loadGoogleMaps(apiKey).then((maps) => {
-      if (!pinMapInstance.current) {
-        pinMapInstance.current = new maps.Map(pinMapRef.current, {
-          center: { lat: pinLat, lng: pinLng }, zoom: 14,
-          mapTypeControl: false, streetViewControl: false,
-        });
-        pinMarkerRef.current = new maps.Marker({
-          position: { lat: pinLat, lng: pinLng },
-          map: pinMapInstance.current, draggable: true,
-          title: "Drag to set your location",
-        });
-        pinMapInstance.current.addListener("click", (e) => {
-          pinMarkerRef.current.setPosition(e.latLng);
-          setPinLat(e.latLng.lat()); setPinLng(e.latLng.lng());
-        });
-        pinMarkerRef.current.addListener("dragend", (e) => {
-          setPinLat(e.latLng.lat()); setPinLng(e.latLng.lng());
-        });
-      }
-    });
-  }, [mode, apiKey]);
-
-  return (
-    <div style={{ padding: "0 4px" }}>
-      <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 6px" }}>Set Your Location</h3>
-      <p style={{ fontSize: 13, color: "#6b7280", margin: "0 0 20px" }}>Find venues near you — use GPS, pin on map, or type an address.</p>
-
-      {/* Mode selector */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        {[
-          { id: "current", label: "📍 Use GPS", desc: "Auto-detect" },
-          { id: "pin", label: "📌 Pin on Map", desc: "Click to pin" },
-          { id: "manual", label: "✏️ Type Address", desc: "Manual entry" },
-        ].map((m) => (
-          <button key={m.id} onClick={() => { setMode(m.id); setConfirmed(false); }}
-            style={{
-              flex: 1, padding: "12px 8px", border: `2px solid ${mode === m.id ? "#6366f1" : "#e5e7eb"}`,
-              borderRadius: 12, background: mode === m.id ? "#eef2ff" : "#fff", cursor: "pointer", transition: "all 0.2s", textAlign: "center"
-            }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: mode === m.id ? "#6366f1" : "#374151" }}>{m.label}</div>
-            <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 2 }}>{m.desc}</div>
-          </button>
-        ))}
+    <div className={`vbs-venue-card${selected ? " selected" : ""}`} onClick={onClick}>
+      <div className="vbs-card-photos">
+        <PhotoSlide photos={photos} />
+        {venue.rating && (
+          <div className="vbs-card-badge">
+            ★ {venue.rating}
+          </div>
+        )}
       </div>
-
-      {mode === "current" && (
-        <div style={{ textAlign: "center", padding: "30px 20px", background: "#f9fafb", borderRadius: 14, border: "2px dashed #e5e7eb" }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>🌍</div>
-          <p style={{ fontSize: 14, color: "#374151", margin: "0 0 16px" }}>We'll use your device GPS to find venues nearby.</p>
-          <button onClick={getCurrentLocation} disabled={loading}
-            style={{ padding: "12px 28px", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
-            {loading ? "Detecting…" : "📡 Detect My Location"}
-          </button>
-          {confirmed && (
-            <div style={{ marginTop: 16, padding: "10px 16px", background: "#f0fdf4", borderRadius: 10, border: "1px solid #bbf7d0", display: "inline-block" }}>
-              <span style={{ fontSize: 13, color: "#16a34a", fontWeight: 600 }}>✅ Location found! {pinLat.toFixed(4)}, {pinLng.toFixed(4)}</span>
+      <div className="vbs-card-body">
+        <div className="vbs-card-name">{venue.name}</div>
+        <div className="vbs-card-addr">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
+          {venue.vicinity || "—"}
+        </div>
+        <div className="vbs-card-meta">
+          {venue.rating && (
+            <div className="vbs-card-rating">
+              ★ {venue.rating}
+              <span className="vbs-card-reviews">({venue.user_ratings_total?.toLocaleString() || "0"})</span>
+            </div>
+          )}
+          {venue.opening_hours && (
+            <div className={`vbs-card-open ${venue.opening_hours.open_now ? "open" : "closed"}`}>
+              {venue.opening_hours.open_now ? "Open" : "Closed"}
             </div>
           )}
         </div>
-      )}
-
-      {mode === "pin" && (
-        <div>
-          <p style={{ fontSize: 13, color: "#6b7280", margin: "0 0 10px" }}>Click anywhere on the map or drag the marker to set your location.</p>
-          <div ref={pinMapRef} style={{ width: "100%", height: 300, borderRadius: 14, border: "2px solid #e5e7eb", overflow: "hidden" }} />
-          <div style={{ marginTop: 10, padding: "10px 14px", background: "#f0f9ff", borderRadius: 10, border: "1px solid #bae6fd" }}>
-            <span style={{ fontSize: 12, color: "#0369a1" }}>📌 Pinned: {pinLat.toFixed(5)}, {pinLng.toFixed(5)}</span>
-          </div>
-          <button onClick={() => setConfirmed(true)}
-            style={{ marginTop: 12, width: "100%", padding: "12px 0", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
-            Confirm This Location →
-          </button>
-        </div>
-      )}
-
-      {mode === "manual" && (
-        <div>
-          <label style={{ fontSize: 13, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>Enter Full Address</label>
-          <textarea value={address} onChange={(e) => setAddress(e.target.value)} placeholder="e.g. Road No. 12, Banjara Hills, Hyderabad, Telangana 500034"
-            style={{ width: "100%", padding: "12px 14px", border: "2px solid #e5e7eb", borderRadius: 12, fontSize: 14, resize: "vertical", minHeight: 80, fontFamily: "inherit", outline: "none", boxSizing: "border-box" }} />
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
-            <div>
-              <label style={{ fontSize: 12, color: "#6b7280", display: "block", marginBottom: 4 }}>Latitude (optional)</label>
-              <input type="number" placeholder="17.4126" value={pinLat} onChange={(e) => setPinLat(parseFloat(e.target.value))}
-                style={{ width: "100%", padding: "10px 12px", border: "2px solid #e5e7eb", borderRadius: 10, fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+        {selected && (
+          <div className="vbs-card-pricing">
+            <div className="vbs-pricing-item">
+              <div className="vbs-pricing-label">Hourly</div>
+              <div className="vbs-pricing-value">{formatINR(pricing.hourly)}</div>
+              <div className="vbs-pricing-unit">+ taxes</div>
             </div>
-            <div>
-              <label style={{ fontSize: 12, color: "#6b7280", display: "block", marginBottom: 4 }}>Longitude (optional)</label>
-              <input type="number" placeholder="78.4482" value={pinLng} onChange={(e) => setPinLng(parseFloat(e.target.value))}
-                style={{ width: "100%", padding: "10px 12px", border: "2px solid #e5e7eb", borderRadius: 10, fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+            <div className="vbs-pricing-item">
+              <div className="vbs-pricing-label">Full Day</div>
+              <div className="vbs-pricing-value">{formatINR(pricing.daily)}</div>
+              <div className="vbs-pricing-unit">+ taxes</div>
             </div>
           </div>
-          <button onClick={() => setConfirmed(!!address)} disabled={!address}
-            style={{ marginTop: 12, width: "100%", padding: "12px 0", background: address ? "linear-gradient(135deg,#6366f1,#8b5cf6)" : "#e5e7eb", color: address ? "#fff" : "#9ca3af", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: address ? "pointer" : "not-allowed" }}>
-            Confirm Address →
-          </button>
-        </div>
-      )}
-
-      {confirmed && (
-        <div style={{ marginTop: 20, padding: "16px 20px", background: "linear-gradient(135deg,#f0fdf4,#dcfce7)", borderRadius: 14, border: "1px solid #bbf7d0" }}>
-          <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#15803d" }}>✅ Location Confirmed!</p>
-          <p style={{ margin: "4px 0 0", fontSize: 13, color: "#16a34a" }}>
-            {mode === "manual" ? address : `Coordinates: ${pinLat.toFixed(5)}, ${pinLng.toFixed(5)}`}
-          </p>
-          <button style={{ marginTop: 12, padding: "10px 20px", background: "#16a34a", color: "#fff", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
-            🔍 Find Nearby Venues
-          </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
 
-// ─── Browse Tab ────────────────────────────────────────────────────────────────
-function BrowseTab({ apiKey }) {
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCity, setSelectedCity] = useState("All Cities");
-  const [minRating, setMinRating] = useState(0);
-  const [selectedVenue, setSelectedVenue] = useState(null);
-  const [detailVenue, setDetailVenue] = useState(null);
-
-  const filteredVenues = STATIC_VENUES.filter((v) => {
-    const matchesEvent = !selectedEvent || v.type.includes(selectedEvent);
-    const matchesSearch = !searchQuery || v.name.toLowerCase().includes(searchQuery.toLowerCase()) || v.area.toLowerCase().includes(searchQuery.toLowerCase()) || v.city.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCity = selectedCity === "All Cities" || v.city === selectedCity;
-    const matchesRating = v.rating >= minRating;
-    return matchesEvent && matchesSearch && matchesCity && matchesRating;
-  });
-
+// ─── Skeleton Loader ──────────────────────────────────────────────────────────
+function SkeletonCard() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      {/* Event Type Selection */}
-      {!selectedEvent && (
-        <div style={{ padding: "16px 0 20px" }}>
-          <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 19, fontWeight: 800, color: "#111827", margin: "0 0 6px" }}>What's the Occasion?</h3>
-          <p style={{ fontSize: 13, color: "#9ca3af", margin: "0 0 14px" }}>Select an event type to discover the perfect venues.</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-            {EVENT_TYPES.map((e) => (
-              <button key={e.id} onClick={() => setSelectedEvent(e.id)}
-                style={{ padding: "12px 6px", background: "#fff", border: "2px solid #e5e7eb", borderRadius: 12, cursor: "pointer", textAlign: "center", transition: "all 0.18s" }}
-                onMouseEnter={(el) => { el.target.style.borderColor = "#6366f1"; el.target.style.background = "#eef2ff"; }}
-                onMouseLeave={(el) => { el.target.style.borderColor = "#e5e7eb"; el.target.style.background = "#fff"; }}>
-                <div style={{ fontSize: 22 }}>{e.icon}</div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: "#374151", marginTop: 4 }}>{e.label}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {selectedEvent && (
-        <>
-          {/* Header with back */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10, paddingBottom: 14, borderBottom: "1px solid #f3f4f6", marginBottom: 14 }}>
-            <button onClick={() => setSelectedEvent(null)} style={{ background: "#f3f4f6", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 13, color: "#374151" }}>← Back</button>
-            <div style={{ display: "flex", gap: 6 }}>
-              {EVENT_TYPES.map((e) => (
-                <button key={e.id} onClick={() => setSelectedEvent(e.id)}
-                  style={{ padding: "6px 12px", background: selectedEvent === e.id ? "#6366f1" : "#f3f4f6", color: selectedEvent === e.id ? "#fff" : "#6b7280", border: "none", borderRadius: 20, cursor: "pointer", fontSize: 12, fontWeight: 600, whiteSpace: "nowrap" }}>
-                  {e.icon} {e.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Search & Filters */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-            <div style={{ flex: "1 1 200px", position: "relative" }}>
-              <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 14, color: "#9ca3af" }}>🔍</span>
-              <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name, area, city…"
-                style={{ width: "100%", paddingLeft: 34, paddingRight: 12, paddingTop: 10, paddingBottom: 10, border: "2px solid #e5e7eb", borderRadius: 10, fontSize: 13, outline: "none", boxSizing: "border-box" }} />
-            </div>
-            <select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)}
-              style={{ padding: "10px 14px", border: "2px solid #e5e7eb", borderRadius: 10, fontSize: 13, background: "#fff", cursor: "pointer", outline: "none" }}>
-              {CITIES.map((c) => <option key={c}>{c}</option>)}
-            </select>
-            <select value={minRating} onChange={(e) => setMinRating(Number(e.target.value))}
-              style={{ padding: "10px 14px", border: "2px solid #e5e7eb", borderRadius: 10, fontSize: 13, background: "#fff", cursor: "pointer", outline: "none" }}>
-              <option value={0}>All Ratings</option>
-              <option value={4}>4★ & above</option>
-              <option value={4.5}>4.5★ & above</option>
-            </select>
-          </div>
-
-          {/* Two-column layout: list + map */}
-          <div style={{ flex: 1, display: "flex", gap: 14, minHeight: 0, height: "calc(100vh - 320px)", maxHeight: 620 }}>
-            {/* Venue List */}
-            <div style={{ width: 320, overflowY: "auto", paddingRight: 4, flexShrink: 0 }}>
-              <div style={{ fontSize: 12, color: "#9ca3af", marginBottom: 10, fontWeight: 600 }}>
-                {filteredVenues.length} VENUES FOUND
-              </div>
-              {filteredVenues.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "40px 20px", color: "#9ca3af" }}>
-                  <div style={{ fontSize: 36, marginBottom: 10 }}>🏛️</div>
-                  <p style={{ fontSize: 14 }}>No venues match your filters.</p>
-                </div>
-              ) : (
-                filteredVenues.map((venue) => (
-                  <VenueCard key={venue.id} venue={venue} selected={selectedVenue?.id === venue.id}
-                    onClick={(v) => { setSelectedVenue(v); setDetailVenue(v); }} />
-                ))
-              )}
-            </div>
-
-            {/* Map */}
-            <div style={{ flex: 1, borderRadius: 16, overflow: "hidden", border: "2px solid #e5e7eb", position: "relative", minWidth: 0 }}>
-              <GoogleMapView
-                venues={filteredVenues}
-                selectedVenue={selectedVenue}
-                onVenueSelect={(v) => { setSelectedVenue(v); setDetailVenue(v); }}
-                apiKey={apiKey}
-              />
-              <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(255,255,255,0.95)", borderRadius: 10, padding: "8px 12px", boxShadow: "0 2px 8px rgba(0,0,0,0.15)", fontSize: 12, color: "#374151", backdropFilter: "blur(8px)" }}>
-                🟡 Venue • 🔵 Selected
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      {detailVenue && <VenueDetailModal venue={detailVenue} onClose={() => setDetailVenue(null)} />}
+    <div className="vbs-skeleton">
+      <div className="vbs-skeleton-img" />
+      <div className="vbs-skeleton-body">
+        <div className="vbs-skeleton-line" style={{ width: "70%" }} />
+        <div className="vbs-skeleton-line" style={{ width: "90%" }} />
+        <div className="vbs-skeleton-line" style={{ width: "50%" }} />
+      </div>
     </div>
   );
 }
 
-// ─── Main Component ────────────────────────────────────────────────────────────
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function VenueBookingSection() {
-  const [activeTab, setActiveTab] = useState("browse");
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
+  const [mode, setMode] = useState("browse"); // "browse" | "location"
+  const [eventType, setEventType] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [cityFilter, setCityFilter] = useState("All Cities");
+  const [ratingFilter, setRatingFilter] = useState("All Ratings");
+  const [venues, setVenues] = useState([]);
+  const [filteredVenues, setFilteredVenues] = useState([]);
+  const [selectedVenue, setSelectedVenue] = useState(null);
+  const [modalVenue, setModalVenue] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [mapLoading, setMapLoading] = useState(false);
+  const [mapAreaName, setMapAreaName] = useState("");
+  const [manualAddress, setManualAddress] = useState("");
+  const [locStatus, setLocStatus] = useState("idle"); // "idle"|"loading"|"done"|"error"
+
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const markersRef = useRef([]);
+  const placesServiceRef = useRef(null);
+  const geocoderRef = useRef(null);
+  const mapsApiRef = useRef(null);
+  const searchDebounceRef = useRef(null);
+  const mapMoveDebounceRef = useRef(null);
+  const currentLocationRef = useRef({ lat: 17.385, lng: 78.4867 }); // Hyderabad default
+
+  // ── Init Maps ──
+  useEffect(() => {
+    if (!mapRef.current) return;
+    setMapLoading(true);
+    loadGoogleMaps().then((maps) => {
+      mapsApiRef.current = maps;
+      const map = new maps.Map(mapRef.current, {
+        center: currentLocationRef.current,
+        zoom: 13,
+        mapTypeId: "roadmap",
+        styles: darkMapStyles,
+        disableDefaultUI: false,
+        zoomControl: true,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+      });
+      mapInstanceRef.current = map;
+      placesServiceRef.current = new maps.places.PlacesService(map);
+      geocoderRef.current = new maps.Geocoder();
+
+      map.addListener("idle", () => {
+        const center = map.getCenter();
+        if (center && eventType) {
+          currentLocationRef.current = { lat: center.lat(), lng: center.lng() };
+          clearTimeout(mapMoveDebounceRef.current);
+          mapMoveDebounceRef.current = setTimeout(() => {
+            fetchVenuesFromMaps(eventType, { lat: center.lat(), lng: center.lng() });
+            reverseGeocode({ lat: center.lat(), lng: center.lng() });
+          }, 600);
+        }
+      });
+
+      setMapLoading(false);
+    }).catch(() => setMapLoading(false));
+  }, [mapRef.current]);
+
+  // ── Reverse Geocode for area name ──
+  const reverseGeocode = useCallback((latlng) => {
+    if (!geocoderRef.current) return;
+    geocoderRef.current.geocode({ location: latlng }, (results, status) => {
+      if (status === "OK" && results[0]) {
+        const comp = results[0].address_components.find(c => c.types.includes("sublocality") || c.types.includes("locality"));
+        if (comp) setMapAreaName(comp.long_name);
+      }
+    });
+  }, []);
+
+  // ── Fetch venues from Google Maps Places API ──
+  const fetchVenuesFromMaps = useCallback((evType, location) => {
+    if (!placesServiceRef.current || !evType) return;
+    setLoading(true);
+    const eventObj = EVENT_TYPES.find(e => e.id === evType);
+    const query = eventObj?.query || "event venue hall";
+
+    const bounds = mapInstanceRef.current?.getBounds();
+
+    const request = {
+      location: new mapsApiRef.current.LatLng(location.lat, location.lng),
+      radius: 10000,
+      keyword: query,
+      type: ["establishment"],
+    };
+
+    placesServiceRef.current.nearbySearch(request, (results, status, pagination) => {
+      if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
+        const enriched = results.map((place) => ({
+          ...place,
+          photos: place.photos
+            ? place.photos.slice(0, 5).map(p =>
+              p.getUrl({ maxWidth: 600, maxHeight: 400 })
+            )
+            : [],
+        }));
+
+        setVenues(prev => {
+          // merge new + old, deduplicate by place_id, keep top 20
+          const merged = [...enriched, ...prev];
+          const seen = new Set();
+          const deduped = merged.filter(v => {
+            if (seen.has(v.place_id)) return false;
+            seen.add(v.place_id);
+            return true;
+          });
+          return deduped.slice(0, 20);
+        });
+
+        // If we have fewer than 20 and pagination exists, fetch more
+        if (pagination && pagination.hasNextPage) {
+          setTimeout(() => pagination.nextPage(), 1200);
+        }
+      }
+      setLoading(false);
+    });
+  }, []);
+
+  // ── When event type changes, fetch new venues ──
+  useEffect(() => {
+    if (eventType && mapInstanceRef.current) {
+      setVenues([]);
+      setSelectedVenue(null);
+      fetchVenuesFromMaps(eventType, currentLocationRef.current);
+      reverseGeocode(currentLocationRef.current);
+    }
+  }, [eventType]);
+
+  // ── Filter venues based on search + filters ──
+  useEffect(() => {
+    let list = [...venues];
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(v =>
+        v.name?.toLowerCase().includes(q) ||
+        v.vicinity?.toLowerCase().includes(q)
+      );
+    }
+
+    if (cityFilter !== "All Cities") {
+      list = list.filter(v => v.vicinity?.toLowerCase().includes(cityFilter.toLowerCase()));
+    }
+
+    if (ratingFilter !== "All Ratings") {
+      const minRating = parseFloat(ratingFilter);
+      list = list.filter(v => (v.rating || 0) >= minRating);
+    }
+
+    setFilteredVenues(list);
+  }, [venues, searchQuery, cityFilter, ratingFilter]);
+
+  // ── Update map markers when filtered venues change ──
+  useEffect(() => {
+    if (!mapInstanceRef.current || !mapsApiRef.current) return;
+    // Clear old markers
+    markersRef.current.forEach(m => m.setMap(null));
+    markersRef.current = [];
+
+    filteredVenues.forEach((venue) => {
+      const isSelected = selectedVenue?.place_id === venue.place_id;
+      const loc = venue.geometry?.location;
+      if (!loc) return;
+
+      const marker = new mapsApiRef.current.Marker({
+        position: { lat: loc.lat(), lng: loc.lng() },
+        map: mapInstanceRef.current,
+        title: venue.name,
+        icon: {
+          path: mapsApiRef.current.SymbolPath.CIRCLE,
+          fillColor: isSelected ? "#22c55e" : "#ef4444",
+          fillOpacity: 1,
+          strokeColor: isSelected ? "#16a34a" : "#b91c1c",
+          strokeWeight: 2,
+          scale: isSelected ? 12 : 9,
+        },
+        animation: isSelected ? mapsApiRef.current.Animation.BOUNCE : null,
+        zIndex: isSelected ? 100 : 1,
+      });
+
+      marker.addListener("click", () => {
+        setSelectedVenue(venue);
+        setModalVenue(venue);
+      });
+
+      markersRef.current.push(marker);
+    });
+  }, [filteredVenues, selectedVenue]);
+
+  // ── Pan map to selected venue ──
+  useEffect(() => {
+    if (selectedVenue && mapInstanceRef.current) {
+      const loc = selectedVenue.geometry?.location;
+      if (loc) {
+        mapInstanceRef.current.panTo({ lat: loc.lat(), lng: loc.lng() });
+        mapInstanceRef.current.setZoom(15);
+      }
+    }
+  }, [selectedVenue]);
+
+  // ── Get current GPS location ──
+  const handleCurrentLocation = () => {
+    setLocStatus("loading");
+    if (!navigator.geolocation) { setLocStatus("error"); return; }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const latlng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        currentLocationRef.current = latlng;
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.setCenter(latlng);
+          mapInstanceRef.current.setZoom(13);
+        }
+        if (eventType) fetchVenuesFromMaps(eventType, latlng);
+        reverseGeocode(latlng);
+        setLocStatus("done");
+        setMode("browse");
+      },
+      () => setLocStatus("error")
+    );
+  };
+
+  // ── Manual address search ──
+  const handleManualAddress = () => {
+    if (!manualAddress.trim() || !geocoderRef.current) return;
+    geocoderRef.current.geocode({ address: manualAddress }, (results, status) => {
+      if (status === "OK" && results[0]) {
+        const loc = results[0].geometry.location;
+        const latlng = { lat: loc.lat(), lng: loc.lng() };
+        currentLocationRef.current = latlng;
+        mapInstanceRef.current?.setCenter(latlng);
+        mapInstanceRef.current?.setZoom(13);
+        if (eventType) fetchVenuesFromMaps(eventType, latlng);
+        reverseGeocode(latlng);
+        setMode("browse");
+        setManualAddress("");
+      }
+    });
+  };
+
+  const minRatingVal = ratingFilter !== "All Ratings" ? parseFloat(ratingFilter) : 0;
 
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
-        * { box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
-      `}</style>
+      <style>{styles}</style>
+      <div className="vbs-root">
+        {/* Header */}
+        <div className="vbs-header">
+          <div className="vbs-logo">Venue<span>Finder</span></div>
+          <div className="vbs-tagline">Discover extraordinary spaces for every occasion</div>
+        </div>
 
-      <div style={{
-        fontFamily: "'DM Sans', sans-serif",
-        background: "linear-gradient(135deg, #f8faff 0%, #faf5ff 50%, #f0f9ff 100%)",
-        minHeight: "100vh",
-        padding: "32px 24px",
-      }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        {/* Mode Toggle */}
+        <div className="vbs-mode-bar">
+          <button
+            className={`vbs-mode-btn${mode === "browse" ? " active" : ""}`}
+            onClick={() => setMode("browse")}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+            </svg>
+            Browse Venues
+          </button>
+          <button
+            className={`vbs-mode-btn${mode === "location" ? " active" : ""}`}
+            onClick={() => setMode("location")}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
+            </svg>
+            Pin Location
+          </button>
+        </div>
 
-          {/* Header */}
-          <div style={{ marginBottom: 28, textAlign: "center" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#eef2ff", borderRadius: 30, padding: "6px 16px", marginBottom: 12 }}>
-              <span style={{ fontSize: 14 }}>🏛️</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#6366f1", letterSpacing: 1, textTransform: "uppercase" }}>Venue Discovery</span>
-            </div>
-            <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(28px, 5vw, 42px)", fontWeight: 800, color: "#0f172a", margin: "0 0 8px", lineHeight: 1.2 }}>
-              Find Your Perfect <span style={{ background: "linear-gradient(135deg, #6366f1, #a855f7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Venue</span>
-            </h1>
-            <p style={{ fontSize: 15, color: "#6b7280", margin: 0 }}>Discover stunning venues for every occasion — from intimate birthdays to grand weddings.</p>
-          </div>
-
-          {/* Tab Switcher */}
-          <div style={{ display: "flex", background: "#fff", borderRadius: 16, padding: 6, marginBottom: 24, boxShadow: "0 2px 12px rgba(0,0,0,0.06)", maxWidth: 480, margin: "0 auto 24px" }}>
-            {[
-              { id: "browse", icon: "🗺️", label: "Browse Venues" },
-              { id: "location", icon: "📍", label: "My Location" },
-            ].map((tab) => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                style={{
-                  flex: 1, padding: "12px 20px", border: "none", borderRadius: 12,
-                  background: activeTab === tab.id ? "linear-gradient(135deg, #6366f1, #8b5cf6)" : "transparent",
-                  color: activeTab === tab.id ? "#fff" : "#6b7280",
-                  fontSize: 14, fontWeight: 700, cursor: "pointer", transition: "all 0.25s",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                  boxShadow: activeTab === tab.id ? "0 4px 14px rgba(99,102,241,0.35)" : "none",
-                }}>
-                <span>{tab.icon}</span> {tab.label}
+        {/* Event Type Picker */}
+        <div className="vbs-event-section">
+          <div className="vbs-section-label">Select Event Type</div>
+          <div className="vbs-event-grid">
+            {EVENT_TYPES.map((ev) => (
+              <button
+                key={ev.id}
+                className={`vbs-event-chip${eventType === ev.id ? " active" : ""}`}
+                onClick={() => setEventType(ev.id)}
+              >
+                <span className="chip-icon">{ev.icon}</span>
+                {ev.label}
               </button>
             ))}
           </div>
-
-          {/* Content */}
-          <div style={{
-            background: "#fff", borderRadius: 20, padding: "24px 24px 28px",
-            boxShadow: "0 4px 24px rgba(0,0,0,0.07)", border: "1px solid rgba(99,102,241,0.08)",
-          }}>
-            {activeTab === "browse" ? <BrowseTab apiKey={apiKey} /> : <LocationTab apiKey={apiKey} />}
-          </div>
         </div>
+
+        {/* Main Content */}
+        <div className="vbs-main">
+          {mode === "browse" ? (
+            <>
+              {/* Left Panel */}
+              <div className="vbs-left">
+                {eventType ? (
+                  <>
+                    {/* Search */}
+                    <div className="vbs-search-box">
+                      <svg className="vbs-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+                      </svg>
+                      <input
+                        className="vbs-search-input"
+                        placeholder="Search by name or area…"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
+                    </div>
+
+                    {/* Filters */}
+                    <div className="vbs-filters">
+                      <select className="vbs-filter-select" value={cityFilter} onChange={(e) => setCityFilter(e.target.value)}>
+                        {CITY_FILTERS.map(c => <option key={c}>{c}</option>)}
+                      </select>
+                      <select className="vbs-filter-select" value={ratingFilter} onChange={(e) => setRatingFilter(e.target.value)}>
+                        {RATING_FILTERS.map(r => <option key={r}>{r}</option>)}
+                      </select>
+                    </div>
+
+                    {/* Results meta */}
+                    <div className="vbs-results-meta">
+                      <div className="vbs-results-count">
+                        <strong>{filteredVenues.length}</strong> venues found
+                        {loading && <span style={{ color: "var(--gold)", marginLeft: 8 }}>• Searching…</span>}
+                      </div>
+                      {mapAreaName && (
+                        <div className="vbs-map-area-badge">📍 {mapAreaName}</div>
+                      )}
+                    </div>
+
+                    {/* Venue List */}
+                    <div className="vbs-venue-list">
+                      {loading && filteredVenues.length === 0 ? (
+                        <div className="vbs-loading-cards">
+                          {[1, 2, 3, 4].map(i => <SkeletonCard key={i} />)}
+                        </div>
+                      ) : filteredVenues.length === 0 ? (
+                        <div className="vbs-empty">
+                          <div className="vbs-empty-icon">🔍</div>
+                          <div className="vbs-empty-title">No venues found</div>
+                          <div className="vbs-empty-sub">Try adjusting your filters or moving the map to explore a different area</div>
+                        </div>
+                      ) : (
+                        filteredVenues.map((venue) => (
+                          <VenueCard
+                            key={venue.place_id}
+                            venue={venue}
+                            selected={selectedVenue?.place_id === venue.place_id}
+                            onClick={() => {
+                              setSelectedVenue(venue);
+                              setModalVenue(venue);
+                            }}
+                            mapsApi={mapsApiRef.current}
+                          />
+                        ))
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="vbs-prompt-overlay">
+                    <div className="vbs-prompt-icon">🎪</div>
+                    <div className="vbs-prompt-title">Choose Your Event Type</div>
+                    <div className="vbs-prompt-sub">
+                      Select the type of event above to discover the perfect venues near you, complete with photos, ratings, and pricing.
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Map Panel */}
+              <div className="vbs-map-panel">
+                {mapLoading && (
+                  <div className="vbs-map-loading">
+                    <div className="vbs-spinner" />
+                    <div className="vbs-map-loading-text">Loading map…</div>
+                  </div>
+                )}
+                <div className="vbs-map-overlay-top">
+                  <div className="vbs-map-pill">
+                    <div className="vbs-map-pill-dot red" />
+                    Available venues
+                    <div className="vbs-map-pill-dot green" style={{ marginLeft: 8 }} />
+                    Selected
+                  </div>
+                  {filteredVenues.length > 0 && (
+                    <div className="vbs-map-pill">{filteredVenues.length} pins visible</div>
+                  )}
+                </div>
+                <div ref={mapRef} className="vbs-map-container" />
+              </div>
+            </>
+          ) : (
+            /* Location Mode */
+            <div className="vbs-location-panel">
+              <div className="vbs-location-card">
+                <div className="vbs-location-icon">📍</div>
+                <div className="vbs-location-title">Set Your Location</div>
+                <div className="vbs-location-sub">
+                  Use your current GPS location or type an address to find venues nearby.
+                </div>
+                <div className="vbs-loc-options">
+                  <button className="vbs-loc-btn" onClick={handleCurrentLocation} disabled={locStatus === "loading"}>
+                    <span className="loc-icon">🎯</span>
+                    <div className="loc-text">
+                      <div>{locStatus === "loading" ? "Detecting location…" : locStatus === "done" ? "✓ Location detected" : "Use My Current Location"}</div>
+                      <div className="loc-sub">Automatically detect via GPS</div>
+                    </div>
+                  </button>
+                </div>
+                <div className="vbs-divider">or enter manually</div>
+                <div className="vbs-manual-input-wrap" style={{ marginTop: 16 }}>
+                  <input
+                    className="vbs-manual-input"
+                    placeholder="e.g. Jubilee Hills, Hyderabad"
+                    value={manualAddress}
+                    onChange={(e) => setManualAddress(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleManualAddress()}
+                  />
+                  <button className="vbs-manual-submit" onClick={handleManualAddress}>Go</button>
+                </div>
+                {locStatus === "error" && (
+                  <div style={{ marginTop: 12, color: "var(--red)", fontSize: 13 }}>
+                    ⚠ Could not detect location. Please allow location access or enter manually.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Venue Detail Modal */}
+        {modalVenue && (
+          <VenueModal venue={modalVenue} onClose={() => setModalVenue(null)} />
+        )}
       </div>
     </>
   );
 }
+
+// ─── Dark Map Styles ──────────────────────────────────────────────────────────
+const darkMapStyles = [
+  { elementType: "geometry", stylers: [{ color: "#1a1f2e" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#1a1f2e" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#7a8299" }] },
+  { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#c9a84c" }] },
+  { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#8a8fa0" }] },
+  { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#1e2d1e" }] },
+  { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#3a5a3a" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#2a3042" }] },
+  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#1a1f2e" }] },
+  { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#6a7080" }] },
+  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#3a4060" }] },
+  { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1a2040" }] },
+  { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#a0a8c0" }] },
+  { featureType: "transit", elementType: "geometry", stylers: [{ color: "#2a3042" }] },
+  { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#c9a84c" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0d1520" }] },
+  { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#3a5a7a" }] },
+  { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#0d1520" }] },
+  { featureType: "poi.business", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.medical", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.school", stylers: [{ visibility: "off" }] },
+];
