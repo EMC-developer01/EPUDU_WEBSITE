@@ -8,16 +8,6 @@ import {
   InfoWindow,
 } from "@react-google-maps/api";
 
-const containerStyle = {
-  width: "100%",
-  height: "100vh",
-};
-
-const defaultCenter = {
-  lat: 17.385044,
-  lng: 78.486671,
-};
-
 const libraries = ["places"];
 
 const eventKeywords = {
@@ -31,12 +21,15 @@ export default function VenueBookingSection() {
   const [map, setMap] = useState(null);
   const [places, setPlaces] = useState([]);
   const [selected, setSelected] = useState(null);
-  const [center, setCenter] = useState(defaultCenter);
+  const [center, setCenter] = useState({
+    lat: 17.385044,
+    lng: 78.486671,
+  });
   const [eventType, setEventType] = useState("wedding");
 
   const inputRef = useRef(null);
 
-  // 📏 Distance Calculation
+  // 📏 Distance
   const getDistance = (lat1, lng1, lat2, lng2) => {
     const R = 6371;
     const dLat = (lat2 - lat1) * (Math.PI / 180);
@@ -51,7 +44,7 @@ export default function VenueBookingSection() {
     return (R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)))).toFixed(2);
   };
 
-  // 🔍 Fetch venues
+  // 📡 Fetch venues
   const fetchPlaces = (location) => {
     if (!map || !window.google) return;
 
@@ -65,18 +58,18 @@ export default function VenueBookingSection() {
       },
       (results, status) => {
         if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-          setPlaces(results);
+          setPlaces(results.slice(0, 30));
         }
       }
     );
   };
 
-  // 📍 Current Location
+  // 📍 Current location
   const getCurrentLocation = () => {
-    navigator.geolocation.getCurrentPosition((position) => {
+    navigator.geolocation.getCurrentPosition((pos) => {
       const loc = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
       };
       setCenter(loc);
       map.panTo(loc);
@@ -97,11 +90,7 @@ export default function VenueBookingSection() {
       if (!place.geometry) return;
 
       const loc = place.geometry.location;
-
-      const newCenter = {
-        lat: loc.lat(),
-        lng: loc.lng(),
-      };
+      const newCenter = { lat: loc.lat(), lng: loc.lng() };
 
       setCenter(newCenter);
       map.panTo(newCenter);
@@ -109,7 +98,7 @@ export default function VenueBookingSection() {
     });
   }, [map]);
 
-  // 🔄 Load on map ready
+  // Initial load
   useEffect(() => {
     if (map) fetchPlaces(center);
   }, [map, eventType]);
@@ -119,16 +108,19 @@ export default function VenueBookingSection() {
       googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
       libraries={libraries}
     >
-      <div style={{ display: "flex" }}>
-        {/* LEFT SIDE */}
-        <div style={{ width: "70%" }}>
-          {/* Controls */}
-          <div style={{ padding: "10px", background: "#fff" }}>
-            {/* Event Type */}
+      <div className="h-screen w-screen flex overflow-hidden">
+
+        {/* LEFT PANEL */}
+        <div className="w-full md:w-[40%] h-full flex flex-col bg-white border-r">
+
+          {/* 🔥 FILTERS */}
+          <div className="p-4 border-b sticky top-0 bg-white z-10 space-y-3">
+
+            {/* Event */}
             <select
               value={eventType}
               onChange={(e) => setEventType(e.target.value)}
-              style={{ padding: "10px", marginRight: "10px" }}
+              className="w-full p-2 border rounded"
             >
               <option value="wedding">Wedding</option>
               <option value="birthday">Birthday</option>
@@ -139,46 +131,105 @@ export default function VenueBookingSection() {
             {/* Search */}
             <input
               ref={inputRef}
-              type="text"
-              placeholder="Search location..."
-              style={{
-                padding: "10px",
-                width: "40%",
-                marginRight: "10px",
-              }}
+              placeholder="Search city / area / venue..."
+              className="w-full p-2 border rounded"
             />
 
-            {/* Current Location */}
-            <button onClick={getCurrentLocation}>
+            {/* Current location */}
+            <button
+              onClick={getCurrentLocation}
+              className="w-full p-2 bg-black text-white rounded"
+            >
               Use Current Location
             </button>
           </div>
 
-          {/* Map */}
+          {/* 📋 LIST */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-3">
+            {places.map((place) => {
+              const lat = place.geometry.location.lat();
+              const lng = place.geometry.location.lng();
+
+              const distance = getDistance(
+                center.lat,
+                center.lng,
+                lat,
+                lng
+              );
+
+              const image =
+                place.photos?.[0]?.getUrl({ maxWidth: 400 }) ||
+                "https://via.placeholder.com/300";
+
+              return (
+                <div
+                  key={place.place_id}
+                  onClick={() => {
+                    setSelected(place);
+                    map.panTo({ lat, lng });
+                  }}
+                  className={`border rounded-xl p-3 cursor-pointer transition ${selected?.place_id === place.place_id
+                      ? "border-blue-500 shadow"
+                      : "hover:shadow"
+                    }`}
+                >
+                  <img
+                    src={image}
+                    className="w-full h-40 object-cover rounded-lg"
+                  />
+
+                  <h3 className="font-semibold mt-2">{place.name}</h3>
+                  <p className="text-sm text-gray-500">
+                    {place.vicinity}
+                  </p>
+                  <p>⭐ {place.rating || "N/A"}</p>
+                  <p className="text-sm">📍 {distance} km away</p>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+
+                      localStorage.setItem(
+                        "selectedVenue",
+                        JSON.stringify({
+                          name: place.name,
+                          address: place.vicinity,
+                          lat,
+                          lng,
+                          placeId: place.place_id,
+                          eventType,
+                        })
+                      );
+
+                      alert("Venue Selected!");
+                    }}
+                    className="mt-2 w-full bg-blue-500 text-white p-2 rounded"
+                  >
+                    Book Now
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* RIGHT PANEL - MAP */}
+        <div className="w-full md:w-[60%] h-full">
           <GoogleMap
-            mapContainerStyle={containerStyle}
+            mapContainerStyle={{ width: "100%", height: "100%" }}
             center={center}
             zoom={13}
-            onLoad={(mapInstance) => setMap(mapInstance)}
+            onLoad={(m) => setMap(m)}
             onIdle={() => {
               if (map) {
                 const c = map.getCenter();
                 fetchPlaces({ lat: c.lat(), lng: c.lng() });
               }
             }}
-            onClick={(e) => {
-              const lat = e.latLng.lat();
-              const lng = e.latLng.lng();
-
-              const newLoc = { lat, lng };
-              setCenter(newLoc);
-              fetchPlaces(newLoc);
-            }}
           >
-            {/* Markers */}
-            {places.map((place, i) => (
+            {places.map((place) => (
               <Marker
-                key={i}
+                key={place.place_id}
                 position={{
                   lat: place.geometry.location.lat(),
                   lng: place.geometry.location.lng(),
@@ -187,7 +238,6 @@ export default function VenueBookingSection() {
               />
             ))}
 
-            {/* InfoWindow */}
             {selected && (
               <InfoWindow
                 position={{
@@ -204,94 +254,6 @@ export default function VenueBookingSection() {
               </InfoWindow>
             )}
           </GoogleMap>
-        </div>
-
-        {/* RIGHT SIDE */}
-        <div
-          style={{
-            width: "30%",
-            height: "100vh",
-            overflowY: "auto",
-            padding: "10px",
-            borderLeft: "1px solid #ddd",
-          }}
-        >
-          <h2>Venues</h2>
-
-          {places.map((place, i) => {
-            const lat = place.geometry.location.lat();
-            const lng = place.geometry.location.lng();
-
-            const distance = getDistance(
-              center.lat,
-              center.lng,
-              lat,
-              lng
-            );
-
-            const image =
-              place.photos?.[0]?.getUrl({ maxWidth: 400 }) ||
-              "https://via.placeholder.com/300";
-
-            return (
-              <div
-                key={i}
-                onClick={() => {
-                  setSelected(place);
-                  map.panTo({ lat, lng });
-                }}
-                style={{
-                  border:
-                    selected?.place_id === place.place_id
-                      ? "2px solid blue"
-                      : "1px solid #ccc",
-                  borderRadius: "10px",
-                  marginBottom: "10px",
-                  padding: "10px",
-                  cursor: "pointer",
-                }}
-              >
-                <img
-                  src={image}
-                  style={{
-                    width: "100%",
-                    height: "150px",
-                    objectFit: "cover",
-                    borderRadius: "8px",
-                  }}
-                />
-
-                <h4>{place.name}</h4>
-                <p>{place.vicinity}</p>
-                <p>⭐ {place.rating || "N/A"}</p>
-                <p>📍 {distance} km away</p>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-
-                    const data = {
-                      name: place.name,
-                      address: place.vicinity,
-                      lat,
-                      lng,
-                      placeId: place.place_id,
-                      eventType,
-                    };
-
-                    localStorage.setItem(
-                      "selectedVenue",
-                      JSON.stringify(data)
-                    );
-
-                    alert("Venue Selected!");
-                  }}
-                >
-                  Book Now
-                </button>
-              </div>
-            );
-          })}
         </div>
       </div>
     </LoadScript>
