@@ -1,1506 +1,1154 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+/**
+ * VenueBookingSection.jsx
+ * Airbnb / Booking.com-inspired venue discovery UI
+ * Uses: @react-google-maps/api  (npm i @react-google-maps/api)
+ * APIs: Maps JavaScript API · Places API (New) · Geocoding API
+ *
+ * Usage:
+ *   <VenueBookingSection
+ *     googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+ *     onVenueCostChange={(cost) => setVenueCost(cost)}
+ *   />
+ */
 
-// ─── Google Maps Loader ───────────────────────────────────────────────────────
-const loadGoogleMaps = (() => {
-  let promise = null;
-  return () => {
-    if (!promise) {
-      promise = new Promise((resolve, reject) => {
-        if (window.google?.maps) return resolve(window.google.maps);
-        const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=places,geometry`;
-        script.async = true;
-        script.onload = () => resolve(window.google.maps);
-        script.onerror = reject;
-        document.head.appendChild(script);
-      });
-    }
-    return promise;
-  };
-})();
+import React, { useState, useRef, useCallback, useEffect } from "react";
+import {
+  GoogleMap,
+  useLoadScript,
+  OverlayView,
+  StandaloneSearchBox,
+} from "@react-google-maps/api";
 
-// ─── Event Types ─────────────────────────────────────────────────────────────
+/* ─── Constants ──────────────────────────────────────────────────────────── */
+const LIBRARIES = ["places"];
+const DEFAULT_CTR = { lat: 17.385, lng: 78.4867 };
+
+const PRICE_PER_DAY = { 0: 8000, 1: 15000, 2: 35000, 3: 75000, 4: 150000 };
+const PRICE_PER_HOUR = { 0: 1200, 1: 2500, 2: 5500, 3: 11000, 4: 22000 };
+const PRICE_TAG = ["Free", "₹", "₹₹", "₹₹₹", "₹₹₹₹"];
+const PRICE_LABEL = ["Free", "Budget", "Moderate", "Upscale", "Luxury"];
+
 const EVENT_TYPES = [
-  { id: "birthday", label: "Birthday", icon: "🎂", query: "birthday party venue" },
-  { id: "wedding", label: "Wedding", icon: "💍", query: "wedding venue banquet hall" },
-  { id: "corporate", label: "Corporate", icon: "💼", query: "corporate event space conference hall" },
-  { id: "function", label: "Function", icon: "🎊", query: "function hall event venue" },
+  { id: "all", label: "All Venues", icon: "🏛️", query: "event venue banquet hall" },
+  { id: "birthday", label: "Birthday", icon: "🎂", query: "birthday party venue hall" },
+  { id: "wedding", label: "Wedding", icon: "💍", query: "wedding banquet hall" },
+  { id: "function", label: "Function", icon: "🎊", query: "function hall event space" },
   { id: "reception", label: "Reception", icon: "🥂", query: "reception hall banquet" },
-  { id: "conference", label: "Conference", icon: "🎤", query: "conference center meeting hall" },
-  { id: "concert", label: "Concert", icon: "🎵", query: "concert hall auditorium event space" },
-  { id: "exhibition", label: "Exhibition", icon: "🖼️", query: "exhibition hall gallery space" },
+  { id: "outdoor", label: "Outdoor", icon: "🌿", query: "outdoor event lawn garden venue" },
+  { id: "resort", label: "Resort", icon: "🏨", query: "resort event venue party" },
+  { id: "rooftop", label: "Rooftop", icon: "🌆", query: "rooftop venue terrace party" },
+  { id: "corporate", label: "Corporate", icon: "💼", query: "corporate conference event hall" },
+  { id: "concert", label: "Concert", icon: "🎵", query: "auditorium concert hall event" },
 ];
 
-const CITY_FILTERS = ["All Cities", "Hyderabad", "Mumbai", "Delhi", "Bangalore", "Chennai", "Pune", "Kolkata"];
-const RATING_FILTERS = ["All Ratings", "4.5+", "4.0+", "3.5+", "3.0+"];
+const CITIES = [
+  { label: "Hyderabad", center: { lat: 17.385, lng: 78.4867 } },
+  { label: "Bangalore", center: { lat: 12.9716, lng: 77.5946 } },
+  { label: "Mumbai", center: { lat: 19.076, lng: 72.8777 } },
+  { label: "Chennai", center: { lat: 13.0827, lng: 80.2707 } },
+  { label: "Delhi", center: { lat: 28.7041, lng: 77.1025 } },
+  { label: "Pune", center: { lat: 18.5204, lng: 73.8567 } },
+  { label: "Kolkata", center: { lat: 22.5726, lng: 88.3639 } },
+];
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+const RATING_OPTS = [
+  { label: "Any", min: 0 },
+  { label: "3.0+", min: 3.0 },
+  { label: "4.0+", min: 4.0 },
+  { label: "4.5+", min: 4.5 },
+];
 
-  :root {
-    --bg: #0d0f14;
-    --surface: #161a22;
-    --surface2: #1e2330;
-    --surface3: #252d3d;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.12);
-    --gold: #c9a84c;
-    --gold-light: #e8c96a;
-    --gold-dim: rgba(201,168,76,0.15);
-    --text: #f0ede8;
-    --text-muted: #8a8fa0;
-    --text-dim: #5a5f70;
-    --accent: #3d7bf5;
-    --accent-dim: rgba(61,123,245,0.15);
-    --green: #22c55e;
-    --red: #ef4444;
-    --radius: 14px;
-    --radius-sm: 8px;
-    --shadow: 0 4px 24px rgba(0,0,0,0.4);
-    --shadow-gold: 0 4px 24px rgba(201,168,76,0.2);
-  }
+/* ─── Helpers ────────────────────────────────────────────────────────────── */
+const parsePriceLevel = (pl) => {
+  if (typeof pl === "number") return Math.min(pl, 4);
+  return ({
+    PRICE_LEVEL_FREE: 0, PRICE_LEVEL_INEXPENSIVE: 1,
+    PRICE_LEVEL_MODERATE: 2, PRICE_LEVEL_EXPENSIVE: 3,
+    PRICE_LEVEL_VERY_EXPENSIVE: 4
+  }[pl] ?? 1);
+};
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+const getPhotoUrl = (place, w = 500) => {
+  try {
+    if (place?._photo?.getURI) return place._photo.getURI({ maxWidth: w });
+    if (place?.photos?.[0]?.getUrl) return place.photos[0].getUrl({ maxWidth: w });
+  } catch (_) { }
+  return `https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=${w}&q=80`;
+};
 
-  .vbs-root {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+const fmtINR = (n) => "₹" + Number(n).toLocaleString("en-IN");
 
-  /* ── Header ── */
-  .vbs-header {
-    padding: 28px 40px 20px;
-    background: linear-gradient(180deg, rgba(201,168,76,0.06) 0%, transparent 100%);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  .vbs-logo {
-    font-family: 'Playfair Display', serif;
-    font-size: 26px;
-    font-weight: 700;
-    color: var(--gold);
-    letter-spacing: -0.5px;
-  }
-  .vbs-logo span { color: var(--text); font-weight: 400; }
-  .vbs-tagline {
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-left: auto;
-  }
+/* ─── Injected styles ────────────────────────────────────────────────────── */
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Lora:wght@500;600;700&display=swap');
 
-  /* ── Mode Toggle ── */
-  .vbs-mode-bar {
-    padding: 20px 40px 0;
-    display: flex;
-    gap: 12px;
-  }
-  .vbs-mode-btn {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 24px;
-    border-radius: 50px;
-    border: 1.5px solid var(--border2);
-    background: var(--surface);
-    color: var(--text-muted);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .vbs-mode-btn:hover { border-color: var(--gold); color: var(--text); }
-  .vbs-mode-btn.active {
-    background: var(--gold-dim);
-    border-color: var(--gold);
-    color: var(--gold);
-  }
-  .vbs-mode-btn svg { width: 18px; height: 18px; }
+.vbs * { box-sizing: border-box; margin: 0; padding: 0; }
+.vbs {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: #fff;
+  color: #1a1a2e;
+  border-radius: 16px;
+  border: 1.5px solid #e5e7eb;
+  overflow: hidden;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.07);
+}
 
-  /* ── Event Type Selector ── */
-  .vbs-event-section {
-    padding: 24px 40px 0;
-  }
-  .vbs-section-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 14px;
-  }
-  .vbs-event-grid {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .vbs-event-chip {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 18px;
-    border-radius: 50px;
-    border: 1.5px solid var(--border2);
-    background: var(--surface);
-    color: var(--text-muted);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .vbs-event-chip:hover { border-color: var(--gold-light); color: var(--text); background: var(--surface2); }
-  .vbs-event-chip.active {
-    background: var(--gold);
-    border-color: var(--gold);
-    color: #0d0f14;
-    font-weight: 600;
-    box-shadow: var(--shadow-gold);
-  }
-  .vbs-event-chip .chip-icon { font-size: 16px; }
+/* TOP BAR */
+.vbs-top {
+  background: #fff;
+  border-bottom: 1.5px solid #f1f5f9;
+  padding: 18px 20px 0;
+}
+.vbs-logo-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+}
+.vbs-logo-icon {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: linear-gradient(135deg, #1a1a2e, #2d3a6e);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.vbs-logo-text {
+  font-family: 'Lora', serif; font-size: 18px; font-weight: 700;
+  color: #1a1a2e; letter-spacing: -0.3px;
+}
+.vbs-logo-text span { color: #e07b39; }
+.vbs-logo-sub { font-size: 11px; color: #9ca3af; margin-left: auto; font-weight: 400; }
 
-  /* ── Main Content ── */
-  .vbs-main {
-    flex: 1;
-    display: flex;
-    gap: 0;
-    padding: 20px 40px 28px;
-    height: calc(100vh - 240px);
-    min-height: 580px;
-  }
+/* Mode buttons */
+.vbs-modes { display: flex; gap: 6px; margin-bottom: 14px; }
+.vbs-mode-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 9px 18px; border-radius: 50px;
+  border: 1.5px solid #e5e7eb;
+  background: #fff; color: #6b7280;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all 0.18s;
+}
+.vbs-mode-btn:hover { border-color: #1a1a2e; color: #1a1a2e; }
+.vbs-mode-btn.active { background: #1a1a2e; border-color: #1a1a2e; color: #fff; }
+.vbs-mode-icon { font-size: 15px; }
 
-  /* ── Left Panel ── */
-  .vbs-left {
-    width: 400px;
-    min-width: 340px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    margin-right: 20px;
-  }
+/* Event chips */
+.vbs-ev-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+  text-transform: uppercase; color: #9ca3af; margin-bottom: 8px;
+}
+.vbs-ev-chips {
+  display: flex; gap: 6px; overflow-x: auto;
+  padding-bottom: 12px; scrollbar-width: none;
+}
+.vbs-ev-chips::-webkit-scrollbar { display: none; }
+.vbs-ev-chip {
+  flex-shrink: 0; display: flex; align-items: center; gap: 5px;
+  padding: 7px 14px; border-radius: 50px;
+  border: 1.5px solid #e5e7eb;
+  background: #fff; color: #374151;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  transition: all 0.15s; white-space: nowrap;
+}
+.vbs-ev-chip:hover { border-color: #1a1a2e; color: #1a1a2e; }
+.vbs-ev-chip.active { background: #1a1a2e; border-color: #1a1a2e; color: #fff; font-weight: 700; }
 
-  /* ── Search + Filters ── */
-  .vbs-search-box {
-    position: relative;
-  }
-  .vbs-search-input {
-    width: 100%;
-    padding: 13px 18px 13px 46px;
-    background: var(--surface2);
-    border: 1.5px solid var(--border2);
-    border-radius: var(--radius);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .vbs-search-input:focus { border-color: var(--gold); }
-  .vbs-search-input::placeholder { color: var(--text-dim); }
-  .vbs-search-icon {
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-muted);
-    width: 18px;
-    height: 18px;
-  }
+/* Filter row */
+.vbs-filter-row {
+  display: flex; gap: 8px; padding-bottom: 14px; flex-wrap: wrap; align-items: center;
+}
+.vbs-search-wrap { position: relative; flex: 1; min-width: 180px; }
+.vbs-search-icon {
+  position: absolute; left: 12px; top: 50%;
+  transform: translateY(-50%); color: #9ca3af; pointer-events: none; font-size: 14px;
+}
+.vbs-search-input {
+  width: 100%; padding: 9px 14px 9px 36px;
+  border-radius: 10px; border: 1.5px solid #e5e7eb;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px; color: #1a1a2e; background: #f9fafb;
+  outline: none; transition: border-color 0.18s;
+}
+.vbs-search-input:focus { border-color: #1a1a2e; background: #fff; }
+.vbs-search-input::placeholder { color: #c4c9d4; }
+.vbs-search-input:disabled { opacity: 0.5; cursor: not-allowed; }
+.vbs-select {
+  padding: 9px 12px; border-radius: 10px; border: 1.5px solid #e5e7eb;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px; color: #374151; background: #fff;
+  cursor: pointer; outline: none; font-weight: 500;
+  transition: border-color 0.18s;
+}
+.vbs-select:focus, .vbs-select:hover { border-color: #1a1a2e; }
+.vbs-select:disabled { opacity: 0.5; cursor: not-allowed; }
+.vbs-select option { background: #fff; }
+.vbs-rating-btns { display: flex; gap: 4px; }
+.vbs-rating-btn {
+  padding: 8px 11px; border-radius: 8px;
+  border: 1.5px solid #e5e7eb;
+  background: #fff; color: #6b7280;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px; font-weight: 600; cursor: pointer;
+  transition: all 0.15s; white-space: nowrap;
+}
+.vbs-rating-btn:hover { border-color: #1a1a2e; color: #1a1a2e; }
+.vbs-rating-btn.active { background: #1a1a2e; border-color: #1a1a2e; color: #e2b96f; }
+.vbs-rating-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  .vbs-filters {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .vbs-filter-select {
-    padding: 8px 14px;
-    background: var(--surface2);
-    border: 1.5px solid var(--border2);
-    border-radius: 50px;
-    color: var(--text-muted);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    outline: none;
-    transition: border-color 0.2s;
-    appearance: none;
-    padding-right: 28px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8fa0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-  }
-  .vbs-filter-select:focus, .vbs-filter-select:hover { border-color: var(--gold); color: var(--text); }
-  .vbs-filter-select option { background: #1e2330; }
+/* BODY */
+.vbs-body { display: flex; height: 600px; }
 
-  .vbs-results-meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 2px;
-  }
-  .vbs-results-count {
-    font-size: 12px;
-    color: var(--text-muted);
-  }
-  .vbs-results-count strong { color: var(--gold); }
-  .vbs-map-area-badge {
-    font-size: 11px;
-    color: var(--accent);
-    background: var(--accent-dim);
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-weight: 500;
-  }
+/* Venue list */
+.vbs-list {
+  width: 380px; flex-shrink: 0; overflow-y: auto;
+  background: #fff; border-right: 1.5px solid #f1f5f9; padding: 10px 12px;
+}
+.vbs-list::-webkit-scrollbar { width: 4px; }
+.vbs-list::-webkit-scrollbar-track { background: transparent; }
+.vbs-list::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
+.vbs-list-meta {
+  font-size: 11px; color: #9ca3af; padding: 2px 0 10px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.vbs-list-meta strong { color: #1a1a2e; }
+.vbs-area-tag {
+  background: #eff6ff; color: #1d4ed8; border-radius: 20px;
+  padding: 2px 10px; font-size: 10px; font-weight: 600;
+}
 
-  /* ── Venue List ── */
-  .vbs-venue-list {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding-right: 4px;
-  }
-  .vbs-venue-list::-webkit-scrollbar { width: 4px; }
-  .vbs-venue-list::-webkit-scrollbar-track { background: transparent; }
-  .vbs-venue-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+/* Venue card */
+.vbs-card {
+  display: flex; gap: 0; border-radius: 12px; overflow: hidden;
+  border: 1.5px solid #f1f5f9; margin-bottom: 8px; cursor: pointer;
+  background: #fff; transition: all 0.17s; position: relative;
+}
+.vbs-card:hover { border-color: #d1d5db; box-shadow: 0 2px 14px rgba(0,0,0,0.07); }
+.vbs-card.selected { border-color: #1a1a2e; box-shadow: 0 4px 20px rgba(26,26,46,0.12); }
+.vbs-card-selected-bar {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: #e07b39; border-radius: 3px 0 0 3px; z-index: 1;
+}
+.vbs-card-img-overflow { overflow: hidden; width: 112px; height: 112px; flex-shrink: 0; position: relative; }
+.vbs-card-img { width: 112px; height: 112px; object-fit: cover; display: block; transition: transform 0.3s; }
+.vbs-card:hover .vbs-card-img { transform: scale(1.05); }
+.vbs-card-badge {
+  position: absolute; top: 7px; left: 7px;
+  background: rgba(26,26,46,0.78); color: #e2b96f;
+  font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 6px;
+  backdrop-filter: blur(4px);
+}
+.vbs-card-body {
+  padding: 10px 12px; flex: 1; min-width: 0;
+  display: flex; flex-direction: column; justify-content: space-between;
+}
+.vbs-card-name {
+  font-size: 13px; font-weight: 700; color: #1a1a2e; line-height: 1.35; margin-bottom: 3px;
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.vbs-card-addr {
+  font-size: 11px; color: #9ca3af;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px;
+}
+.vbs-card-row { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-bottom: 3px; }
+.vbs-rating-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 7px; border-radius: 5px; font-size: 11px; font-weight: 800;
+}
+.vbs-rating-badge.high { background: #dcfce7; color: #15803d; }
+.vbs-rating-badge.med  { background: #fef9c3; color: #92400e; }
+.vbs-rating-badge.low  { background: #fee2e2; color: #991b1b; }
+.vbs-reviews { font-size: 10px; color: #9ca3af; }
+.vbs-open-tag { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 5px; }
+.vbs-open-tag.open   { background: #dcfce7; color: #15803d; }
+.vbs-open-tag.closed { background: #fee2e2; color: #991b1b; }
+.vbs-card-price { font-size: 12px; font-weight: 700; color: #1a1a2e; display: flex; align-items: center; gap: 4px; }
+.vbs-card-price span { color: #9ca3af; font-weight: 400; }
 
-  .vbs-venue-card {
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-  }
-  .vbs-venue-card:hover { border-color: var(--gold); transform: translateY(-1px); box-shadow: var(--shadow); }
-  .vbs-venue-card.selected { border-color: var(--gold); background: var(--surface2); box-shadow: var(--shadow-gold); }
-  .vbs-venue-card.selected::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
-    background: var(--gold);
-    border-radius: 3px 0 0 3px;
-  }
+/* Skeletons */
+.vbs-skeleton {
+  border-radius: 12px; overflow: hidden; border: 1.5px solid #f1f5f9;
+  margin-bottom: 8px; display: flex; animation: vbsPulse 1.4s ease-in-out infinite;
+}
+@keyframes vbsPulse { 0%,100% { opacity:1 } 50% { opacity:0.45 } }
+.vbs-sk-img { width: 112px; height: 112px; background: #f3f4f6; flex-shrink: 0; }
+.vbs-sk-body { flex: 1; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.vbs-sk-line { border-radius: 4px; background: #f3f4f6; }
 
-  .vbs-card-photos {
-    position: relative;
-    height: 140px;
-    overflow: hidden;
-    background: var(--surface3);
-  }
-  .vbs-card-photo {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: opacity 0.4s;
-    position: absolute;
-    top: 0; left: 0;
-  }
-  .vbs-photo-dots {
-    position: absolute;
-    bottom: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 4px;
-  }
-  .vbs-photo-dot {
-    width: 5px; height: 5px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.4);
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .vbs-photo-dot.active { background: white; }
-  .vbs-card-badge {
-    position: absolute;
-    top: 10px; right: 10px;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(8px);
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--gold-light);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .vbs-no-photo {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-dim);
-    font-size: 36px;
-  }
+/* Empty */
+.vbs-empty { text-align: center; padding: 48px 20px; color: #9ca3af; }
+.vbs-empty-icon { font-size: 36px; margin-bottom: 10px; }
+.vbs-empty-title { font-size: 14px; font-weight: 700; color: #374151; margin-bottom: 4px; }
+.vbs-empty-sub { font-size: 12px; line-height: 1.7; }
 
-  .vbs-card-body {
-    padding: 12px 14px 14px;
-  }
-  .vbs-card-name {
-    font-family: 'Playfair Display', serif;
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .vbs-card-addr {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-bottom: 8px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .vbs-card-meta {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .vbs-card-rating {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--gold-light);
-  }
-  .vbs-card-reviews {
-    font-size: 11px;
-    color: var(--text-dim);
-  }
-  .vbs-card-open {
-    margin-left: auto;
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-weight: 500;
-  }
-  .vbs-card-open.open { background: rgba(34,197,94,0.15); color: #22c55e; }
-  .vbs-card-open.closed { background: rgba(239,68,68,0.12); color: #ef4444; }
+/* MAP PANEL */
+.vbs-map-panel { flex: 1; position: relative; background: #f3f4f6; }
+.vbs-map-wrap { width: 100%; height: 100%; }
 
-  /* Pricing strip on selected */
-  .vbs-card-pricing {
-    display: flex;
-    gap: 0;
-    border-top: 1px solid var(--border);
-    margin-top: 10px;
-    padding-top: 10px;
-  }
-  .vbs-pricing-item {
-    flex: 1;
-    text-align: center;
-    padding: 0 6px;
-  }
-  .vbs-pricing-item + .vbs-pricing-item { border-left: 1px solid var(--border); }
-  .vbs-pricing-label { font-size: 10px; color: var(--text-dim); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .vbs-pricing-value { font-size: 14px; font-weight: 600; color: var(--gold); }
-  .vbs-pricing-unit { font-size: 10px; color: var(--text-muted); }
+/* Map legend */
+.vbs-map-legend {
+  position: absolute; top: 14px; left: 14px;
+  background: rgba(255,255,255,0.96); border: 1px solid #e5e7eb; border-radius: 10px;
+  padding: 8px 14px; font-size: 11px; color: #374151;
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1); pointer-events: none; font-weight: 500;
+}
+.vbs-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 
-  /* ── Loading / Empty states ── */
-  .vbs-loading-cards {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .vbs-skeleton {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    animation: pulse 1.5s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
-  .vbs-skeleton-img { height: 110px; background: var(--surface3); }
-  .vbs-skeleton-body { padding: 12px 14px; }
-  .vbs-skeleton-line { height: 10px; background: var(--surface3); border-radius: 4px; margin-bottom: 8px; }
+/* Map Pin */
+.vbs-pin-wrap {
+  position: relative; cursor: pointer;
+  transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), opacity 0.2s ease;
+  transform-origin: bottom center;
+}
+.vbs-pin-bubble {
+  display: flex; align-items: center; gap: 4px;
+  padding: 5px 11px; border-radius: 20px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px; font-weight: 800; white-space: nowrap; line-height: 1;
+}
+.vbs-pin-tail {
+  width: 0; height: 0;
+  border-left: 5px solid transparent; border-right: 5px solid transparent;
+  margin: 0 auto; margin-top: -1px;
+}
+.vbs-pin-pulse {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -62%);
+  width: 48px; height: 28px; border-radius: 14px;
+  border: 2.5px solid rgba(224,123,57,0.5);
+  pointer-events: none;
+  animation: vbsMapPulse 1.8s ease-out infinite;
+}
+@keyframes vbsMapPulse {
+  0%   { transform: translate(-50%,-62%) scale(1);   opacity: 0.8; }
+  70%  { transform: translate(-50%,-62%) scale(1.75); opacity: 0; }
+  100% { transform: translate(-50%,-62%) scale(1.75); opacity: 0; }
+}
 
-  .vbs-empty {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text-dim);
-  }
-  .vbs-empty-icon { font-size: 40px; margin-bottom: 12px; }
-  .vbs-empty-title { font-size: 15px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
-  .vbs-empty-sub { font-size: 13px; }
+/* DETAIL PANEL */
+.vbs-detail {
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: clamp(280px, 36%, 360px);
+  background: #fff; box-shadow: -6px 0 32px rgba(26,26,46,0.12);
+  display: flex; flex-direction: column; z-index: 20;
+  border-radius: 0 0 14px 0; overflow: hidden;
+}
+.vbs-detail-hero { position: relative; flex-shrink: 0; }
+.vbs-detail-hero img { width: 100%; height: 190px; object-fit: cover; display: block; }
+.vbs-detail-close {
+  position: absolute; top: 10px; left: 10px;
+  background: rgba(0,0,0,0.55); border: none; border-radius: 50%;
+  width: 30px; height: 30px; color: #fff; font-size: 17px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.vbs-detail-hero-badge {
+  position: absolute; bottom: 10px; left: 10px;
+  background: rgba(26,26,46,0.75); color: #e2b96f;
+  padding: 3px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;
+  backdrop-filter: blur(4px);
+}
+.vbs-detail-body { flex: 1; overflow-y: auto; padding: 16px; }
+.vbs-detail-body::-webkit-scrollbar { width: 3px; }
+.vbs-detail-body::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 3px; }
+.vbs-detail-name {
+  font-family: 'Lora', serif; font-size: 17px; font-weight: 700;
+  color: #1a1a2e; line-height: 1.3; margin-bottom: 5px;
+}
+.vbs-detail-addr {
+  display: flex; gap: 5px; align-items: flex-start;
+  font-size: 11px; color: #6b7280; margin-bottom: 10px; line-height: 1.55;
+}
+.vbs-detail-stats { display: flex; align-items: center; gap: 7px; margin-bottom: 12px; flex-wrap: wrap; }
+.vbs-divider { border: none; border-top: 1.5px solid #f1f5f9; margin: 12px 0; }
+.vbs-detail-section-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: #9ca3af; margin-bottom: 10px;
+}
+.vbs-booking-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.vbs-booking-tab {
+  flex: 1; padding: 9px; border-radius: 10px;
+  border: 1.5px solid #e5e7eb; background: #fff;
+  color: #6b7280; font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  transition: all 0.15s; text-align: center;
+}
+.vbs-booking-tab:hover { border-color: #1a1a2e; color: #1a1a2e; }
+.vbs-booking-tab.active { background: #1a1a2e; border-color: #1a1a2e; color: #e2b96f; }
+.vbs-duration-chips { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 12px; }
+.vbs-dur-chip {
+  padding: 6px 12px; border-radius: 8px;
+  border: 1.5px solid #e5e7eb; background: #fff;
+  color: #6b7280; font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.15s;
+}
+.vbs-dur-chip:hover { border-color: #374151; color: #1a1a2e; }
+.vbs-dur-chip.active { background: #f8fafc; border-color: #1a1a2e; color: #1a1a2e; font-weight: 700; }
+.vbs-cost-box {
+  background: linear-gradient(135deg, #1a1a2e 0%, #2d3a6e 100%);
+  border-radius: 12px; padding: 14px 16px;
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
+}
+.vbs-cost-label { color: rgba(255,255,255,0.55); font-size: 10px; margin-bottom: 3px; }
+.vbs-cost-breakdown { color: rgba(255,255,255,0.7); font-size: 10px; }
+.vbs-cost-value { color: #fff; font-size: 22px; font-weight: 800; font-family: 'Lora', serif; }
+.vbs-cost-sub { color: #e2b96f; font-size: 10px; margin-top: 1px; }
+.vbs-book-btn {
+  width: 100%; padding: 13px; background: #e07b39; border: none; border-radius: 10px;
+  color: #fff; font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px; font-weight: 800; cursor: pointer;
+  letter-spacing: 0.2px; transition: background 0.18s, transform 0.1s;
+}
+.vbs-book-btn:hover { background: #c96a28; transform: translateY(-1px); }
+.vbs-book-btn:active { transform: translateY(0); }
 
-  /* ── Map Panel ── */
-  .vbs-map-panel {
-    flex: 1;
-    border-radius: var(--radius);
-    overflow: hidden;
-    position: relative;
-    border: 1.5px solid var(--border2);
-    background: var(--surface3);
-  }
-  .vbs-map-container {
-    width: 100%;
-    height: 100%;
-  }
+/* Location mode */
+.vbs-loc-panel {
+  width: 380px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  background: #f9fafb; border-right: 1.5px solid #f1f5f9; padding: 20px;
+}
+.vbs-loc-card {
+  background: #fff; border: 1.5px solid #e5e7eb; border-radius: 16px;
+  padding: 28px 24px; width: 100%; text-align: center;
+}
+.vbs-loc-card-icon { font-size: 42px; margin-bottom: 14px; }
+.vbs-loc-card-title {
+  font-family: 'Lora', serif; font-size: 18px; font-weight: 700;
+  color: #1a1a2e; margin-bottom: 6px;
+}
+.vbs-loc-card-sub { font-size: 13px; color: #6b7280; line-height: 1.65; margin-bottom: 20px; }
+.vbs-gps-btn {
+  width: 100%; padding: 12px; background: #1a1a2e; border: none; border-radius: 10px;
+  color: #e2b96f; font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: background 0.18s; margin-bottom: 10px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.vbs-gps-btn:hover { background: #2d3a6e; }
+.vbs-gps-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.vbs-loc-divider {
+  display: flex; align-items: center; gap: 10px;
+  color: #d1d5db; font-size: 11px; margin: 8px 0 10px;
+}
+.vbs-loc-divider::before, .vbs-loc-divider::after {
+  content: ''; flex: 1; height: 1px; background: #f1f5f9;
+}
+.vbs-loc-input-wrap { position: relative; }
+.vbs-loc-input {
+  width: 100%; padding: 12px 56px 12px 14px;
+  border-radius: 10px; border: 1.5px solid #e5e7eb;
+  font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; color: #1a1a2e;
+  outline: none; transition: border-color 0.18s; background: #f9fafb;
+}
+.vbs-loc-input:focus { border-color: #1a1a2e; background: #fff; }
+.vbs-loc-input::placeholder { color: #c4c9d4; }
+.vbs-loc-go {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  background: #1a1a2e; color: #e2b96f; border: none; border-radius: 7px;
+  padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.15s;
+}
+.vbs-loc-go:hover { background: #2d3a6e; }
+.vbs-loc-success {
+  margin-top: 10px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;
+  padding: 9px 12px; font-size: 12px; color: #15803d; text-align: left;
+  display: flex; gap: 7px; align-items: flex-start; line-height: 1.5;
+}
+.vbs-loc-error { margin-top: 8px; font-size: 12px; color: #dc2626; }
 
-  .vbs-map-overlay-top {
-    position: absolute;
-    top: 14px;
-    left: 14px;
-    right: 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    pointer-events: none;
-    z-index: 10;
-  }
-  .vbs-map-pill {
-    pointer-events: all;
-    background: rgba(13,15,20,0.85);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--border2);
-    border-radius: 50px;
-    padding: 7px 16px;
-    font-size: 12px;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .vbs-map-pill-dot { width: 7px; height: 7px; border-radius: 50%; }
-  .vbs-map-pill-dot.red { background: var(--red); }
-  .vbs-map-pill-dot.green { background: var(--green); }
+/* Preferred pin */
+.vbs-pref-pin {
+  width: 24px; height: 24px; background: #e07b39; border: 3px solid #1a1a2e;
+  border-radius: 50% 50% 50% 0; transform: rotate(-45deg) translate(-50%,-50%);
+  box-shadow: 0 3px 12px rgba(224,123,57,0.5);
+}
+.vbs-pref-cost-badge {
+  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+  background: #1a1a2e; color: #e2b96f; padding: 9px 20px; border-radius: 50px;
+  font-size: 12px; font-weight: 800; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  white-space: nowrap;
+}
+.vbs-map-hint {
+  position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
+  background: rgba(26,26,46,0.88); color: #fff; padding: 8px 20px; border-radius: 50px;
+  font-size: 12px; font-weight: 600; pointer-events: none; white-space: nowrap;
+}
 
-  .vbs-map-loading {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: var(--surface3);
-    z-index: 5;
-    gap: 16px;
-  }
-  .vbs-spinner {
-    width: 36px; height: 36px;
-    border: 3px solid var(--border2);
-    border-top-color: var(--gold);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .vbs-map-loading-text { color: var(--text-muted); font-size: 13px; }
+/* Prompt */
+.vbs-prompt {
+  width: 380px; flex-shrink: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 32px; text-align: center;
+  background: #f9fafb; border-right: 1.5px solid #f1f5f9;
+}
+.vbs-prompt-icon { font-size: 52px; margin-bottom: 14px; }
+.vbs-prompt-title {
+  font-family: 'Lora', serif; font-size: 19px; font-weight: 700;
+  color: #1a1a2e; margin-bottom: 6px;
+}
+.vbs-prompt-sub { font-size: 13px; color: #9ca3af; line-height: 1.7; }
 
-  /* ── Location Mode ── */
-  .vbs-location-panel {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .vbs-location-card {
-    background: var(--surface);
-    border: 1.5px solid var(--border2);
-    border-radius: 20px;
-    padding: 40px;
-    max-width: 480px;
-    width: 100%;
-    text-align: center;
-  }
-  .vbs-location-icon { font-size: 48px; margin-bottom: 20px; }
-  .vbs-location-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-weight: 600;
-    margin-bottom: 8px;
-  }
-  .vbs-location-sub {
-    font-size: 14px;
-    color: var(--text-muted);
-    margin-bottom: 28px;
-    line-height: 1.6;
-  }
-  .vbs-loc-options {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-  .vbs-loc-btn {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 20px;
-    border-radius: var(--radius);
-    border: 1.5px solid var(--border2);
-    background: var(--surface2);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: left;
-  }
-  .vbs-loc-btn:hover { border-color: var(--gold); background: var(--surface3); }
-  .vbs-loc-btn .loc-icon { font-size: 20px; }
-  .vbs-loc-btn .loc-text { flex: 1; }
-  .vbs-loc-btn .loc-sub { font-size: 11px; color: var(--text-muted); font-weight: 400; margin-top: 1px; }
-
-  .vbs-divider { display: flex; align-items: center; gap: 12px; color: var(--text-dim); font-size: 12px; margin: 4px 0; }
-  .vbs-divider::before, .vbs-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-  .vbs-manual-input-wrap { position: relative; }
-  .vbs-manual-input {
-    width: 100%;
-    padding: 13px 50px 13px 18px;
-    background: var(--surface2);
-    border: 1.5px solid var(--border2);
-    border-radius: var(--radius);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .vbs-manual-input:focus { border-color: var(--gold); }
-  .vbs-manual-input::placeholder { color: var(--text-dim); }
-  .vbs-manual-submit {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: var(--gold);
-    border: none;
-    border-radius: 8px;
-    padding: 6px 12px;
-    color: #0d0f14;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .vbs-manual-submit:hover { background: var(--gold-light); }
-
-  /* ── Event selector prompt ── */
-  .vbs-prompt-overlay {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 16px;
-    color: var(--text-muted);
-    text-align: center;
-    padding: 40px;
-  }
-  .vbs-prompt-icon { font-size: 52px; margin-bottom: 8px; }
-  .vbs-prompt-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-  .vbs-prompt-sub { font-size: 14px; line-height: 1.7; max-width: 360px; }
-
-  /* ── Venue Detail Modal ── */
-  .vbs-modal-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(6px);
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
-  .vbs-modal {
-    background: var(--surface);
-    border: 1.5px solid var(--border2);
-    border-radius: 20px;
-    width: 100%;
-    max-width: 560px;
-    max-height: 85vh;
-    overflow-y: auto;
-    position: relative;
-  }
-  .vbs-modal::-webkit-scrollbar { width: 4px; }
-  .vbs-modal::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
-  .vbs-modal-photos {
-    height: 240px;
-    position: relative;
-    background: var(--surface3);
-    overflow: hidden;
-  }
-  .vbs-modal-photo { width: 100%; height: 100%; object-fit: cover; }
-  .vbs-modal-photo-nav {
-    position: absolute;
-    bottom: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 6px;
-  }
-  .vbs-modal-photo-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.4);
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .vbs-modal-photo-dot.active { background: white; width: 20px; border-radius: 4px; }
-  .vbs-modal-prev, .vbs-modal-next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0,0,0,0.5);
-    border: none;
-    color: white;
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    transition: background 0.2s;
-  }
-  .vbs-modal-prev { left: 10px; }
-  .vbs-modal-next { right: 10px; }
-  .vbs-modal-prev:hover, .vbs-modal-next:hover { background: rgba(0,0,0,0.8); }
-
-  .vbs-modal-body { padding: 24px; }
-  .vbs-modal-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 6px;
-  }
-  .vbs-modal-addr {
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .vbs-modal-stats {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-  }
-  .vbs-modal-stat {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: var(--text-muted);
-  }
-  .vbs-modal-stat strong { color: var(--text); }
-
-  .vbs-pricing-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .vbs-pricing-box {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-    text-align: center;
-  }
-  .vbs-pricing-box-label {
-    font-size: 11px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-  }
-  .vbs-pricing-box-val {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--gold);
-  }
-  .vbs-pricing-box-unit { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-
-  .vbs-modal-close {
-    position: absolute;
-    top: 14px; right: 14px;
-    background: rgba(0,0,0,0.5);
-    border: none;
-    color: white;
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    z-index: 5;
-  }
-  .vbs-book-btn {
-    width: 100%;
-    padding: 14px;
-    background: var(--gold);
-    border: none;
-    border-radius: var(--radius);
-    color: #0d0f14;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    letter-spacing: 0.3px;
-    transition: background 0.2s, transform 0.1s;
-  }
-  .vbs-book-btn:hover { background: var(--gold-light); transform: translateY(-1px); }
-  .vbs-book-btn:active { transform: translateY(0); }
-
-  /* scrollbar for modal */
-  .vbs-modal::-webkit-scrollbar { width: 5px; }
-  .vbs-modal::-webkit-scrollbar-track { background: transparent; }
-  .vbs-modal::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 5px; }
+/* SB wrap */
+.vbs-sb-outer { position: relative; padding: 0 0 14px; }
+.vbs-sb-icon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-60%);
+  pointer-events: none; font-size: 13px; z-index: 1;
+}
+.vbs-sb-input {
+  width: 100%; padding: 10px 14px 10px 36px;
+  border-radius: 10px; border: 1.5px solid #e5e7eb;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px; color: #1a1a2e; outline: none; background: #f9fafb;
+}
+.vbs-sb-input:focus { border-color: #1a1a2e; background: #fff; }
 `;
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-const priceMap = {
-  hourly: [1500, 2000, 2500, 3000, 4000, 5000, 7500, 10000, 15000],
-  daily: [15000, 20000, 25000, 35000, 50000, 75000, 100000],
-};
-function mockPricing(placeId) {
-  const h = priceMap.hourly[(placeId.charCodeAt(3) || 0) % priceMap.hourly.length];
-  const d = priceMap.daily[(placeId.charCodeAt(4) || 0) % priceMap.daily.length];
-  return { hourly: h, daily: d };
-}
-function formatINR(n) {
-  return "₹" + n.toLocaleString("en-IN");
-}
-function getRatingStars(r) {
-  const full = Math.floor(r);
-  return "★".repeat(full) + (r % 1 >= 0.5 ? "½" : "") + "☆".repeat(5 - Math.ceil(r));
+/* ─── Rating Badge ───────────────────────────────────────────────────────── */
+function RatingBadge({ rating }) {
+  if (!rating) return null;
+  const cls = rating >= 4 ? "high" : rating >= 3 ? "med" : "low";
+  return <span className={`vbs-rating-badge ${cls}`}>★ {rating.toFixed(1)}</span>;
 }
 
-// ─── Photo Slideshow ──────────────────────────────────────────────────────────
-function PhotoSlide({ photos, height = 140 }) {
-  const [idx, setIdx] = useState(0);
-  useEffect(() => {
-    if (!photos?.length) return;
-    const t = setInterval(() => setIdx((i) => (i + 1) % photos.length), 3000);
-    return () => clearInterval(t);
-  }, [photos]);
-  if (!photos?.length) return <div className="vbs-no-photo">🏛️</div>;
-  return (
-    <>
-      {photos.map((p, i) => (
-        <img
-          key={i}
-          src={p}
-          className="vbs-card-photo"
-          style={{ opacity: i === idx ? 1 : 0 }}
-          alt=""
-          onError={(e) => { e.target.style.display = "none"; }}
-        />
-      ))}
-      {photos.length > 1 && (
-        <div className="vbs-photo-dots">
-          {photos.map((_, i) => (
-            <div
-              key={i}
-              className={`vbs-photo-dot${i === idx ? " active" : ""}`}
-              onClick={(e) => { e.stopPropagation(); setIdx(i); }}
-            />
-          ))}
-        </div>
-      )}
-    </>
-  );
-}
-
-// ─── Venue Detail Modal ───────────────────────────────────────────────────────
-function VenueModal({ venue, onClose }) {
-  const [photoIdx, setPhotoIdx] = useState(0);
-  const photos = venue.photos || [];
-  const pricing = mockPricing(venue.place_id);
+/* ─── Map Pin ────────────────────────────────────────────────────────────── */
+function MapPin({ place, isSelected, isHovered, isDimmed, onClick }) {
+  const pl = parsePriceLevel(place.price_level);
+  const label = PRICE_TAG[pl] || "₹";
+  const bg = isSelected ? "#e07b39" : isHovered ? "#1a1a2e" : "#fff";
+  const fg = isSelected ? "#fff" : isHovered ? "#e2b96f" : "#1a1a2e";
+  const border = isSelected ? "#c96a28" : isHovered ? "#e2b96f" : "#1a1a2e";
 
   return (
-    <div className="vbs-modal-backdrop" onClick={onClose}>
-      <div className="vbs-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="vbs-modal-close" onClick={onClose}>✕</button>
-        <div className="vbs-modal-photos">
-          {photos.length > 0 ? (
-            <>
-              <img src={photos[photoIdx]} className="vbs-modal-photo" alt={venue.name} onError={(e) => e.target.style.display = "none"} />
-              {photos.length > 1 && (
-                <>
-                  <button className="vbs-modal-prev" onClick={() => setPhotoIdx((i) => (i - 1 + photos.length) % photos.length)}>‹</button>
-                  <button className="vbs-modal-next" onClick={() => setPhotoIdx((i) => (i + 1) % photos.length)}>›</button>
-                  <div className="vbs-modal-photo-nav">
-                    {photos.map((_, i) => (
-                      <div key={i} className={`vbs-modal-photo-dot${i === photoIdx ? " active" : ""}`} onClick={() => setPhotoIdx(i)} />
-                    ))}
-                  </div>
-                </>
-              )}
-            </>
-          ) : (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontSize: 60 }}>🏛️</div>
-          )}
-        </div>
-        <div className="vbs-modal-body">
-          <div className="vbs-modal-title">{venue.name}</div>
-          <div className="vbs-modal-addr">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            {venue.vicinity || venue.formatted_address || "Address not available"}
-          </div>
-          <div className="vbs-modal-stats">
-            {venue.rating && (
-              <div className="vbs-modal-stat">
-                <span style={{ color: "#f59e0b" }}>★</span>
-                <strong>{venue.rating}</strong>
-                <span>({venue.user_ratings_total?.toLocaleString() || "0"} reviews)</span>
-              </div>
-            )}
-            <div className="vbs-modal-stat">
-              <span>🕐</span>
-              <span className={venue.opening_hours?.open_now ? "vbs-card-open open" : "vbs-card-open closed"}>
-                {venue.opening_hours?.open_now ? "Open Now" : "Closed"}
-              </span>
-            </div>
-            {venue.price_level && (
-              <div className="vbs-modal-stat">
-                <span>💰</span>
-                <strong>{"₹".repeat(venue.price_level)}</strong>
-              </div>
-            )}
-          </div>
-
-          <div style={{ fontSize: 11, letterSpacing: 1.5, textTransform: "uppercase", color: "var(--gold)", fontWeight: 600, marginBottom: 12 }}>
-            Estimated Pricing
-          </div>
-          <div className="vbs-pricing-grid">
-            <div className="vbs-pricing-box">
-              <div className="vbs-pricing-box-label">Per Hour</div>
-              <div className="vbs-pricing-box-val">{formatINR(pricing.hourly)}</div>
-              <div className="vbs-pricing-box-unit">+ taxes</div>
-            </div>
-            <div className="vbs-pricing-box">
-              <div className="vbs-pricing-box-label">Full Day</div>
-              <div className="vbs-pricing-box-val">{formatINR(pricing.daily)}</div>
-              <div className="vbs-pricing-box-unit">+ taxes</div>
-            </div>
-          </div>
-
-          <button className="vbs-book-btn">Request Booking →</button>
-        </div>
+    <div
+      className="vbs-pin-wrap"
+      onClick={onClick}
+      style={{
+        transform: `scale(${isSelected ? 1.35 : isHovered ? 1.1 : 1}) translateY(${isSelected ? -5 : 0}px)`,
+        opacity: isDimmed ? 0.2 : 1,
+        zIndex: isSelected ? 100 : isHovered ? 50 : 1,
+      }}
+    >
+      {isSelected && <div className="vbs-pin-pulse" />}
+      <div
+        className="vbs-pin-bubble"
+        style={{
+          background: bg, color: fg, border: `2px solid ${border}`,
+          boxShadow: isSelected
+            ? "0 6px 22px rgba(224,123,57,0.45)"
+            : isHovered ? "0 3px 12px rgba(26,26,46,0.2)" : "0 2px 8px rgba(0,0,0,0.18)",
+        }}
+      >
+        {isSelected && <span style={{ fontSize: 9 }}>●</span>}
+        {label}
       </div>
+      <div className="vbs-pin-tail" style={{ borderTop: `6px solid ${border}` }} />
     </div>
   );
 }
 
-// ─── Venue Card ───────────────────────────────────────────────────────────────
-function VenueCard({ venue, selected, onClick, mapsApi }) {
-  const photos = venue.photos || [];
-  const pricing = mockPricing(venue.place_id);
-
+/* ─── Venue Card ─────────────────────────────────────────────────────────── */
+function VenueCard({ place, isSelected, isHovered, onClick, onMouseEnter, onMouseLeave }) {
+  const pl = parsePriceLevel(place.price_level);
+  const isOpen = place.opening_hours?.isOpen?.();
   return (
-    <div className={`vbs-venue-card${selected ? " selected" : ""}`} onClick={onClick}>
-      <div className="vbs-card-photos">
-        <PhotoSlide photos={photos} />
-        {venue.rating && (
-          <div className="vbs-card-badge">
-            ★ {venue.rating}
-          </div>
-        )}
+    <div
+      className={`vbs-card${isSelected ? " selected" : ""}`}
+      onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      data-id={place.place_id}
+    >
+      {isSelected && <div className="vbs-card-selected-bar" />}
+      <div className="vbs-card-img-overflow">
+        <img
+          className="vbs-card-img"
+          src={getPhotoUrl(place, 300)}
+          alt={place.name}
+          onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=300&q=80"; }}
+        />
+        <div className="vbs-card-badge">{PRICE_TAG[pl]}</div>
       </div>
       <div className="vbs-card-body">
-        <div className="vbs-card-name">{venue.name}</div>
-        <div className="vbs-card-addr">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          {venue.vicinity || "—"}
-        </div>
-        <div className="vbs-card-meta">
-          {venue.rating && (
-            <div className="vbs-card-rating">
-              ★ {venue.rating}
-              <span className="vbs-card-reviews">({venue.user_ratings_total?.toLocaleString() || "0"})</span>
-            </div>
+        <div className="vbs-card-name">{place.name}</div>
+        <div className="vbs-card-addr">📍 {place.formatted_address || place.vicinity || "—"}</div>
+        <div className="vbs-card-row">
+          <RatingBadge rating={place.rating} />
+          {place.user_ratings_total && (
+            <span className="vbs-reviews">({place.user_ratings_total.toLocaleString("en-IN")})</span>
           )}
-          {venue.opening_hours && (
-            <div className={`vbs-card-open ${venue.opening_hours.open_now ? "open" : "closed"}`}>
-              {venue.opening_hours.open_now ? "Open" : "Closed"}
-            </div>
+          {place.opening_hours != null && (
+            <span className={`vbs-open-tag ${isOpen ? "open" : "closed"}`}>
+              {isOpen ? "Open" : "Closed"}
+            </span>
           )}
         </div>
-        {selected && (
-          <div className="vbs-card-pricing">
-            <div className="vbs-pricing-item">
-              <div className="vbs-pricing-label">Hourly</div>
-              <div className="vbs-pricing-value">{formatINR(pricing.hourly)}</div>
-              <div className="vbs-pricing-unit">+ taxes</div>
-            </div>
-            <div className="vbs-pricing-item">
-              <div className="vbs-pricing-label">Full Day</div>
-              <div className="vbs-pricing-value">{formatINR(pricing.daily)}</div>
-              <div className="vbs-pricing-unit">+ taxes</div>
-            </div>
-          </div>
-        )}
+        <div className="vbs-card-price">
+          {fmtINR(PRICE_PER_DAY[pl] ?? 15000)}<span>/ day</span>
+        </div>
       </div>
     </div>
   );
 }
 
-// ─── Skeleton Loader ──────────────────────────────────────────────────────────
-function SkeletonCard() {
+/* ─── Skeleton ───────────────────────────────────────────────────────────── */
+function Skeleton() {
   return (
     <div className="vbs-skeleton">
-      <div className="vbs-skeleton-img" />
-      <div className="vbs-skeleton-body">
-        <div className="vbs-skeleton-line" style={{ width: "70%" }} />
-        <div className="vbs-skeleton-line" style={{ width: "90%" }} />
-        <div className="vbs-skeleton-line" style={{ width: "50%" }} />
+      <div className="vbs-sk-img" />
+      <div className="vbs-sk-body">
+        <div className="vbs-sk-line" style={{ height: 13, width: "72%" }} />
+        <div className="vbs-sk-line" style={{ height: 10, width: "88%" }} />
+        <div className="vbs-sk-line" style={{ height: 10, width: "52%" }} />
+        <div className="vbs-sk-line" style={{ height: 11, width: "38%" }} />
       </div>
     </div>
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-export default function VenueBookingSection() {
-  const [mode, setMode] = useState("browse"); // "browse" | "location"
-  const [eventType, setEventType] = useState(null);
-  const eventTypeRef = useRef(null); // ref so map listeners can read current value
-  const [searchQuery, setSearchQuery] = useState("");
-  const [cityFilter, setCityFilter] = useState("All Cities");
-  const [ratingFilter, setRatingFilter] = useState("All Ratings");
-  const [venues, setVenues] = useState([]);
-  const [filteredVenues, setFilteredVenues] = useState([]);
-  const [selectedVenue, setSelectedVenue] = useState(null);
-  const [modalVenue, setModalVenue] = useState(null);
+/* ─── Detail Panel ───────────────────────────────────────────────────────── */
+function DetailPanel({ place, onClose, onBook, bookingType, setBookingType, hours, setHours, days, setDays }) {
+  if (!place) return null;
+  const pl = parsePriceLevel(place.price_level);
+  const dayRate = PRICE_PER_DAY[pl] ?? 15000;
+  const hrRate = PRICE_PER_HOUR[pl] ?? 2500;
+  const isOpen = place.opening_hours?.isOpen?.();
+  const cost = bookingType === "day" ? dayRate * days : hrRate * hours;
+
+  return (
+    <div className="vbs-detail">
+      <div className="vbs-detail-hero">
+        <img
+          src={getPhotoUrl(place, 800)}
+          alt={place.name}
+          onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&q=80"; }}
+        />
+        <button className="vbs-detail-close" onClick={onClose}>‹</button>
+        <div className="vbs-detail-hero-badge">{PRICE_TAG[pl]} · {PRICE_LABEL[pl]}</div>
+      </div>
+      <div className="vbs-detail-body">
+        <div className="vbs-detail-name">{place.name}</div>
+        <div className="vbs-detail-addr">
+          <span>📍</span>
+          <span>{place.formatted_address || place.vicinity || "Address unavailable"}</span>
+        </div>
+        <div className="vbs-detail-stats">
+          <RatingBadge rating={place.rating} />
+          {place.user_ratings_total && (
+            <span className="vbs-reviews">{place.user_ratings_total.toLocaleString("en-IN")} reviews</span>
+          )}
+          {place.opening_hours != null && (
+            <span className={`vbs-open-tag ${isOpen ? "open" : "closed"}`}>
+              {isOpen ? "Open now" : "Closed"}
+            </span>
+          )}
+        </div>
+
+        <hr className="vbs-divider" />
+        <div className="vbs-detail-section-label">Booking Duration</div>
+
+        <div className="vbs-booking-tabs">
+          {[{ key: "hour", label: "⏱ Hourly" }, { key: "day", label: "📅 Full Day" }].map((t) => (
+            <button
+              key={t.key}
+              className={`vbs-booking-tab${bookingType === t.key ? " active" : ""}`}
+              onClick={() => setBookingType(t.key)}
+            >{t.label}</button>
+          ))}
+        </div>
+
+        {bookingType === "hour" && (
+          <div className="vbs-duration-chips">
+            {[2, 4, 6, 8, 12].map(h => (
+              <button key={h} className={`vbs-dur-chip${hours === h ? " active" : ""}`} onClick={() => setHours(h)}>{h}h</button>
+            ))}
+          </div>
+        )}
+        {bookingType === "day" && (
+          <div className="vbs-duration-chips">
+            {[1, 2, 3, 5, 7].map(d => (
+              <button key={d} className={`vbs-dur-chip${days === d ? " active" : ""}`} onClick={() => setDays(d)}>{d}d</button>
+            ))}
+          </div>
+        )}
+
+        <div className="vbs-cost-box">
+          <div>
+            <div className="vbs-cost-label">Estimated cost</div>
+            <div className="vbs-cost-breakdown">
+              {bookingType === "day"
+                ? `${days} day${days > 1 ? "s" : ""} × ${fmtINR(dayRate)}`
+                : `${hours} hr${hours > 1 ? "s" : ""} × ${fmtINR(hrRate)}`}
+            </div>
+          </div>
+          <div>
+            <div className="vbs-cost-value">{fmtINR(cost)}</div>
+            <div className="vbs-cost-sub">+ taxes</div>
+          </div>
+        </div>
+
+        <button className="vbs-book-btn" onClick={() => onBook(place, cost)}>
+          Request to Book →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Main Component ─────────────────────────────────────────────────────── */
+export default function VenueBookingSection({ googleMapsApiKey, onVenueCostChange }) {
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: googleMapsApiKey || "",
+    libraries: LIBRARIES,
+  });
+
+  const [mode, setMode] = useState("browse");
+  const [activeEvent, setActiveEvent] = useState(null);
+  const [activeCity, setActiveCity] = useState(CITIES[0]);
+  const [minRating, setMinRating] = useState(0);
+  const [searchText, setSearchText] = useState("");
+
+  const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [mapLoading, setMapLoading] = useState(false);
-  const [mapAreaName, setMapAreaName] = useState("");
-  const [manualAddress, setManualAddress] = useState("");
-  const [locStatus, setLocStatus] = useState("idle"); // "idle"|"loading"|"done"|"error"
+  const [mapCenter, setMapCenter] = useState(DEFAULT_CTR);
+  const [mapZoom, setMapZoom] = useState(12);
+  const [areaName, setAreaName] = useState("");
+
+  const [selectedPlace, setSelectedPlace] = useState(null);
+  const [hoveredId, setHoveredId] = useState(null);
+
+  const [bookingType, setBookingType] = useState("day");
+  const [hours, setHours] = useState(4);
+  const [days, setDays] = useState(1);
+
+  const [sbRef, setSbRef] = useState(null);
+  const [prefPin, setPrefPin] = useState(null);
+  const [prefAddress, setPrefAddress] = useState("");
+  const [locStatus, setLocStatus] = useState("idle");
+  const [manualAddr, setManualAddr] = useState("");
 
   const mapRef = useRef(null);
-  const mapInstanceRef = useRef(null);
-  const markersRef = useRef([]);
-  const placesServiceRef = useRef(null);
-  const geocoderRef = useRef(null);
-  const mapsApiRef = useRef(null);
-  const mapMoveDebounceRef = useRef(null);
-  const lastSearchKeyRef = useRef(""); // tracks last searched location+eventType to prevent duplication
-  const isFetchingRef = useRef(false);
-  const currentLocationRef = useRef({ lat: 17.385, lng: 78.4867 }); // Hyderabad default
+  const listRef = useRef(null);
+  const isFetching = useRef(false);
 
-  // ── Init Maps ──
-  useEffect(() => {
-    if (!mapRef.current) return;
-    setMapLoading(true);
-    loadGoogleMaps().then((maps) => {
-      mapsApiRef.current = maps;
-      const map = new maps.Map(mapRef.current, {
-        center: currentLocationRef.current,
-        zoom: 13,
-        mapTypeId: "roadmap",
-        styles: darkMapStyles,
-        disableDefaultUI: false,
-        zoomControl: true,
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: false,
-      });
-      mapInstanceRef.current = map;
-      placesServiceRef.current = new maps.places.PlacesService(map);
-      geocoderRef.current = new maps.Geocoder();
+  const onMapLoad = useCallback((map) => { mapRef.current = map; }, []);
 
-      // Only re-fetch on dragend (user explicitly moved map), not on every idle
-      map.addListener("dragend", () => {
-        const center = map.getCenter();
-        if (!center) return;
-        const latlng = { lat: center.lat(), lng: center.lng() };
-        clearTimeout(mapMoveDebounceRef.current);
-        mapMoveDebounceRef.current = setTimeout(() => {
-          currentLocationRef.current = latlng;
-          reverseGeocode(latlng);
-          // Use the current eventType from the ref so closure isn't stale
-          if (eventTypeRef.current) {
-            doFetchVenues(eventTypeRef.current, latlng, true);
-          }
-        }, 500);
-      });
+  /* Cost */
+  const venueCost = (() => {
+    if (mode === "location" && prefPin) return 3000;
+    if (!selectedPlace) return 0;
+    const pl = parsePriceLevel(selectedPlace.price_level);
+    return bookingType === "day"
+      ? (PRICE_PER_DAY[pl] ?? 15000) * days
+      : (PRICE_PER_HOUR[pl] ?? 2500) * hours;
+  })();
+  useEffect(() => { onVenueCostChange?.(venueCost); }, [venueCost]);
 
-      // Also re-fetch when zoom changes significantly
-      let lastZoom = 13;
-      map.addListener("zoom_changed", () => {
-        clearTimeout(mapMoveDebounceRef.current);
-        mapMoveDebounceRef.current = setTimeout(() => {
-          const newZoom = map.getZoom();
-          if (Math.abs(newZoom - lastZoom) >= 1) {
-            lastZoom = newZoom;
-            const center = map.getCenter();
-            if (center && eventTypeRef.current) {
-              const latlng = { lat: center.lat(), lng: center.lng() };
-              currentLocationRef.current = latlng;
-              doFetchVenues(eventTypeRef.current, latlng, true);
-            }
-          }
-        }, 700);
-      });
-
-      setMapLoading(false);
-    }).catch(() => setMapLoading(false));
-  }, [mapRef.current]);
-
-  // ── Reverse Geocode for area name ──
+  /* Reverse geocode */
   const reverseGeocode = useCallback((latlng) => {
-    if (!geocoderRef.current) return;
-    geocoderRef.current.geocode({ location: latlng }, (results, status) => {
-      if (status === "OK" && results[0]) {
-        const comp = results[0].address_components.find(c => c.types.includes("sublocality") || c.types.includes("locality"));
-        if (comp) setMapAreaName(comp.long_name);
+    if (!window.google?.maps) return;
+    new window.google.maps.Geocoder().geocode({ location: latlng }, (res, st) => {
+      if (st === "OK" && res[0]) {
+        const c = res[0].address_components.find(x =>
+          x.types.includes("sublocality") || x.types.includes("locality")
+        );
+        if (c) setAreaName(c.long_name);
       }
     });
   }, []);
 
-  // ── Core fetch — ONE call, no pagination loop, guarded by key ──
-  const doFetchVenues = useCallback((evType, location, replace = false) => {
-    if (!placesServiceRef.current || !evType) return;
+  /* Fetch venues — Places API New */
+  const fetchPlaces = useCallback(async () => {
+    if (!window.google?.maps?.places?.Place || isFetching.current || !activeEvent) return;
+    const ev = EVENT_TYPES.find(e => e.id === activeEvent) || EVENT_TYPES[0];
+    const query = [searchText || ev.query, activeCity.label].filter(Boolean).join(" in ");
 
-    // Build a key — only re-fetch if location changed by >0.01 deg OR evType changed
-    const key = `${evType}|${location.lat.toFixed(2)}|${location.lng.toFixed(2)}`;
-    if (key === lastSearchKeyRef.current && !replace) return;
-    if (isFetchingRef.current) return;
-
-    lastSearchKeyRef.current = key;
-    isFetchingRef.current = true;
+    isFetching.current = true;
     setLoading(true);
-
-    const eventObj = EVENT_TYPES.find(e => e.id === evType);
-    const keyword = eventObj?.query || "event venue hall";
-
-    const request = {
-      location: new mapsApiRef.current.LatLng(location.lat, location.lng),
-      radius: 8000,
-      keyword,
-      type: ["establishment"],
-    };
-
-    placesServiceRef.current.nearbySearch(request, (results, status, pagination) => {
-      isFetchingRef.current = false;
-      setLoading(false);
-
-      if (status === window.google.maps.places.PlacesServiceStatus.OK && results?.length) {
-        const enriched = results.map((place) => ({
-          ...place,
-          photos: place.photos
-            ? place.photos.slice(0, 5).map(p => p.getUrl({ maxWidth: 600, maxHeight: 400 }))
-            : [],
-        }));
-
-        if (replace) {
-          setVenues(enriched.slice(0, 20));
-        } else {
-          setVenues(prev => {
-            const seen = new Set(prev.map(v => v.place_id));
-            const fresh = enriched.filter(v => !seen.has(v.place_id));
-            return [...prev, ...fresh].slice(0, 20);
-          });
-        }
-
-        // Fetch one more page only if we still have fewer than 20 — but only once
-        if (pagination?.hasNextPage) {
-          setVenues(current => {
-            if (current.length < 20) {
-              setTimeout(() => {
-                pagination.nextPage();
-              }, 1500);
-            }
-            return current;
-          });
-        }
-      }
-    });
-  }, []);
-
-  // ── When event type changes, fetch new venues ──
-  useEffect(() => {
-    eventTypeRef.current = eventType;
-    if (eventType && placesServiceRef.current) {
-      setVenues([]);
-      setSelectedVenue(null);
-      lastSearchKeyRef.current = ""; // reset key so fresh fetch happens
-      doFetchVenues(eventType, currentLocationRef.current, true);
-      reverseGeocode(currentLocationRef.current);
-    }
-  }, [eventType]);
-
-  // ── Filter venues based on search + filters ──
-  useEffect(() => {
-    let list = [...venues];
-
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter(v =>
-        v.name?.toLowerCase().includes(q) ||
-        v.vicinity?.toLowerCase().includes(q)
-      );
-    }
-
-    if (cityFilter !== "All Cities") {
-      list = list.filter(v => v.vicinity?.toLowerCase().includes(cityFilter.toLowerCase()));
-    }
-
-    if (ratingFilter !== "All Ratings") {
-      const minRating = parseFloat(ratingFilter);
-      list = list.filter(v => (v.rating || 0) >= minRating);
-    }
-
-    setFilteredVenues(list);
-  }, [venues, searchQuery, cityFilter, ratingFilter]);
-
-  // ── Update map markers when filtered venues change ──
-  useEffect(() => {
-    if (!mapInstanceRef.current || !mapsApiRef.current) return;
-    // Clear old markers
-    markersRef.current.forEach(m => m.setMap(null));
-    markersRef.current = [];
-
-    filteredVenues.forEach((venue) => {
-      const isSelected = selectedVenue?.place_id === venue.place_id;
-      const loc = venue.geometry?.location;
-      if (!loc) return;
-
-      // Custom teardrop pin SVG — medium sized
-      const pinSvg = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="38" viewBox="0 0 28 38">
-          <path d="M14 0C6.27 0 0 6.27 0 14c0 10.5 14 24 14 24S28 24.5 28 14C28 6.27 21.73 0 14 0z"
-            fill="${isSelected ? '#22c55e' : '#ef4444'}"
-            stroke="${isSelected ? '#15803d' : '#b91c1c'}"
-            stroke-width="1.5"/>
-          <circle cx="14" cy="14" r="5.5" fill="white" opacity="0.9"/>
-        </svg>`;
-
-      const marker = new mapsApiRef.current.Marker({
-        position: { lat: loc.lat(), lng: loc.lng() },
-        map: mapInstanceRef.current,
-        title: venue.name,
-        icon: {
-          url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(pinSvg)}`,
-          scaledSize: new mapsApiRef.current.Size(28, 38),
-          anchor: new mapsApiRef.current.Point(14, 38),
+    try {
+      const { places: raw } = await window.google.maps.places.Place.searchByText({
+        textQuery: query,
+        fields: ["id", "displayName", "formattedAddress", "location", "rating",
+          "userRatingCount", "priceLevel", "photos", "regularOpeningHours"],
+        locationBias: { center: activeCity.center, radius: 20000 },
+        maxResultCount: 20,
+      });
+      let list = (raw || []).map((p) => ({
+        place_id: p.id,
+        name: p.displayName,
+        formatted_address: p.formattedAddress,
+        vicinity: p.formattedAddress,
+        rating: p.rating,
+        user_ratings_total: p.userRatingCount,
+        price_level: parsePriceLevel(p.priceLevel),
+        photos: p.photos,
+        opening_hours: p.regularOpeningHours,
+        _photo: p.photos?.[0] ?? null,
+        geometry: {
+          location: {
+            lat: () => p.location?.lat ?? activeCity.center.lat,
+            lng: () => p.location?.lng ?? activeCity.center.lng,
+          },
         },
-        animation: isSelected ? mapsApiRef.current.Animation.BOUNCE : null,
-        zIndex: isSelected ? 100 : 1,
-      });
-
-      marker.addListener("click", () => {
-        setSelectedVenue(venue);
-        setModalVenue(venue);
-      });
-
-      markersRef.current.push(marker);
-    });
-  }, [filteredVenues, selectedVenue]);
-
-  // ── Pan map to selected venue ──
-  useEffect(() => {
-    if (selectedVenue && mapInstanceRef.current) {
-      const loc = selectedVenue.geometry?.location;
-      if (loc) {
-        mapInstanceRef.current.panTo({ lat: loc.lat(), lng: loc.lng() });
-        mapInstanceRef.current.setZoom(15);
-      }
+      }));
+      if (minRating > 0) list = list.filter(p => (p.rating || 0) >= minRating);
+      setPlaces(list);
+      setSelectedPlace(null);
+      setMapCenter(activeCity.center);
+      setMapZoom(12);
+      reverseGeocode(activeCity.center);
+    } catch (err) {
+      console.error("Places fetch error:", err);
+      setPlaces([]);
+    } finally {
+      setLoading(false);
+      isFetching.current = false;
     }
-  }, [selectedVenue]);
+  }, [activeEvent, activeCity, minRating, searchText, reverseGeocode]);
 
-  // ── Get current GPS location ──
-  const handleCurrentLocation = () => {
+  useEffect(() => {
+    if (mode !== "browse" || !isLoaded || !activeEvent) return;
+    const t = setTimeout(fetchPlaces, 350);
+    return () => clearTimeout(t);
+  }, [activeEvent, activeCity, minRating, searchText, mode, isLoaded, fetchPlaces]);
+
+  /* GPS */
+  const handleGPS = () => {
     setLocStatus("loading");
     if (!navigator.geolocation) { setLocStatus("error"); return; }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const latlng = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        currentLocationRef.current = latlng;
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.setCenter(latlng);
-          mapInstanceRef.current.setZoom(13);
-        }
-        lastSearchKeyRef.current = "";
-        if (eventType) doFetchVenues(eventType, latlng, true);
-        reverseGeocode(latlng);
+        setPrefPin(latlng); setMapCenter(latlng); setMapZoom(15);
+        new window.google.maps.Geocoder().geocode({ location: latlng }, (res, st) => {
+          setPrefAddress(st === "OK" && res[0] ? res[0].formatted_address : `${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)}`);
+        });
         setLocStatus("done");
-        setMode("browse");
       },
       () => setLocStatus("error")
     );
   };
 
-  // ── Manual address search ──
-  const handleManualAddress = () => {
-    if (!manualAddress.trim() || !geocoderRef.current) return;
-    geocoderRef.current.geocode({ address: manualAddress }, (results, status) => {
-      if (status === "OK" && results[0]) {
-        const loc = results[0].geometry.location;
+  /* Manual address */
+  const handleManualAddr = () => {
+    if (!manualAddr.trim() || !window.google) return;
+    new window.google.maps.Geocoder().geocode({ address: manualAddr }, (res, st) => {
+      if (st === "OK" && res[0]) {
+        const loc = res[0].geometry.location;
         const latlng = { lat: loc.lat(), lng: loc.lng() };
-        currentLocationRef.current = latlng;
-        mapInstanceRef.current?.setCenter(latlng);
-        mapInstanceRef.current?.setZoom(13);
-        lastSearchKeyRef.current = "";
-        if (eventType) doFetchVenues(eventType, latlng, true);
-        reverseGeocode(latlng);
-        setMode("browse");
-        setManualAddress("");
+        setPrefPin(latlng); setMapCenter(latlng); setMapZoom(15);
+        setPrefAddress(res[0].formatted_address); setLocStatus("done"); setManualAddr("");
       }
     });
   };
 
-  const minRatingVal = ratingFilter !== "All Ratings" ? parseFloat(ratingFilter) : 0;
+  /* Map click pin */
+  const handleMapClick = (e) => {
+    if (mode !== "location") return;
+    const lat = e.latLng.lat(), lng = e.latLng.lng();
+    setPrefPin({ lat, lng });
+    new window.google.maps.Geocoder().geocode({ location: { lat, lng } }, (res, st) => {
+      setPrefAddress(st === "OK" && res[0] ? res[0].formatted_address : `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+      setLocStatus("done");
+    });
+  };
+
+  /* StandaloneSearchBox */
+  const onSBLoad = (r) => setSbRef(r);
+  const onSBChanged = () => {
+    if (!sbRef) return;
+    const r = sbRef.getPlaces();
+    if (r?.length) {
+      const p = r[0], lat = p.geometry.location.lat(), lng = p.geometry.location.lng();
+      setPrefPin({ lat, lng }); setMapCenter({ lat, lng }); setMapZoom(15);
+      setPrefAddress(p.formatted_address); setLocStatus("done");
+    }
+  };
+
+  /* Scroll card into view */
+  useEffect(() => {
+    if (!selectedPlace || !listRef.current) return;
+    const el = listRef.current.querySelector(`[data-id="${selectedPlace.place_id}"]`);
+    el?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [selectedPlace]);
+
+  const handleBook = (place, cost) => {
+    onVenueCostChange?.(cost);
+    console.log("Booked:", place.name, fmtINR(cost));
+  };
+
+  if (loadError) return (
+    <div style={{ padding: 40, textAlign: "center", color: "#ef4444", fontFamily: "sans-serif" }}>
+      ❌ Maps failed to load. Check API key and enable billing.
+    </div>
+  );
+  if (!isLoaded) return (
+    <div style={{ padding: 40, textAlign: "center", color: "#9ca3af", fontFamily: "sans-serif" }}>
+      <div style={{ fontSize: 24, marginBottom: 8 }}>🗺️</div>Loading map…
+    </div>
+  );
+
+  const showPrompt = mode === "browse" && !activeEvent;
 
   return (
     <>
-      <style>{styles}</style>
-      <div className="vbs-root">
-        {/* Header */}
-        <div className="vbs-header">
-          <div className="vbs-logo">Venue<span>Finder</span></div>
-          <div className="vbs-tagline">Discover extraordinary spaces for every occasion</div>
-        </div>
+      <style>{CSS}</style>
+      <div className="vbs">
 
-        {/* Mode Toggle */}
-        <div className="vbs-mode-bar">
-          <button
-            className={`vbs-mode-btn${mode === "browse" ? " active" : ""}`}
-            onClick={() => setMode("browse")}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-            </svg>
-            Browse Venues
-          </button>
-          <button
-            className={`vbs-mode-btn${mode === "location" ? " active" : ""}`}
-            onClick={() => setMode("location")}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
-            </svg>
-            Pin Location
-          </button>
-        </div>
-
-        {/* Event Type Picker */}
-        <div className="vbs-event-section">
-          <div className="vbs-section-label">Select Event Type</div>
-          <div className="vbs-event-grid">
-            {EVENT_TYPES.map((ev) => (
-              <button
-                key={ev.id}
-                className={`vbs-event-chip${eventType === ev.id ? " active" : ""}`}
-                onClick={() => setEventType(ev.id)}
-              >
-                <span className="chip-icon">{ev.icon}</span>
-                {ev.label}
-              </button>
-            ))}
+        {/* ── TOP BAR ── */}
+        <div className="vbs-top">
+          <div className="vbs-logo-row">
+            <div className="vbs-logo-icon">🏛️</div>
+            <div className="vbs-logo-text">Venue<span>Scout</span></div>
+            <div className="vbs-logo-sub">Discover & book extraordinary spaces</div>
           </div>
-        </div>
 
-        {/* Main Content */}
-        <div className="vbs-main">
-          {mode === "browse" ? (
-            <>
-              {/* Left Panel */}
-              <div className="vbs-left">
-                {eventType ? (
-                  <>
-                    {/* Search */}
-                    <div className="vbs-search-box">
-                      <svg className="vbs-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-                      </svg>
-                      <input
-                        className="vbs-search-input"
-                        placeholder="Search by name or area…"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
-                    </div>
+          <div className="vbs-modes">
+            <button className={`vbs-mode-btn${mode === "browse" ? " active" : ""}`}
+              onClick={() => { setMode("browse"); setSelectedPlace(null); }}>
+              <span className="vbs-mode-icon">🏛️</span> Browse Venues
+            </button>
+            <button className={`vbs-mode-btn${mode === "location" ? " active" : ""}`}
+              onClick={() => { setMode("location"); setSelectedPlace(null); }}>
+              <span className="vbs-mode-icon">📍</span> Pin My Location
+            </button>
+          </div>
 
-                    {/* Filters */}
-                    <div className="vbs-filters">
-                      <select className="vbs-filter-select" value={cityFilter} onChange={(e) => setCityFilter(e.target.value)}>
-                        {CITY_FILTERS.map(c => <option key={c}>{c}</option>)}
-                      </select>
-                      <select className="vbs-filter-select" value={ratingFilter} onChange={(e) => setRatingFilter(e.target.value)}>
-                        {RATING_FILTERS.map(r => <option key={r}>{r}</option>)}
-                      </select>
-                    </div>
-
-                    {/* Results meta */}
-                    <div className="vbs-results-meta">
-                      <div className="vbs-results-count">
-                        <strong>{filteredVenues.length}</strong> venues found
-                        {loading && <span style={{ color: "var(--gold)", marginLeft: 8 }}>• Searching…</span>}
-                      </div>
-                      {mapAreaName && (
-                        <div className="vbs-map-area-badge">📍 {mapAreaName}</div>
-                      )}
-                    </div>
-
-                    {/* Venue List */}
-                    <div className="vbs-venue-list">
-                      {loading && filteredVenues.length === 0 ? (
-                        <div className="vbs-loading-cards">
-                          {[1,2,3,4].map(i => <SkeletonCard key={i} />)}
-                        </div>
-                      ) : filteredVenues.length === 0 ? (
-                        <div className="vbs-empty">
-                          <div className="vbs-empty-icon">🔍</div>
-                          <div className="vbs-empty-title">No venues found</div>
-                          <div className="vbs-empty-sub">Try adjusting your filters or moving the map to explore a different area</div>
-                        </div>
-                      ) : (
-                        filteredVenues.map((venue) => (
-                          <VenueCard
-                            key={venue.place_id}
-                            venue={venue}
-                            selected={selectedVenue?.place_id === venue.place_id}
-                            onClick={() => {
-                              setSelectedVenue(venue);
-                              setModalVenue(venue);
-                            }}
-                            mapsApi={mapsApiRef.current}
-                          />
-                        ))
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div className="vbs-prompt-overlay">
-                    <div className="vbs-prompt-icon">🎪</div>
-                    <div className="vbs-prompt-title">Choose Your Event Type</div>
-                    <div className="vbs-prompt-sub">
-                      Select the type of event above to discover the perfect venues near you, complete with photos, ratings, and pricing.
-                    </div>
-                  </div>
-                )}
+          {mode === "browse" && (<>
+            <div className="vbs-ev-label">Select Event Type</div>
+            <div className="vbs-ev-chips">
+              {EVENT_TYPES.map(ev => (
+                <button key={ev.id}
+                  className={`vbs-ev-chip${activeEvent === ev.id ? " active" : ""}`}
+                  onClick={() => setActiveEvent(ev.id)}>
+                  <span>{ev.icon}</span>{ev.label}
+                </button>
+              ))}
+            </div>
+            <div className="vbs-filter-row">
+              <div className="vbs-search-wrap">
+                <span className="vbs-search-icon">🔍</span>
+                <input className="vbs-search-input" type="text" value={searchText}
+                  onChange={e => setSearchText(e.target.value)}
+                  placeholder="Search by name, place or area…"
+                  disabled={!activeEvent} />
               </div>
-
-              {/* Map Panel */}
-              <div className="vbs-map-panel">
-                {mapLoading && (
-                  <div className="vbs-map-loading">
-                    <div className="vbs-spinner" />
-                    <div className="vbs-map-loading-text">Loading map…</div>
-                  </div>
-                )}
-                <div className="vbs-map-overlay-top">
-                  <div className="vbs-map-pill">
-                    <div className="vbs-map-pill-dot red" />
-                    Available venues
-                    <div className="vbs-map-pill-dot green" style={{ marginLeft: 8 }} />
-                    Selected
-                  </div>
-                  {filteredVenues.length > 0 && (
-                    <div className="vbs-map-pill">{filteredVenues.length} pins visible</div>
-                  )}
-                </div>
-                <div ref={mapRef} className="vbs-map-container" />
-              </div>
-            </>
-          ) : (
-            /* Location Mode */
-            <div className="vbs-location-panel">
-              <div className="vbs-location-card">
-                <div className="vbs-location-icon">📍</div>
-                <div className="vbs-location-title">Set Your Location</div>
-                <div className="vbs-location-sub">
-                  Use your current GPS location or type an address to find venues nearby.
-                </div>
-                <div className="vbs-loc-options">
-                  <button className="vbs-loc-btn" onClick={handleCurrentLocation} disabled={locStatus === "loading"}>
-                    <span className="loc-icon">🎯</span>
-                    <div className="loc-text">
-                      <div>{locStatus === "loading" ? "Detecting location…" : locStatus === "done" ? "✓ Location detected" : "Use My Current Location"}</div>
-                      <div className="loc-sub">Automatically detect via GPS</div>
-                    </div>
+              <select className="vbs-select" value={activeCity.label}
+                onChange={e => { const c = CITIES.find(x => x.label === e.target.value); if (c) setActiveCity(c); }}
+                disabled={!activeEvent}>
+                {CITIES.map(c => <option key={c.label}>{c.label}</option>)}
+              </select>
+              <div className="vbs-rating-btns">
+                {RATING_OPTS.map(r => (
+                  <button key={r.min}
+                    className={`vbs-rating-btn${minRating === r.min ? " active" : ""}`}
+                    onClick={() => setMinRating(r.min)}
+                    disabled={!activeEvent}>
+                    {r.label === "Any" ? "Any ★" : `★ ${r.label}`}
                   </button>
-                </div>
-                <div className="vbs-divider">or enter manually</div>
-                <div className="vbs-manual-input-wrap" style={{ marginTop: 16 }}>
-                  <input
-                    className="vbs-manual-input"
-                    placeholder="e.g. Jubilee Hills, Hyderabad"
-                    value={manualAddress}
-                    onChange={(e) => setManualAddress(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleManualAddress()}
-                  />
-                  <button className="vbs-manual-submit" onClick={handleManualAddress}>Go</button>
-                </div>
-                {locStatus === "error" && (
-                  <div style={{ marginTop: 12, color: "var(--red)", fontSize: 13 }}>
-                    ⚠ Could not detect location. Please allow location access or enter manually.
-                  </div>
-                )}
+                ))}
               </div>
+            </div>
+          </>)}
+
+          {mode === "location" && (
+            <div className="vbs-sb-outer">
+              <span className="vbs-sb-icon">🔍</span>
+              <StandaloneSearchBox onLoad={onSBLoad} onPlacesChanged={onSBChanged}>
+                <input className="vbs-sb-input" type="text"
+                  placeholder="Search and pin your event location…" />
+              </StandaloneSearchBox>
             </div>
           )}
         </div>
 
-        {/* Venue Detail Modal */}
-        {modalVenue && (
-          <VenueModal venue={modalVenue} onClose={() => setModalVenue(null)} />
-        )}
+        {/* ── BODY ── */}
+        <div className="vbs-body">
+
+          {/* Left: list */}
+          {mode === "browse" && !showPrompt && (
+            <div className="vbs-list" ref={listRef}>
+              <div className="vbs-list-meta">
+                <span>
+                  {loading ? "Searching…"
+                    : <><strong>{places.length}</strong> venue{places.length !== 1 ? "s" : ""} found</>}
+                </span>
+                {areaName && <span className="vbs-area-tag">📍 {areaName}</span>}
+              </div>
+              {loading && [1, 2, 3, 4, 5].map(i => <Skeleton key={i} />)}
+              {!loading && places.length === 0 && (
+                <div className="vbs-empty">
+                  <div className="vbs-empty-icon">🔍</div>
+                  <div className="vbs-empty-title">No venues found</div>
+                  <div className="vbs-empty-sub">Try a different event type, city, or clear the rating filter.</div>
+                </div>
+              )}
+              {!loading && places.map(place => (
+                <VenueCard key={place.place_id} place={place}
+                  isSelected={selectedPlace?.place_id === place.place_id}
+                  isHovered={hoveredId === place.place_id}
+                  onClick={() => {
+                    if (selectedPlace?.place_id === place.place_id) {
+                      setSelectedPlace(null); setMapCenter(activeCity.center); setMapZoom(12);
+                    } else {
+                      setSelectedPlace(place);
+                      const loc = place.geometry?.location;
+                      if (loc) { setMapCenter({ lat: loc.lat(), lng: loc.lng() }); setMapZoom(15); }
+                    }
+                  }}
+                  onMouseEnter={() => setHoveredId(place.place_id)}
+                  onMouseLeave={() => setHoveredId(null)}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Left: event prompt */}
+          {showPrompt && (
+            <div className="vbs-prompt">
+              <div className="vbs-prompt-icon">🎪</div>
+              <div className="vbs-prompt-title">What's the occasion?</div>
+              <div className="vbs-prompt-sub">
+                Pick an event type above to discover perfect venues near you — with real photos, ratings and pricing.
+              </div>
+            </div>
+          )}
+
+          {/* Left: location */}
+          {mode === "location" && (
+            <div className="vbs-loc-panel">
+              <div className="vbs-loc-card">
+                <div className="vbs-loc-card-icon">📍</div>
+                <div className="vbs-loc-card-title">Set Your Location</div>
+                <div className="vbs-loc-card-sub">
+                  Auto-detect with GPS, type an address, or click the map to drop a pin.
+                </div>
+                <button className="vbs-gps-btn" onClick={handleGPS} disabled={locStatus === "loading"}>
+                  <span>🎯</span>
+                  {locStatus === "loading" ? "Detecting…" : "Use My Current Location"}
+                </button>
+                <div className="vbs-loc-divider">or type manually</div>
+                <div className="vbs-loc-input-wrap">
+                  <input className="vbs-loc-input" type="text" value={manualAddr}
+                    onChange={e => setManualAddr(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && handleManualAddr()}
+                    placeholder="e.g. Jubilee Hills, Hyderabad" />
+                  <button className="vbs-loc-go" onClick={handleManualAddr}>Go</button>
+                </div>
+                {locStatus === "done" && prefAddress && (
+                  <div className="vbs-loc-success">
+                    <span>✅</span>
+                    <span><strong>Pinned:</strong> {prefAddress}<br />Flat fee: <strong>₹3,000</strong></span>
+                  </div>
+                )}
+                {locStatus === "error" && (
+                  <div className="vbs-loc-error">⚠ Location denied. Please type your address above.</div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Right: map */}
+          <div className="vbs-map-panel">
+            <GoogleMap
+              zoom={mapZoom}
+              center={mapCenter}
+              onLoad={onMapLoad}
+              onClick={mode === "location" ? handleMapClick : undefined}
+              mapContainerClassName="vbs-map-wrap"
+              options={{
+                styles: MAP_STYLE,
+                disableDefaultUI: false,
+                zoomControl: true,
+                streetViewControl: false,
+                mapTypeControl: false,
+                fullscreenControl: true,
+                clickableIcons: false,
+              }}
+            >
+              {/* Venue pins */}
+              {mode === "browse" && places.map(place => {
+                const loc = place.geometry?.location;
+                if (!loc) return null;
+                const isSelected = selectedPlace?.place_id === place.place_id;
+                const isDimmed = !!selectedPlace && !isSelected;
+                return (
+                  <OverlayView key={place.place_id}
+                    position={{ lat: loc.lat(), lng: loc.lng() }}
+                    mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}>
+                    <MapPin place={place} isSelected={isSelected}
+                      isHovered={hoveredId === place.place_id} isDimmed={isDimmed}
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedPlace(null); setMapCenter(activeCity.center); setMapZoom(12);
+                        } else {
+                          setSelectedPlace(place);
+                          setMapCenter({ lat: loc.lat(), lng: loc.lng() }); setMapZoom(15);
+                        }
+                      }} />
+                  </OverlayView>
+                );
+              })}
+
+              {/* Preferred pin */}
+              {mode === "location" && prefPin && (
+                <OverlayView position={prefPin} mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}>
+                  <div className="vbs-pref-pin" />
+                </OverlayView>
+              )}
+            </GoogleMap>
+
+            {/* Map legend */}
+            {mode === "browse" && places.length > 0 && (
+              <div className="vbs-map-legend">
+                <div className="vbs-legend-dot" style={{ background: "#1a1a2e" }} />
+                <span>Available</span>
+                <div className="vbs-legend-dot" style={{ background: "#e07b39", marginLeft: 4 }} />
+                <span>Selected</span>
+                <span style={{ marginLeft: 6, color: "#d1d5db" }}>·</span>
+                <span style={{ color: "#9ca3af" }}>{places.length} pins</span>
+              </div>
+            )}
+
+            {mode === "location" && !prefPin && <div className="vbs-map-hint">📍 Click anywhere to pin your location</div>}
+            {mode === "location" && prefPin && <div className="vbs-pref-cost-badge">📍 Preferred Location · ₹3,000 flat fee</div>}
+
+            {/* Detail panel */}
+            {mode === "browse" && selectedPlace && (
+              <DetailPanel place={selectedPlace}
+                onClose={() => { setSelectedPlace(null); setMapCenter(activeCity.center); setMapZoom(12); }}
+                onBook={handleBook}
+                bookingType={bookingType} setBookingType={setBookingType}
+                hours={hours} setHours={setHours}
+                days={days} setDays={setDays} />
+            )}
+
+            <style>{`
+              @keyframes vbsMapPulse {
+                0%   { transform: translate(-50%,-62%) scale(1);    opacity: 0.75; }
+                70%  { transform: translate(-50%,-62%) scale(1.8);  opacity: 0;   }
+                100% { transform: translate(-50%,-62%) scale(1.8);  opacity: 0;   }
+              }
+            `}</style>
+          </div>
+        </div>
       </div>
     </>
   );
 }
 
-// ─── Dark Map Styles ──────────────────────────────────────────────────────────
-const darkMapStyles = [
-  { elementType: "geometry", stylers: [{ color: "#1a1f2e" }] },
-  { elementType: "labels.text.stroke", stylers: [{ color: "#1a1f2e" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#7a8299" }] },
-  { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#c9a84c" }] },
-  { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#8a8fa0" }] },
-  { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#1e2d1e" }] },
-  { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#3a5a3a" }] },
-  { featureType: "road", elementType: "geometry", stylers: [{ color: "#2a3042" }] },
-  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#1a1f2e" }] },
-  { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#6a7080" }] },
-  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#3a4060" }] },
-  { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#1a2040" }] },
-  { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#a0a8c0" }] },
-  { featureType: "transit", elementType: "geometry", stylers: [{ color: "#2a3042" }] },
-  { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#c9a84c" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0d1520" }] },
-  { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#3a5a7a" }] },
-  { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#0d1520" }] },
-  { featureType: "poi.business", stylers: [{ visibility: "off" }] },
-  { featureType: "poi.medical", stylers: [{ visibility: "off" }] },
-  { featureType: "poi.school", stylers: [{ visibility: "off" }] },
+/* ─── Clean Map Style ────────────────────────────────────────────────────── */
+const MAP_STYLE = [
+  { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.business", elementType: "all", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.medical", elementType: "all", stylers: [{ visibility: "off" }] },
+  { featureType: "poi.school", elementType: "all", stylers: [{ visibility: "off" }] },
+  { featureType: "transit", elementType: "labels", stylers: [{ visibility: "off" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
+  { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#adb5bd" }] },
+  { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#f4f5f7" }] },
+  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#e9ecef" }] },
+  { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#868e96" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#c8dff4" }] },
+  { featureType: "landscape", elementType: "geometry", stylers: [{ color: "#f8f9fa" }] },
+  { featureType: "landscape.natural", elementType: "geometry", stylers: [{ color: "#e9f5ec" }] },
+  { featureType: "administrative", elementType: "geometry.stroke", stylers: [{ color: "#dee2e6" }] },
+  { featureType: "administrative", elementType: "labels.text.fill", stylers: [{ color: "#495057" }] },
+  { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#1a1a2e" }] },
 ];
