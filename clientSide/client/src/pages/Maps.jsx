@@ -21,14 +21,13 @@ export default function VenueBookingSection() {
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const coords = {
+        setLocation({
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
-        };
-        setLocation(coords);
+        });
       },
       () => {
-        setLocation({ lat: 17.385, lng: 78.4867 }); // fallback (Hyderabad)
+        setLocation({ lat: 17.385, lng: 78.4867 }); // fallback
       }
     );
   }, []);
@@ -40,14 +39,14 @@ export default function VenueBookingSection() {
     mapInstance.current = new window.google.maps.Map(mapRef.current, {
       center: location,
       zoom: 13,
+      disableDefaultUI: false,
     });
 
     fetchVenues(location);
   }, [location]);
 
-  // 📡 Fetch venues (replace API)
+  // 📡 Dummy fetch (replace API)
   const fetchVenues = async (loc) => {
-    // Replace with your API
     const data = [
       {
         id: 1,
@@ -76,7 +75,7 @@ export default function VenueBookingSection() {
     addMarkers(data);
   };
 
-  // 📍 Add markers
+  // 📍 Markers
   const addMarkers = (data) => {
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
@@ -87,12 +86,11 @@ export default function VenueBookingSection() {
         map: mapInstance.current,
         title: venue.name,
       });
-
       markersRef.current.push(marker);
     });
   };
 
-  // 🔍 Filter logic
+  // 🔍 Filtering
   useEffect(() => {
     let result = venues;
 
@@ -119,69 +117,76 @@ export default function VenueBookingSection() {
   }, [search, filters, venues]);
 
   return (
-    <div className="flex h-screen">
-      {/* LEFT SIDE - LIST */}
-      <div className="w-1/2 overflow-y-auto p-4 space-y-4 bg-white">
-        {/* 🔍 Search */}
-        <input
-          type="text"
-          placeholder="Search venue..."
-          className="w-full p-2 border rounded"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+    <div className="h-screen w-screen flex flex-col md:flex-row overflow-hidden">
 
-        {/* 🎯 Filters */}
-        <div className="flex gap-2 mt-2">
-          <select
-            onChange={(e) =>
-              setFilters({ ...filters, city: e.target.value })
-            }
-            className="border p-2"
-          >
-            <option value="">City</option>
-            <option value="Hyderabad">Hyderabad</option>
-          </select>
+      {/* LEFT PANEL */}
+      <div className="w-full md:w-1/2 h-1/2 md:h-full flex flex-col bg-white">
 
-          <select
-            onChange={(e) =>
-              setFilters({ ...filters, stars: e.target.value })
-            }
-            className="border p-2"
-          >
-            <option value="">Stars</option>
-            <option value="5">5 Star</option>
-            <option value="4">4 Star</option>
-          </select>
+        {/* 🔍 Sticky Header */}
+        <div className="p-3 border-b bg-white sticky top-0 z-10 space-y-2">
+          <input
+            type="text"
+            placeholder="Search venue or location..."
+            className="w-full p-2 border rounded"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
 
-          <select
-            onChange={(e) =>
-              setFilters({ ...filters, pricing: e.target.value })
-            }
-            className="border p-2"
-          >
-            <option value="">Pricing</option>
-            <option value="daily">Daily</option>
-            <option value="hourly">Hourly</option>
-          </select>
+          <div className="flex gap-2 overflow-x-auto">
+            <select
+              className="border p-2"
+              onChange={(e) =>
+                setFilters({ ...filters, city: e.target.value })
+              }
+            >
+              <option value="">City</option>
+              <option value="Hyderabad">Hyderabad</option>
+            </select>
+
+            <select
+              className="border p-2"
+              onChange={(e) =>
+                setFilters({ ...filters, stars: e.target.value })
+              }
+            >
+              <option value="">Stars</option>
+              <option value="5">5 Star</option>
+              <option value="4">4 Star</option>
+            </select>
+
+            <select
+              className="border p-2"
+              onChange={(e) =>
+                setFilters({ ...filters, pricing: e.target.value })
+              }
+            >
+              <option value="">Pricing</option>
+              <option value="daily">Daily</option>
+              <option value="hourly">Hourly</option>
+            </select>
+          </div>
         </div>
 
-        {/* 📋 Venue List */}
-        {filteredVenues.map((venue) => (
-          <div
-            key={venue.id}
-            className="border rounded-lg p-4 shadow hover:shadow-lg transition"
-          >
-            <h2 className="text-lg font-semibold">{venue.name}</h2>
-            <p>{venue.city}</p>
-            <p>{"⭐".repeat(venue.stars)}</p>
-            <p>₹{venue.price} / {venue.pricingType}</p>
-          </div>
-        ))}
+        {/* 📋 Scrollable List */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-3">
+          {filteredVenues.map((venue) => (
+            <div
+              key={venue.id}
+              className="border rounded-xl p-4 shadow hover:shadow-lg transition"
+            >
+              <h2 className="font-semibold text-lg">{venue.name}</h2>
+              <p className="text-sm text-gray-500">{venue.city}</p>
+              <p>{"⭐".repeat(venue.stars)}</p>
+              <p className="font-medium">
+                ₹{venue.price} / {venue.pricingType}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* RIGHT SIDE - MAP */}
-      <div className="w-1/2 h-full">
+      {/* RIGHT PANEL - MAP */}
+      <div className="w-full md:w-1/2 h-1/2 md:h-full">
         <div ref={mapRef} className="w-full h-full" />
       </div>
     </div>
