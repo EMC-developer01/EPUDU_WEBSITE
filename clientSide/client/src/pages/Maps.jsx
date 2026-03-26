@@ -3,28 +3,21 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
   GoogleMap,
+  LoadScript,
   Marker,
-  useLoadScript,
 } from "@react-google-maps/api";
 
-const libraries = ["places"];
-
-const mapContainerStyle = {
+const containerStyle = {
   width: "100%",
   height: "500px",
 };
 
 const defaultCenter = {
   lat: 17.385044,
-  lng: 78.486671, // Hyderabad
+  lng: 78.486671, // Hyderabad default
 };
 
 export default function VenueBookingSection() {
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries,
-  });
-
   const [map, setMap] = useState(null);
   const [venues, setVenues] = useState([]);
   const [filteredVenues, setFilteredVenues] = useState([]);
@@ -37,7 +30,7 @@ export default function VenueBookingSection() {
 
   // 📍 Fetch venues from Google Places
   const fetchVenues = useCallback(() => {
-    if (!map) return;
+    if (!map || !window.google) return;
 
     const service = new window.google.maps.places.PlacesService(map);
 
@@ -51,7 +44,7 @@ export default function VenueBookingSection() {
         status === window.google.maps.places.PlacesServiceStatus.OK &&
         results
       ) {
-        const data = results.map((place) => ({
+        const formatted = results.map((place) => ({
           id: place.place_id,
           name: place.name,
           rating: place.rating || 0,
@@ -59,34 +52,37 @@ export default function VenueBookingSection() {
           address: place.vicinity || "",
         }));
 
-        setVenues(data);
-        setFilteredVenues(data);
+        setVenues(formatted);
+        setFilteredVenues(formatted);
       }
     });
   }, [map]);
 
-  // 📍 Load venues when map moves
+  // 📌 Fetch when map loads or moves
   useEffect(() => {
-    if (!map) return;
-
-    const listener = map.addListener("idle", fetchVenues);
-    return () => window.google.maps.event.removeListener(listener);
+    if (map) {
+      fetchVenues();
+      map.addListener("idle", fetchVenues);
+    }
   }, [map, fetchVenues]);
 
-  // 🔍 Apply filters locally
+  // 🎯 Filter Logic
   useEffect(() => {
     let result = venues;
 
+    // City filter
     if (filters.city) {
       result = result.filter((v) =>
         v.address.toLowerCase().includes(filters.city.toLowerCase())
       );
     }
 
+    // Rating filter
     if (filters.rating > 0) {
       result = result.filter((v) => v.rating >= filters.rating);
     }
 
+    // Search filter
     if (filters.search) {
       result = result.filter((v) =>
         v.name.toLowerCase().includes(filters.search.toLowerCase())
@@ -96,13 +92,10 @@ export default function VenueBookingSection() {
     setFilteredVenues(result);
   }, [filters, venues]);
 
-  if (!isLoaded) return <div>Loading Map...</div>;
-
   return (
     <div style={{ display: "flex", gap: "20px" }}>
-      
-      {/* 🧩 FILTER PANEL */}
-      <div style={{ width: "25%" }}>
+      {/* 🔎 FILTER PANEL */}
+      <div style={{ width: "300px" }}>
         <h3>Filters</h3>
 
         {/* Search */}
@@ -139,32 +132,37 @@ export default function VenueBookingSection() {
               rating: Number(e.target.value),
             })
           }
-          style={{ width: "100%" }}
+          style={{ width: "100%", marginBottom: "10px" }}
         >
-          <option value="0">All Ratings</option>
-          <option value="4">4★ & above</option>
-          <option value="3">3★ & above</option>
+          <option value={0}>All Ratings</option>
+          <option value={4}>4★ & above</option>
+          <option value={3}>3★ & above</option>
         </select>
       </div>
 
       {/* 🗺️ MAP + RESULTS */}
-      <div style={{ width: "75%" }}>
-        <GoogleMap
-          mapContainerStyle={mapContainerStyle}
-          zoom={12}
-          center={defaultCenter}
-          onLoad={(mapInstance) => setMap(mapInstance)}
+      <div style={{ flex: 1 }}>
+        <LoadScript
+          googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+          libraries={["places"]}
         >
-          {filteredVenues.map((venue) => (
-            <Marker
-              key={venue.id}
-              position={{
-                lat: venue.location.lat(),
-                lng: venue.location.lng(),
-              }}
-            />
-          ))}
-        </GoogleMap>
+          <GoogleMap
+            mapContainerStyle={containerStyle}
+            center={defaultCenter}
+            zoom={12}
+            onLoad={(mapInstance) => setMap(mapInstance)}
+          >
+            {filteredVenues.map((venue) => (
+              <Marker
+                key={venue.id}
+                position={{
+                  lat: venue.location.lat(),
+                  lng: venue.location.lng(),
+                }}
+              />
+            ))}
+          </GoogleMap>
+        </LoadScript>
 
         {/* 📋 Venue List */}
         <div style={{ marginTop: "20px" }}>
@@ -172,8 +170,9 @@ export default function VenueBookingSection() {
             <div
               key={v.id}
               style={{
+                border: "1px solid #ccc",
                 padding: "10px",
-                borderBottom: "1px solid #ccc",
+                marginBottom: "10px",
               }}
             >
               <h4>{v.name}</h4>
