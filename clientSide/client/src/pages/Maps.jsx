@@ -27,7 +27,6 @@ const eventKeywords = {
   function: "function hall event venue",
 };
 
-// ✅ Example cities (you can expand)
 const cities = ["Hyderabad", "Bangalore", "Chennai", "Mumbai", "Delhi"];
 
 export default function VenueBookingSection() {
@@ -44,16 +43,19 @@ export default function VenueBookingSection() {
 
   const inputRef = useRef(null);
 
-  // 🔍 Fetch Places (30km radius)
-  const fetchPlaces = (location) => {
+  // 🔥 Fetch based on map bounds (AUTO RADIUS)
+  const fetchPlacesByBounds = () => {
     if (!map || !window.google || mode === "pin") return;
+
+    const bounds = map.getBounds();
+    if (!bounds) return;
 
     const service = new window.google.maps.places.PlacesService(map);
 
     service.nearbySearch(
       {
-        location,
-        radius: 30000, // ✅ 30km
+        location: map.getCenter(),
+        radius: getRadiusFromBounds(bounds),
         keyword: eventKeywords[eventType],
       },
       (results, status) => {
@@ -64,7 +66,29 @@ export default function VenueBookingSection() {
     );
   };
 
-  // 🔎 Single Search (location + venue)
+  // 📏 Convert bounds → radius
+  const getRadiusFromBounds = (bounds) => {
+    const ne = bounds.getNorthEast();
+    const sw = bounds.getSouthWest();
+
+    const lat = (ne.lat() + sw.lat()) / 2;
+    const lng = (ne.lng() + sw.lng()) / 2;
+
+    const R = 6371;
+
+    const dLat = (ne.lat() - lat) * (Math.PI / 180);
+    const dLng = (ne.lng() - lng) * (Math.PI / 180);
+
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat * (Math.PI / 180)) *
+      Math.cos(ne.lat() * (Math.PI / 180)) *
+      Math.sin(dLng / 2) ** 2;
+
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) * 1000; // meters
+  };
+
+  // 🔎 Search (single)
   useEffect(() => {
     if (!window.google || !inputRef.current) return;
 
@@ -83,7 +107,7 @@ export default function VenueBookingSection() {
 
       setCenter(loc);
       map.panTo(loc);
-      fetchPlaces(loc);
+      fetchPlacesByBounds();
     });
   }, [map]);
 
@@ -96,37 +120,33 @@ export default function VenueBookingSection() {
       };
       setCenter(loc);
       map.panTo(loc);
-      fetchPlaces(loc);
+      fetchPlacesByBounds();
     });
   };
 
-  // 🔘 Apply Filters Button
+  // 🎯 Apply city filter
   const applyFilters = () => {
-    if (!map) return;
+    if (!city || !window.google) return;
 
-    if (city && window.google) {
-      const geocoder = new window.google.maps.Geocoder();
+    const geocoder = new window.google.maps.Geocoder();
 
-      geocoder.geocode({ address: city }, (results, status) => {
-        if (status === "OK") {
-          const loc = {
-            lat: results[0].geometry.location.lat(),
-            lng: results[0].geometry.location.lng(),
-          };
+    geocoder.geocode({ address: city }, (results, status) => {
+      if (status === "OK") {
+        const loc = {
+          lat: results[0].geometry.location.lat(),
+          lng: results[0].geometry.location.lng(),
+        };
 
-          setCenter(loc);
-          map.panTo(loc);
-          fetchPlaces(loc);
-        }
-      });
-    } else {
-      fetchPlaces(center);
-    }
+        setCenter(loc);
+        map.panTo(loc);
+        fetchPlacesByBounds();
+      }
+    });
   };
 
-  // 🔄 Initial Load
+  // 🔄 Initial
   useEffect(() => {
-    if (map && mode === "browse") fetchPlaces(center);
+    if (map && mode === "browse") fetchPlacesByBounds();
   }, [map, eventType, mode]);
 
   return (
@@ -140,38 +160,38 @@ export default function VenueBookingSection() {
           style={{
             display: "flex",
             gap: "10px",
-            padding: "10px",
-            background: "#fff",
-            borderBottom: "1px solid #ddd",
+            padding: "12px",
+            background: "#0f172a",
+            color: "#fff",
             alignItems: "center",
           }}
         >
-          {/* 🔍 Single Search */}
           <input
             ref={inputRef}
             placeholder="Search location or venue"
-            style={{ padding: "8px", width: "220px" }}
+            style={{
+              padding: "8px",
+              width: "220px",
+              borderRadius: "6px",
+              border: "none",
+            }}
           />
 
-          {/* City Dropdown */}
           <select
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            style={{ padding: "8px" }}
+            style={{ padding: "8px", borderRadius: "6px" }}
           >
-            <option value="">Select City</option>
+            <option value="">City</option>
             {cities.map((c, i) => (
-              <option key={i} value={c}>
-                {c}
-              </option>
+              <option key={i}>{c}</option>
             ))}
           </select>
 
-          {/* Event Type */}
           <select
             value={eventType}
             onChange={(e) => setEventType(e.target.value)}
-            style={{ padding: "8px" }}
+            style={{ padding: "8px", borderRadius: "6px" }}
           >
             <option value="wedding">Wedding</option>
             <option value="birthday">Birthday</option>
@@ -179,16 +199,27 @@ export default function VenueBookingSection() {
             <option value="function">Function</option>
           </select>
 
-          {/* Apply Button */}
-          <button onClick={applyFilters}>Apply</button>
+          <button
+            onClick={applyFilters}
+            style={{
+              background: "#22c55e",
+              color: "#fff",
+              padding: "8px 12px",
+              borderRadius: "6px",
+              border: "none",
+            }}
+          >
+            Apply
+          </button>
 
-          {/* Mode Toggle */}
           <button
             onClick={() => setMode("browse")}
             style={{
-              background: mode === "browse" ? "blue" : "#eee",
-              color: mode === "browse" ? "#fff" : "#000",
+              background: mode === "browse" ? "#3b82f6" : "#1e293b",
+              color: "#fff",
               padding: "8px",
+              borderRadius: "6px",
+              border: "none",
             }}
           >
             Browse
@@ -197,15 +228,28 @@ export default function VenueBookingSection() {
           <button
             onClick={() => setMode("pin")}
             style={{
-              background: mode === "pin" ? "blue" : "#eee",
-              color: mode === "pin" ? "#fff" : "#000",
+              background: mode === "pin" ? "#3b82f6" : "#1e293b",
+              color: "#fff",
               padding: "8px",
+              borderRadius: "6px",
+              border: "none",
             }}
           >
             Set Pin
           </button>
 
-          <button onClick={getCurrentLocation}>📍</button>
+          <button
+            onClick={getCurrentLocation}
+            style={{
+              background: "#f59e0b",
+              color: "#fff",
+              padding: "8px",
+              borderRadius: "6px",
+              border: "none",
+            }}
+          >
+            📍
+          </button>
         </div>
 
         {/* MAIN */}
@@ -216,7 +260,7 @@ export default function VenueBookingSection() {
               width: "35%",
               height: "calc(100vh - 60px)",
               overflowY: "auto",
-              borderRight: "1px solid #ddd",
+              background: "#f8fafc",
             }}
           >
             {mode === "browse" &&
@@ -247,28 +291,30 @@ export default function VenueBookingSection() {
                         width: "100%",
                         height: "120px",
                         objectFit: "cover",
+                        borderRadius: "6px",
                       }}
                     />
-                    <h4>{place.name}</h4>
-                    <p>{place.vicinity}</p>
+                    <h4 style={{ color: "#0f172a" }}>{place.name}</h4>
+                    <p style={{ color: "#475569" }}>{place.vicinity}</p>
                   </div>
                 );
               })}
 
             {mode === "pin" && (
               <div style={{ padding: "20px" }}>
-                <h3>Click on map to set your venue 📍</h3>
+                Click map to set your venue 📍
               </div>
             )}
           </div>
 
-          {/* RIGHT MAP */}
+          {/* MAP */}
           <div style={{ width: "65%" }}>
             <GoogleMap
               mapContainerStyle={containerStyle}
               center={center}
               zoom={12}
               onLoad={(m) => setMap(m)}
+              onIdle={fetchPlacesByBounds}
               onClick={(e) => {
                 if (mode === "pin") {
                   const loc = {
@@ -279,14 +325,7 @@ export default function VenueBookingSection() {
                   setCenter(loc);
                 }
               }}
-              onIdle={() => {
-                if (map && mode === "browse") {
-                  const c = map.getCenter();
-                  fetchPlaces({ lat: c.lat(), lng: c.lng() });
-                }
-              }}
             >
-              {/* Markers */}
               {mode === "browse" &&
                 places.map((place, i) => (
                   <Marker
@@ -299,13 +338,11 @@ export default function VenueBookingSection() {
                   />
                 ))}
 
-              {/* Pin */}
               {mode === "pin" && pinnedLocation && (
                 <Marker position={pinnedLocation} />
               )}
 
-              {/* Info */}
-              {selected && mode === "browse" && (
+              {selected && (
                 <InfoWindow
                   position={{
                     lat: selected.geometry.location.lat(),
