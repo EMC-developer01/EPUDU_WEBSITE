@@ -30,17 +30,15 @@ const eventKeywords = {
 export default function VenueBookingSection() {
   const [map, setMap] = useState(null);
   const [places, setPlaces] = useState([]);
-  const [filteredPlaces, setFilteredPlaces] = useState([]);
   const [selected, setSelected] = useState(null);
   const [center, setCenter] = useState(defaultCenter);
-  const [eventType, setEventType] = useState("wedding");
 
-  const [searchText, setSearchText] = useState("");
+  const [eventType, setEventType] = useState("wedding");
   const [city, setCity] = useState("");
 
   const inputRef = useRef(null);
 
-  // 🔍 Fetch places
+  // 🔍 Fetch Places
   const fetchPlaces = (location) => {
     if (!map || !window.google) return;
 
@@ -55,13 +53,12 @@ export default function VenueBookingSection() {
       (results, status) => {
         if (status === window.google.maps.places.PlacesServiceStatus.OK) {
           setPlaces(results);
-          setFilteredPlaces(results);
         }
       }
     );
   };
 
-  // 🔎 Autocomplete (city/location search)
+  // 🔎 Autocomplete
   useEffect(() => {
     if (!window.google || !inputRef.current) return;
 
@@ -86,7 +83,7 @@ export default function VenueBookingSection() {
     });
   }, [map]);
 
-  // 📍 Current location
+  // 📍 Current Location
   const getCurrentLocation = () => {
     navigator.geolocation.getCurrentPosition((pos) => {
       const loc = {
@@ -99,166 +96,93 @@ export default function VenueBookingSection() {
     });
   };
 
-  // 🔄 Initial load
+  // 🔄 Load
   useEffect(() => {
     if (map) fetchPlaces(center);
   }, [map, eventType]);
-
-  // 🔍 Filter logic
-  useEffect(() => {
-    let filtered = places;
-
-    if (searchText) {
-      filtered = filtered.filter((p) =>
-        p.name.toLowerCase().includes(searchText.toLowerCase())
-      );
-    }
-
-    if (city) {
-      filtered = filtered.filter((p) =>
-        p.vicinity?.toLowerCase().includes(city.toLowerCase())
-      );
-    }
-
-    setFilteredPlaces(filtered);
-  }, [searchText, city, places]);
 
   return (
     <LoadScript
       googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
       libraries={libraries}
     >
-      <div style={{ display: "flex", height: "100vh" }}>
-        {/* LEFT SIDE */}
+      <div style={{ position: "relative" }}>
+        {/* 🔝 TOP FILTER BAR */}
         <div
           style={{
-            width: "35%",
+            position: "absolute",
+            top: 10,
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "#fff",
+            padding: "10px",
+            borderRadius: "10px",
             display: "flex",
-            flexDirection: "column",
-            borderRight: "1px solid #ddd",
+            gap: "10px",
+            zIndex: 10,
+            boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
           }}
         >
-          {/* FILTERS */}
-          <div style={{ padding: "15px", borderBottom: "1px solid #ddd" }}>
-            <h3>Filters</h3>
+          {/* Search */}
+          <input
+            ref={inputRef}
+            placeholder="Search location..."
+            style={{ padding: "8px", width: "200px" }}
+          />
 
-            {/* Event Type */}
-            <select
-              value={eventType}
-              onChange={(e) => setEventType(e.target.value)}
-              style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-            >
-              <option value="wedding">Wedding</option>
-              <option value="birthday">Birthday</option>
-              <option value="corporate">Corporate</option>
-              <option value="function">Function</option>
-            </select>
+          {/* City Filter */}
+          <input
+            placeholder="City"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            style={{ padding: "8px", width: "120px" }}
+          />
 
-            {/* City Search */}
-            <input
-              ref={inputRef}
-              placeholder="Search city/location"
-              style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-            />
+          {/* Event Type */}
+          <select
+            value={eventType}
+            onChange={(e) => setEventType(e.target.value)}
+            style={{ padding: "8px" }}
+          >
+            <option value="wedding">Wedding</option>
+            <option value="birthday">Birthday</option>
+            <option value="corporate">Corporate</option>
+            <option value="function">Function</option>
+          </select>
 
-            {/* Name Search */}
-            <input
-              placeholder="Search venue name"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-            />
-
-            {/* City Filter */}
-            <input
-              placeholder="Filter by city"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
-            />
-
-            <button onClick={getCurrentLocation}>
-              Use Current Location
-            </button>
-          </div>
-
-          {/* VENUE LIST */}
-          <div style={{ flex: 1, overflowY: "auto", padding: "10px" }}>
-            {filteredPlaces.map((place, i) => {
-              const lat = place.geometry.location.lat();
-              const lng = place.geometry.location.lng();
-
-              const image =
-                place.photos?.[0]?.getUrl({ maxWidth: 400 }) ||
-                "https://via.placeholder.com/300";
-
-              return (
-                <div
-                  key={i}
-                  onClick={() => {
-                    setSelected(place);
-                    map.panTo({ lat, lng });
-                  }}
-                  style={{
-                    border:
-                      selected?.place_id === place.place_id
-                        ? "2px solid blue"
-                        : "1px solid #ccc",
-                    borderRadius: "10px",
-                    marginBottom: "10px",
-                    padding: "10px",
-                    cursor: "pointer",
-                  }}
-                >
-                  <img
-                    src={image}
-                    style={{
-                      width: "100%",
-                      height: "140px",
-                      objectFit: "cover",
-                      borderRadius: "8px",
-                    }}
-                  />
-
-                  <h4>{place.name}</h4>
-                  <p>{place.vicinity}</p>
-                  <p>⭐ {place.rating || "N/A"}</p>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-
-                      localStorage.setItem(
-                        "selectedVenue",
-                        JSON.stringify(place)
-                      );
-
-                      alert("Venue Selected!");
-                    }}
-                  >
-                    Book Now
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+          {/* Current Location */}
+          <button onClick={getCurrentLocation}>📍</button>
         </div>
 
-        {/* RIGHT SIDE (MAP) */}
-        <div style={{ width: "65%" }}>
-          <GoogleMap
-            mapContainerStyle={containerStyle}
-            center={center}
-            zoom={13}
-            onLoad={(m) => setMap(m)}
-            onIdle={() => {
-              if (map) {
-                const c = map.getCenter();
-                fetchPlaces({ lat: c.lat(), lng: c.lng() });
-              }
-            }}
-          >
-            {filteredPlaces.map((place, i) => (
+        {/* 🗺 MAP */}
+        <GoogleMap
+          mapContainerStyle={containerStyle}
+          center={center}
+          zoom={13}
+          onLoad={(m) => setMap(m)}
+          onClick={(e) => {
+            const lat = e.latLng.lat();
+            const lng = e.latLng.lng();
+
+            const newLoc = { lat, lng };
+            setCenter(newLoc);
+            fetchPlaces(newLoc);
+          }}
+          onIdle={() => {
+            if (map) {
+              const c = map.getCenter();
+              fetchPlaces({ lat: c.lat(), lng: c.lng() });
+            }
+          }}
+        >
+          {/* Markers */}
+          {places
+            .filter((p) =>
+              city
+                ? p.vicinity?.toLowerCase().includes(city.toLowerCase())
+                : true
+            )
+            .map((place, i) => (
               <Marker
                 key={i}
                 position={{
@@ -269,21 +193,79 @@ export default function VenueBookingSection() {
               />
             ))}
 
-            {selected && (
-              <InfoWindow
-                position={{
-                  lat: selected.geometry.location.lat(),
-                  lng: selected.geometry.location.lng(),
-                }}
-                onCloseClick={() => setSelected(null)}
-              >
-                <div>
-                  <h4>{selected.name}</h4>
-                  <p>{selected.vicinity}</p>
+          {/* InfoWindow */}
+          {selected && (
+            <InfoWindow
+              position={{
+                lat: selected.geometry.location.lat(),
+                lng: selected.geometry.location.lng(),
+              }}
+              onCloseClick={() => setSelected(null)}
+            >
+              <div>
+                <h4>{selected.name}</h4>
+                <p>{selected.vicinity}</p>
+              </div>
+            </InfoWindow>
+          )}
+        </GoogleMap>
+
+        {/* 🔽 BOTTOM VENUE LIST */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            width: "100%",
+            display: "flex",
+            overflowX: "auto",
+            gap: "10px",
+            padding: "10px",
+            background: "rgba(255,255,255,0.9)",
+          }}
+        >
+          {places
+            .filter((p) =>
+              city
+                ? p.vicinity?.toLowerCase().includes(city.toLowerCase())
+                : true
+            )
+            .map((place, i) => {
+              const lat = place.geometry.location.lat();
+              const lng = place.geometry.location.lng();
+
+              const image =
+                place.photos?.[0]?.getUrl({ maxWidth: 400 }) ||
+                "https://via.placeholder.com/200";
+
+              return (
+                <div
+                  key={i}
+                  onClick={() => {
+                    setSelected(place);
+                    map.panTo({ lat, lng });
+                  }}
+                  style={{
+                    minWidth: "220px",
+                    background: "#fff",
+                    borderRadius: "10px",
+                    padding: "10px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <img
+                    src={image}
+                    style={{
+                      width: "100%",
+                      height: "120px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                    }}
+                  />
+                  <h4>{place.name}</h4>
+                  <p>{place.vicinity}</p>
                 </div>
-              </InfoWindow>
-            )}
-          </GoogleMap>
+              );
+            })}
         </div>
       </div>
     </LoadScript>
