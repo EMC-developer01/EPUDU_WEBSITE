@@ -41,6 +41,20 @@ const geocodeAddress = async (address) => {
   });
 };
 
+useEffect(() => {
+  let isMounted = true;
+
+  geocodeAddress("Hyderabad").then((coords) => {
+    if (isMounted && coords) {
+      setLocation(coords); // ✅ safe
+    }
+  });
+
+  return () => {
+    isMounted = false;
+  };
+}, []);
+
 const getDistanceKm = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;

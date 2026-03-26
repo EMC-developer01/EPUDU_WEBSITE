@@ -511,9 +511,9 @@ function RatingBadge({ rating }) {
 function MapPin({ place, isSelected, isHovered, isDimmed, onClick }) {
   const pl = parsePriceLevel(place.price_level);
   const label = PRICE_TAG[pl] || "₹";
-  const bg = isSelected ? "#e07b39" : isHovered ? "#1a1a2e" : "#fff";
-  const fg = isSelected ? "#fff" : isHovered ? "#e2b96f" : "#1a1a2e";
-  const border = isSelected ? "#c96a28" : isHovered ? "#e2b96f" : "#1a1a2e";
+  const bg = isSelected ? "#16a34a" : "#ef4444"; // green / red
+  const fg = "#fff";
+  const border = isSelected ? "#15803d" : "#dc2626";
 
   return (
     <div
@@ -546,7 +546,7 @@ function MapPin({ place, isSelected, isHovered, isDimmed, onClick }) {
 /* ─── Venue Card ─────────────────────────────────────────────────────────── */
 function VenueCard({ place, isSelected, isHovered, onClick, onMouseEnter, onMouseLeave }) {
   const pl = parsePriceLevel(place.price_level);
-  const isOpen = place.opening_hours?.isOpen?.();
+  const isOpen = place.opening_hours?.isOpen?.() ?? null;
   return (
     <div
       className={`vbs-card${isSelected ? " selected" : ""}`}
@@ -738,7 +738,16 @@ export default function VenueBookingSection({ googleMapsApiKey, onVenueCostChang
       ? (PRICE_PER_DAY[pl] ?? 15000) * days
       : (PRICE_PER_HOUR[pl] ?? 2500) * hours;
   })();
-  useEffect(() => { onVenueCostChange?.(venueCost); }, [venueCost]);
+  useEffect(() => {
+    onVenueCostChange?.(venueCost);
+  }, [venueCost, onVenueCostChange]);
+
+  useEffect(() => {
+    if (activeEvent && mapRef.current) {
+      mapRef.current.panTo(activeCity.center);
+      mapRef.current.setZoom(12);
+    }
+  }, [activeEvent]);
 
   /* Reverse geocode */
   const reverseGeocode = useCallback((latlng) => {
@@ -754,59 +763,79 @@ export default function VenueBookingSection({ googleMapsApiKey, onVenueCostChang
   }, []);
 
   /* Fetch venues — Places API New */
-  const fetchPlaces = useCallback(async () => {
-    if (!window.google?.maps?.places?.Place || isFetching.current || !activeEvent) return;
+  const fetchPlacesByBounds = useCallback(async () => {
+    if (!window.google?.maps?.places?.Place || !mapRef.current || isFetching.current) return;
+
+    const bounds = mapRef.current.getBounds();
+    if (!bounds) return;
+
+    const ne = bounds.getNorthEast();
+    const sw = bounds.getSouthWest();
+
     const ev = EVENT_TYPES.find(e => e.id === activeEvent) || EVENT_TYPES[0];
-    const query = [searchText || ev.query, activeCity.label].filter(Boolean).join(" in ");
+    const query = [searchText, ev.query].filter(Boolean).join(" ");
 
     isFetching.current = true;
     setLoading(true);
+
     try {
       const { places: raw } = await window.google.maps.places.Place.searchByText({
         textQuery: query,
-        fields: ["id", "displayName", "formattedAddress", "location", "rating",
-          "userRatingCount", "priceLevel", "photos", "regularOpeningHours"],
-        locationBias: { center: activeCity.center, radius: 20000 },
-        maxResultCount: 20,
+        fields: [
+          "id", "displayName", "formattedAddress",
+          "location", "rating", "userRatingCount",
+          "priceLevel", "photos", "regularOpeningHours"
+        ],
+        locationRestriction: {
+          rectangle: {
+            low: { lat: sw.lat(), lng: sw.lng() },
+            high: { lat: ne.lat(), lng: ne.lng() }
+          }
+        },
+        maxResultCount: 30
       });
-      let list = (raw || []).map((p) => ({
+
+      let list = (raw || []).map(p => ({
         place_id: p.id,
-        name: p.displayName,
-        formatted_address: p.formattedAddress,
-        vicinity: p.formattedAddress,
-        rating: p.rating,
-        user_ratings_total: p.userRatingCount,
-        price_level: parsePriceLevel(p.priceLevel),
-        photos: p.photos,
-        opening_hours: p.regularOpeningHours,
+        name: p.displayName || "Unknown",
+        formatted_address: p.formattedAddress || "",
+        rating: p.rating || 0,
+        user_ratings_total: p.userRatingCount || 0,
+        price_level: parsePriceLevel(p.priceLevel ?? ""),
+        photos: p.photos || [],
+        opening_hours: p.regularOpeningHours || null,
         _photo: p.photos?.[0] ?? null,
         geometry: {
           location: {
-            lat: () => p.location?.lat ?? activeCity.center.lat,
-            lng: () => p.location?.lng ?? activeCity.center.lng,
+            lat: () => p.location?.lat ?? 0,
+            lng: () => p.location?.lng ?? 0,
           },
         },
       }));
-      if (minRating > 0) list = list.filter(p => (p.rating || 0) >= minRating);
+
+      if (minRating > 0) {
+        list = list.filter(p => (p.rating || 0) >= minRating);
+      }
+
       setPlaces(list);
-      setSelectedPlace(null);
-      setMapCenter(activeCity.center);
-      setMapZoom(12);
-      reverseGeocode(activeCity.center);
+
     } catch (err) {
-      console.error("Places fetch error:", err);
-      setPlaces([]);
+      console.error(err);
     } finally {
       setLoading(false);
       isFetching.current = false;
     }
-  }, [activeEvent, activeCity, minRating, searchText, reverseGeocode]);
+  }, [activeEvent, searchText, minRating]);
 
-  useEffect(() => {
-    if (mode !== "browse" || !isLoaded || !activeEvent) return;
-    const t = setTimeout(fetchPlaces, 350);
-    return () => clearTimeout(t);
-  }, [activeEvent, activeCity, minRating, searchText, mode, isLoaded, fetchPlaces]);
+  // useEffect(() => {
+  //   if (mode !== "browse" || !isLoaded || !activeEvent) return;
+
+  //   const t = setTimeout(() => {
+  //     fetchPlacesByBounds(); // ✅ FIXED
+  //   }, 350);
+
+  //   return () => clearTimeout(t);
+  // }, [activeEvent, activeCity, minRating, searchText, mode, isLoaded, fetchPlacesByBounds]);
 
   /* GPS */
   const handleGPS = () => {
@@ -985,7 +1014,7 @@ export default function VenueBookingSection({ googleMapsApiKey, onVenueCostChang
                   isHovered={hoveredId === place.place_id}
                   onClick={() => {
                     if (selectedPlace?.place_id === place.place_id) {
-                      setSelectedPlace(null); setMapCenter(activeCity.center); setMapZoom(12);
+                      setSelectedPlace(null);
                     } else {
                       setSelectedPlace(place);
                       const loc = place.geometry?.location;
@@ -1050,6 +1079,12 @@ export default function VenueBookingSection({ googleMapsApiKey, onVenueCostChang
               zoom={mapZoom}
               center={mapCenter}
               onLoad={onMapLoad}
+              onIdle={() => {
+                if (!isFetching.current) {
+                  fetchPlacesByBounds();
+                  reverseGeocode(mapRef.current.getCenter().toJSON());
+                }
+              }}
               onClick={mode === "location" ? handleMapClick : undefined}
               mapContainerClassName="vbs-map-wrap"
               options={{
