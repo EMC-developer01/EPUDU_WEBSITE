@@ -44,16 +44,40 @@ export default function VenueBookingSection() {
 
   const inputRef = useRef(null);
 
-  // 🔥 Fetch venues
+  // 📏 Dynamic radius based on bounds
+  const getRadiusFromBounds = (bounds) => {
+    const ne = bounds.getNorthEast();
+    const sw = bounds.getSouthWest();
+
+    const lat = (ne.lat() + sw.lat()) / 2;
+    const lng = (ne.lng() + sw.lng()) / 2;
+
+    const R = 6371;
+    const dLat = (ne.lat() - lat) * (Math.PI / 180);
+    const dLng = (ne.lng() - lng) * (Math.PI / 180);
+
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat * (Math.PI / 180)) *
+      Math.cos(ne.lat() * (Math.PI / 180)) *
+      Math.sin(dLng / 2) ** 2;
+
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) * 1000;
+  };
+
+  // 🔍 Fetch places
   const fetchPlacesByBounds = () => {
     if (!map || !window.google || mode === "pin") return;
+
+    const bounds = map.getBounds();
+    if (!bounds) return;
 
     const service = new window.google.maps.places.PlacesService(map);
 
     service.nearbySearch(
       {
         location: map.getCenter(),
-        radius: 20000,
+        radius: getRadiusFromBounds(bounds),
         keyword: eventKeywords[eventType],
       },
       (results, status) => {
@@ -64,20 +88,17 @@ export default function VenueBookingSection() {
     );
   };
 
-  // 🔁 Reverse Geocode (lat/lng → address)
+  // 📍 Reverse Geocoding
   const getAddressFromLatLng = (lat, lng) => {
     const geocoder = new window.google.maps.Geocoder();
 
-    geocoder.geocode(
-      { location: { lat, lng } },
-      (results, status) => {
-        if (status === "OK" && results[0]) {
-          setPinnedAddress(results[0].formatted_address);
-        } else {
-          setPinnedAddress("Address not found");
-        }
+    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+      if (status === "OK" && results[0]) {
+        setPinnedAddress(results[0].formatted_address);
+      } else {
+        setPinnedAddress("Address not found");
       }
-    );
+    });
   };
 
   // 🔎 Search
@@ -116,7 +137,27 @@ export default function VenueBookingSection() {
     });
   };
 
-  // 🔄 Load
+  // 🎯 Apply city filter
+  const applyFilters = () => {
+    if (!city || !window.google) return;
+
+    const geocoder = new window.google.maps.Geocoder();
+
+    geocoder.geocode({ address: city }, (results, status) => {
+      if (status === "OK") {
+        const loc = {
+          lat: results[0].geometry.location.lat(),
+          lng: results[0].geometry.location.lng(),
+        };
+
+        setCenter(loc);
+        map.panTo(loc);
+        fetchPlacesByBounds();
+      }
+    });
+  };
+
+  // 🔄 Initial load
   useEffect(() => {
     if (map && mode === "browse") fetchPlacesByBounds();
   }, [map, eventType, mode]);
@@ -127,7 +168,7 @@ export default function VenueBookingSection() {
       libraries={libraries}
     >
       <div style={{ display: "flex", flexDirection: "column" }}>
-        {/* TOP BAR */}
+        {/* 🔝 TOP BAR */}
         <div
           style={{
             display: "flex",
@@ -135,34 +176,53 @@ export default function VenueBookingSection() {
             padding: "12px",
             background: "#0f172a",
             color: "#fff",
+            alignItems: "center",
           }}
         >
           <input
             ref={inputRef}
             placeholder="Search location or venue"
-            style={{ padding: "8px", borderRadius: "6px", border: "none" }}
+            style={{
+              padding: "8px",
+              width: "220px",
+              borderRadius: "6px",
+              border: "none",
+            }}
           />
 
-          <select onChange={(e) => setCity(e.target.value)}>
+          <select
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            style={{ padding: "8px", borderRadius: "6px" }}
+          >
             <option value="">City</option>
             {cities.map((c, i) => (
               <option key={i}>{c}</option>
             ))}
           </select>
 
-          <select onChange={(e) => setEventType(e.target.value)}>
+          <select
+            value={eventType}
+            onChange={(e) => setEventType(e.target.value)}
+            style={{ padding: "8px", borderRadius: "6px" }}
+          >
             <option value="wedding">Wedding</option>
             <option value="birthday">Birthday</option>
+            <option value="corporate">Corporate</option>
+            <option value="function">Function</option>
           </select>
+
+          <button onClick={applyFilters}>Apply</button>
 
           <button onClick={() => setMode("browse")}>Browse</button>
           <button onClick={() => setMode("pin")}>Set Pin</button>
+
           <button onClick={getCurrentLocation}>📍</button>
         </div>
 
         {/* MAIN */}
         <div style={{ display: "flex" }}>
-          {/* LEFT SIDE */}
+          {/* LEFT PANEL */}
           <div
             style={{
               width: "35%",
@@ -172,28 +232,54 @@ export default function VenueBookingSection() {
               background: "#f8fafc",
             }}
           >
-            {/* BROWSE */}
+            {/* Browse */}
             {mode === "browse" &&
-              places.map((place, i) => (
-                <div key={i} style={{ marginBottom: "10px" }}>
-                  <h4>{place.name}</h4>
-                  <p>{place.vicinity}</p>
-                </div>
-              ))}
+              places.map((place, i) => {
+                const lat = place.geometry.location.lat();
+                const lng = place.geometry.location.lng();
 
-            {/* PIN MODE */}
+                const image =
+                  place.photos?.[0]?.getUrl({ maxWidth: 400 }) ||
+                  "https://via.placeholder.com/200";
+
+                return (
+                  <div
+                    key={i}
+                    onClick={() => {
+                      setSelected(place);
+                      map.panTo({ lat, lng });
+                    }}
+                    style={{
+                      marginBottom: "10px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <img
+                      src={image}
+                      style={{
+                        width: "100%",
+                        height: "120px",
+                        objectFit: "cover",
+                        borderRadius: "6px",
+                      }}
+                    />
+                    <h4>{place.name}</h4>
+                    <p>{place.vicinity}</p>
+                  </div>
+                );
+              })}
+
+            {/* Pin Mode */}
             {mode === "pin" && (
               <div>
                 <h3>Selected Location 📍</h3>
 
-                {pinnedLocation && (
+                {pinnedLocation ? (
                   <>
                     <p><b>Lat:</b> {pinnedLocation.lat}</p>
                     <p><b>Lng:</b> {pinnedLocation.lng}</p>
 
-                    <p style={{ marginTop: "10px" }}>
-                      <b>Address:</b>
-                    </p>
+                    <p><b>Address:</b></p>
                     <textarea
                       value={pinnedAddress}
                       readOnly
@@ -231,9 +317,9 @@ export default function VenueBookingSection() {
                       Save Location
                     </button>
                   </>
+                ) : (
+                  <p>Click on map to select location</p>
                 )}
-
-                {!pinnedLocation && <p>Click on map to select location</p>}
               </div>
             )}
           </div>
@@ -245,6 +331,7 @@ export default function VenueBookingSection() {
               center={center}
               zoom={12}
               onLoad={(m) => setMap(m)}
+              onIdle={fetchPlacesByBounds}
               onClick={(e) => {
                 if (mode === "pin") {
                   const lat = e.latLng.lat();
@@ -254,9 +341,7 @@ export default function VenueBookingSection() {
                   getAddressFromLatLng(lat, lng);
                 }
               }}
-              onIdle={fetchPlacesByBounds}
             >
-              {/* Markers */}
               {mode === "browse" &&
                 places.map((place, i) => (
                   <Marker
@@ -265,12 +350,27 @@ export default function VenueBookingSection() {
                       lat: place.geometry.location.lat(),
                       lng: place.geometry.location.lng(),
                     }}
+                    onClick={() => setSelected(place)}
                   />
                 ))}
 
-              {/* Pin */}
               {mode === "pin" && pinnedLocation && (
                 <Marker position={pinnedLocation} />
+              )}
+
+              {selected && (
+                <InfoWindow
+                  position={{
+                    lat: selected.geometry.location.lat(),
+                    lng: selected.geometry.location.lng(),
+                  }}
+                  onCloseClick={() => setSelected(null)}
+                >
+                  <div>
+                    <h4>{selected.name}</h4>
+                    <p>{selected.vicinity}</p>
+                  </div>
+                </InfoWindow>
               )}
             </GoogleMap>
           </div>
