@@ -872,7 +872,7 @@ function VenueModal({ venue, onClose }) {
         <div className="vbs-modal-body">
           <div className="vbs-modal-title">{venue.name}</div>
           <div className="vbs-modal-addr">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
             {venue.vicinity || venue.formatted_address || "Address not available"}
           </div>
           <div className="vbs-modal-stats">
@@ -938,7 +938,7 @@ function VenueCard({ venue, selected, onClick, mapsApi }) {
       <div className="vbs-card-body">
         <div className="vbs-card-name">{venue.name}</div>
         <div className="vbs-card-addr">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
           {venue.vicinity || "—"}
         </div>
         <div className="vbs-card-meta">
@@ -991,6 +991,7 @@ function SkeletonCard() {
 export default function VenueBookingSection() {
   const [mode, setMode] = useState("browse"); // "browse" | "location"
   const [eventType, setEventType] = useState(null);
+  const eventTypeRef = useRef(null); // ref so map listeners can read current value
   const [searchQuery, setSearchQuery] = useState("");
   const [cityFilter, setCityFilter] = useState("All Cities");
   const [ratingFilter, setRatingFilter] = useState("All Ratings");
@@ -1010,8 +1011,9 @@ export default function VenueBookingSection() {
   const placesServiceRef = useRef(null);
   const geocoderRef = useRef(null);
   const mapsApiRef = useRef(null);
-  const searchDebounceRef = useRef(null);
   const mapMoveDebounceRef = useRef(null);
+  const lastSearchKeyRef = useRef(""); // tracks last searched location+eventType to prevent duplication
+  const isFetchingRef = useRef(false);
   const currentLocationRef = useRef({ lat: 17.385, lng: 78.4867 }); // Hyderabad default
 
   // ── Init Maps ──
@@ -1035,16 +1037,38 @@ export default function VenueBookingSection() {
       placesServiceRef.current = new maps.places.PlacesService(map);
       geocoderRef.current = new maps.Geocoder();
 
-      map.addListener("idle", () => {
+      // Only re-fetch on dragend (user explicitly moved map), not on every idle
+      map.addListener("dragend", () => {
         const center = map.getCenter();
-        if (center && eventType) {
-          currentLocationRef.current = { lat: center.lat(), lng: center.lng() };
-          clearTimeout(mapMoveDebounceRef.current);
-          mapMoveDebounceRef.current = setTimeout(() => {
-            fetchVenuesFromMaps(eventType, { lat: center.lat(), lng: center.lng() });
-            reverseGeocode({ lat: center.lat(), lng: center.lng() });
-          }, 600);
-        }
+        if (!center) return;
+        const latlng = { lat: center.lat(), lng: center.lng() };
+        clearTimeout(mapMoveDebounceRef.current);
+        mapMoveDebounceRef.current = setTimeout(() => {
+          currentLocationRef.current = latlng;
+          reverseGeocode(latlng);
+          // Use the current eventType from the ref so closure isn't stale
+          if (eventTypeRef.current) {
+            doFetchVenues(eventTypeRef.current, latlng, true);
+          }
+        }, 500);
+      });
+
+      // Also re-fetch when zoom changes significantly
+      let lastZoom = 13;
+      map.addListener("zoom_changed", () => {
+        clearTimeout(mapMoveDebounceRef.current);
+        mapMoveDebounceRef.current = setTimeout(() => {
+          const newZoom = map.getZoom();
+          if (Math.abs(newZoom - lastZoom) >= 1) {
+            lastZoom = newZoom;
+            const center = map.getCenter();
+            if (center && eventTypeRef.current) {
+              const latlng = { lat: center.lat(), lng: center.lng() };
+              currentLocationRef.current = latlng;
+              doFetchVenues(eventTypeRef.current, latlng, true);
+            }
+          }
+        }, 700);
       });
 
       setMapLoading(false);
@@ -1062,60 +1086,74 @@ export default function VenueBookingSection() {
     });
   }, []);
 
-  // ── Fetch venues from Google Maps Places API ──
-  const fetchVenuesFromMaps = useCallback((evType, location) => {
+  // ── Core fetch — ONE call, no pagination loop, guarded by key ──
+  const doFetchVenues = useCallback((evType, location, replace = false) => {
     if (!placesServiceRef.current || !evType) return;
-    setLoading(true);
-    const eventObj = EVENT_TYPES.find(e => e.id === evType);
-    const query = eventObj?.query || "event venue hall";
 
-    const bounds = mapInstanceRef.current?.getBounds();
+    // Build a key — only re-fetch if location changed by >0.01 deg OR evType changed
+    const key = `${evType}|${location.lat.toFixed(2)}|${location.lng.toFixed(2)}`;
+    if (key === lastSearchKeyRef.current && !replace) return;
+    if (isFetchingRef.current) return;
+
+    lastSearchKeyRef.current = key;
+    isFetchingRef.current = true;
+    setLoading(true);
+
+    const eventObj = EVENT_TYPES.find(e => e.id === evType);
+    const keyword = eventObj?.query || "event venue hall";
 
     const request = {
       location: new mapsApiRef.current.LatLng(location.lat, location.lng),
-      radius: 10000,
-      keyword: query,
+      radius: 8000,
+      keyword,
       type: ["establishment"],
     };
 
     placesServiceRef.current.nearbySearch(request, (results, status, pagination) => {
-      if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
+      isFetchingRef.current = false;
+      setLoading(false);
+
+      if (status === window.google.maps.places.PlacesServiceStatus.OK && results?.length) {
         const enriched = results.map((place) => ({
           ...place,
           photos: place.photos
-            ? place.photos.slice(0, 5).map(p =>
-              p.getUrl({ maxWidth: 600, maxHeight: 400 })
-            )
+            ? place.photos.slice(0, 5).map(p => p.getUrl({ maxWidth: 600, maxHeight: 400 }))
             : [],
         }));
 
-        setVenues(prev => {
-          // merge new + old, deduplicate by place_id, keep top 20
-          const merged = [...enriched, ...prev];
-          const seen = new Set();
-          const deduped = merged.filter(v => {
-            if (seen.has(v.place_id)) return false;
-            seen.add(v.place_id);
-            return true;
+        if (replace) {
+          setVenues(enriched.slice(0, 20));
+        } else {
+          setVenues(prev => {
+            const seen = new Set(prev.map(v => v.place_id));
+            const fresh = enriched.filter(v => !seen.has(v.place_id));
+            return [...prev, ...fresh].slice(0, 20);
           });
-          return deduped.slice(0, 20);
-        });
+        }
 
-        // If we have fewer than 20 and pagination exists, fetch more
-        if (pagination && pagination.hasNextPage) {
-          setTimeout(() => pagination.nextPage(), 1200);
+        // Fetch one more page only if we still have fewer than 20 — but only once
+        if (pagination?.hasNextPage) {
+          setVenues(current => {
+            if (current.length < 20) {
+              setTimeout(() => {
+                pagination.nextPage();
+              }, 1500);
+            }
+            return current;
+          });
         }
       }
-      setLoading(false);
     });
   }, []);
 
   // ── When event type changes, fetch new venues ──
   useEffect(() => {
-    if (eventType && mapInstanceRef.current) {
+    eventTypeRef.current = eventType;
+    if (eventType && placesServiceRef.current) {
       setVenues([]);
       setSelectedVenue(null);
-      fetchVenuesFromMaps(eventType, currentLocationRef.current);
+      lastSearchKeyRef.current = ""; // reset key so fresh fetch happens
+      doFetchVenues(eventType, currentLocationRef.current, true);
       reverseGeocode(currentLocationRef.current);
     }
   }, [eventType]);
@@ -1156,17 +1194,24 @@ export default function VenueBookingSection() {
       const loc = venue.geometry?.location;
       if (!loc) return;
 
+      // Custom teardrop pin SVG — medium sized
+      const pinSvg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="38" viewBox="0 0 28 38">
+          <path d="M14 0C6.27 0 0 6.27 0 14c0 10.5 14 24 14 24S28 24.5 28 14C28 6.27 21.73 0 14 0z"
+            fill="${isSelected ? '#22c55e' : '#ef4444'}"
+            stroke="${isSelected ? '#15803d' : '#b91c1c'}"
+            stroke-width="1.5"/>
+          <circle cx="14" cy="14" r="5.5" fill="white" opacity="0.9"/>
+        </svg>`;
+
       const marker = new mapsApiRef.current.Marker({
         position: { lat: loc.lat(), lng: loc.lng() },
         map: mapInstanceRef.current,
         title: venue.name,
         icon: {
-          path: mapsApiRef.current.SymbolPath.CIRCLE,
-          fillColor: isSelected ? "#22c55e" : "#ef4444",
-          fillOpacity: 1,
-          strokeColor: isSelected ? "#16a34a" : "#b91c1c",
-          strokeWeight: 2,
-          scale: isSelected ? 12 : 9,
+          url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(pinSvg)}`,
+          scaledSize: new mapsApiRef.current.Size(28, 38),
+          anchor: new mapsApiRef.current.Point(14, 38),
         },
         animation: isSelected ? mapsApiRef.current.Animation.BOUNCE : null,
         zIndex: isSelected ? 100 : 1,
@@ -1204,7 +1249,8 @@ export default function VenueBookingSection() {
           mapInstanceRef.current.setCenter(latlng);
           mapInstanceRef.current.setZoom(13);
         }
-        if (eventType) fetchVenuesFromMaps(eventType, latlng);
+        lastSearchKeyRef.current = "";
+        if (eventType) doFetchVenues(eventType, latlng, true);
         reverseGeocode(latlng);
         setLocStatus("done");
         setMode("browse");
@@ -1223,7 +1269,8 @@ export default function VenueBookingSection() {
         currentLocationRef.current = latlng;
         mapInstanceRef.current?.setCenter(latlng);
         mapInstanceRef.current?.setZoom(13);
-        if (eventType) fetchVenuesFromMaps(eventType, latlng);
+        lastSearchKeyRef.current = "";
+        if (eventType) doFetchVenues(eventType, latlng, true);
         reverseGeocode(latlng);
         setMode("browse");
         setManualAddress("");
@@ -1250,7 +1297,7 @@ export default function VenueBookingSection() {
             onClick={() => setMode("browse")}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
             </svg>
             Browse Venues
           </button>
@@ -1259,7 +1306,7 @@ export default function VenueBookingSection() {
             onClick={() => setMode("location")}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
             </svg>
             Pin Location
           </button>
@@ -1293,7 +1340,7 @@ export default function VenueBookingSection() {
                     {/* Search */}
                     <div className="vbs-search-box">
                       <svg className="vbs-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+                        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
                       </svg>
                       <input
                         className="vbs-search-input"
@@ -1328,7 +1375,7 @@ export default function VenueBookingSection() {
                     <div className="vbs-venue-list">
                       {loading && filteredVenues.length === 0 ? (
                         <div className="vbs-loading-cards">
-                          {[1, 2, 3, 4].map(i => <SkeletonCard key={i} />)}
+                          {[1,2,3,4].map(i => <SkeletonCard key={i} />)}
                         </div>
                       ) : filteredVenues.length === 0 ? (
                         <div className="vbs-empty">
