@@ -91,7 +91,7 @@ export default function VenueBookingSection() {
 
   return (
     <LoadScript
-      googleMapsApiKey={process.env.VITE_GOOGLE_MAPS_API_KEY}
+      googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
       libraries={libraries}
     >
       <div style={{ display: "flex" }}>
