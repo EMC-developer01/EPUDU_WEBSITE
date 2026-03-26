@@ -20,6 +20,7 @@ import toast from 'react-hot-toast';
 import { H3Icon } from '@heroicons/react/24/solid';
 import api from './common/api';
 import logo from "../../dist/logo-try-1.png";
+import { LoadScript } from '@react-google-maps/api';
 import VenueBookingSection from './Maps';
 
 
@@ -1037,7 +1038,17 @@ export default function Birthday() {
                 📝 venue Details
               </h5>
               <div className="flex flex-col lg:flex-row gap-6">
-                <VenueBookingSection/>
+                <LoadScript
+                  googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+                  libraries={["places"]}
+                >
+                  <VenueBookingSection
+                    googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+                    onVenueCostChange={(cost) => {
+                      setCosts(prev => ({ ...prev, venue: cost, total: prev.total - prev.venue + cost }));
+                    }}
+                  />
+                </LoadScript>
               </div>
 
               <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-black- mb-8 text-center pt-5">
