@@ -2,191 +2,187 @@
 
 import React, { useEffect, useRef, useState } from "react";
 
+const EVENT_KEYWORDS = {
+  birthday: "party hall",
+  wedding: "wedding venue banquet hall",
+  function: "banquet hall function hall",
+  corporate: "conference hall hotel",
+};
+
 export default function VenueBookingSection() {
   const mapRef = useRef(null);
   const map = useRef(null);
   const service = useRef(null);
   const markers = useRef([]);
-  const markerRef = useRef(null);
 
-  const [mode, setMode] = useState("browse"); // browse | location
-  const [eventType, setEventType] = useState("Birthday");
-  const [places, setPlaces] = useState([]);
+  const [eventType, setEventType] = useState("birthday");
+  const [mode, setMode] = useState("browse"); // browse | current
+  const [location, setLocation] = useState(null);
+  const [venues, setVenues] = useState([]);
   const [search, setSearch] = useState("");
-  const [address, setAddress] = useState("");
 
-  // 📍 Init Map
+  // 📍 Get current location
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const loc = {
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude,
-      };
-
-      map.current = new google.maps.Map(mapRef.current, {
-        center: loc,
-        zoom: 14,
-      });
-
-      service.current = new google.maps.places.PlacesService(map.current);
-
-      // Default marker (for location mode)
-      markerRef.current = new google.maps.Marker({
-        position: loc,
-        map: map.current,
-        draggable: true,
-      });
-
-      markerRef.current.addListener("dragend", () => {
-        const p = markerRef.current.getPosition();
-        setAddress(`Lat: ${p.lat()}, Lng: ${p.lng()}`);
-      });
-
-      fetchPlaces(loc);
-
-      // 🔄 Update on map move
-      map.current.addListener("idle", () => {
-        if (mode === "browse") {
-          const center = map.current.getCenter();
-          fetchPlaces({
-            lat: center.lat(),
-            lng: center.lng(),
-          });
-        }
-      });
-    });
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        });
+      },
+      () => setLocation({ lat: 17.385, lng: 78.4867 })
+    );
   }, []);
 
-  // 📡 Fetch venues (Google Places)
-  const fetchPlaces = (loc) => {
+  // 🗺️ Init Map
+  useEffect(() => {
+    if (!location || !window.google) return;
+
+    map.current = new window.google.maps.Map(mapRef.current, {
+      center: location,
+      zoom: 13,
+    });
+
+    service.current = new window.google.maps.places.PlacesService(
+      map.current
+    );
+
+    fetchVenues(location);
+
+    // 🔥 Map move → fetch new venues
+    map.current.addListener("idle", () => {
+      const center = map.current.getCenter();
+      fetchVenues({
+        lat: center.lat(),
+        lng: center.lng(),
+      });
+    });
+  }, [location, eventType]);
+
+  // 📡 Fetch venues from Google
+  const fetchVenues = (loc) => {
     if (!service.current) return;
 
     const request = {
       location: loc,
       radius: 5000,
-      keyword:
-        "banquet hall OR wedding hall OR resort OR hotel OR party hall",
+      keyword: EVENT_KEYWORDS[eventType],
     };
 
-    service.current.nearbySearch(request, (results) => {
-      if (!results) return;
-
-      const limited = results.slice(0, 30);
-      setPlaces(limited);
-      addMarkers(limited);
+    service.current.nearbySearch(request, (results, status) => {
+      if (status === "OK") {
+        setVenues(results.slice(0, 30));
+        renderMarkers(results);
+      }
     });
   };
 
   // 📍 Markers
-  const addMarkers = (results) => {
+  const renderMarkers = (places) => {
     markers.current.forEach((m) => m.setMap(null));
     markers.current = [];
 
-    results.forEach((place) => {
-      const marker = new google.maps.Marker({
+    places.forEach((place) => {
+      const marker = new window.google.maps.Marker({
         map: map.current,
         position: place.geometry.location,
+        title: place.name,
       });
 
       markers.current.push(marker);
     });
   };
 
+  // 🔍 Search place (city / area / venue)
+  const handleSearch = () => {
+    const geocoder = new window.google.maps.Geocoder();
+
+    geocoder.geocode({ address: search }, (results, status) => {
+      if (status === "OK") {
+        const loc = results[0].geometry.location;
+
+        map.current.setCenter(loc);
+        fetchVenues({
+          lat: loc.lat(),
+          lng: loc.lng(),
+        });
+      }
+    });
+  };
+
   return (
-    <div className="h-screen w-screen flex flex-col">
+    <div className="h-screen w-screen flex flex-col md:flex-row">
 
-      {/* 🔝 TOP BAR */}
-      <div className="p-3 border-b bg-white flex flex-wrap gap-3 items-center">
+      {/* LEFT */}
+      <div className="w-full md:w-1/2 h-1/2 md:h-full flex flex-col bg-white">
 
-        {/* 🎉 Event Type */}
-        <select
-          value={eventType}
-          onChange={(e) => setEventType(e.target.value)}
-          className="border p-2 rounded"
-        >
-          <option>Birthday</option>
-          <option>Wedding</option>
-          <option>Engagement</option>
-          <option>Party</option>
-          <option>Function</option>
-        </select>
+        {/* 🔥 TOP CONTROLS */}
+        <div className="p-3 border-b space-y-2 sticky top-0 bg-white z-10">
 
-        {/* 🔘 Mode Toggle */}
-        <div className="flex border rounded overflow-hidden">
-          <button
-            onClick={() => setMode("browse")}
-            className={`px-4 py-2 ${mode === "browse" ? "bg-black text-white" : ""
-              }`}
+          {/* Event Type */}
+          <select
+            className="w-full p-2 border"
+            value={eventType}
+            onChange={(e) => setEventType(e.target.value)}
           >
-            Browse Venues
-          </button>
-          <button
-            onClick={() => setMode("location")}
-            className={`px-4 py-2 ${mode === "location" ? "bg-black text-white" : ""
-              }`}
-          >
-            My Location
-          </button>
-        </div>
+            <option value="birthday">Birthday</option>
+            <option value="wedding">Wedding</option>
+            <option value="function">Function</option>
+            <option value="corporate">Corporate</option>
+          </select>
 
-        {/* 🔍 Search (only browse mode) */}
-        {mode === "browse" && (
-          <input
-            type="text"
-            placeholder="Search venues or areas..."
-            className="border p-2 rounded flex-1"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        )}
-      </div>
+          {/* Mode */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setMode("browse")}
+              className={`flex-1 p-2 border ${mode === "browse" && "bg-black text-white"
+                }`}
+            >
+              Browse Venues
+            </button>
 
-      {/* 📦 MAIN CONTENT */}
-      <div className="flex flex-1 flex-col md:flex-row overflow-hidden">
+            <button
+              onClick={() => setMode("current")}
+              className={`flex-1 p-2 border ${mode === "current" && "bg-black text-white"
+                }`}
+            >
+              My Location
+            </button>
+          </div>
 
-        {/* LEFT PANEL */}
-        <div className="w-full md:w-1/2 h-1/2 md:h-full overflow-y-auto p-3">
-
-          {/* 📍 LOCATION MODE */}
-          {mode === "location" && (
-            <div className="space-y-4">
-              <h2 className="font-semibold text-lg">Confirm Location</h2>
-
+          {/* Search (only browse mode) */}
+          {mode === "browse" && (
+            <div className="flex gap-2">
               <input
-                type="text"
-                placeholder="Enter address manually"
-                className="w-full border p-2 rounded"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                className="flex-1 border p-2"
+                placeholder="Search city / area / venue..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
-
-              <button className="bg-black text-white px-4 py-2 rounded">
-                Confirm Location
+              <button onClick={handleSearch} className="px-4 border">
+                Go
               </button>
             </div>
           )}
+        </div>
 
-          {/* 🏨 BROWSE MODE */}
-          {mode === "browse" && (
-            <div className="space-y-3">
-              {places.map((p, i) => (
-                <div
-                  key={i}
-                  className="border p-3 rounded-lg shadow hover:shadow-md"
-                >
-                  <h2 className="font-semibold">{p.name}</h2>
-                  <p className="text-sm text-gray-500">{p.vicinity}</p>
-                  <p>⭐ {p.rating || "N/A"}</p>
-                </div>
-              ))}
+        {/* 📋 VENUE LIST */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-3">
+          {venues.map((place) => (
+            <div key={place.place_id} className="border p-3 rounded-lg">
+              <h2 className="font-semibold">{place.name}</h2>
+              <p className="text-sm text-gray-500">
+                {place.vicinity}
+              </p>
+              <p>{"⭐".repeat(place.rating || 3)}</p>
             </div>
-          )}
+          ))}
         </div>
+      </div>
 
-        {/* 🗺️ MAP */}
-        <div className="w-full md:w-1/2 h-1/2 md:h-full">
-          <div ref={mapRef} className="w-full h-full" />
-        </div>
+      {/* RIGHT - MAP */}
+      <div className="w-full md:w-1/2 h-1/2 md:h-full">
+        <div ref={mapRef} className="w-full h-full" />
       </div>
     </div>
   );
