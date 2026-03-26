@@ -27,6 +27,9 @@ const eventKeywords = {
   function: "function hall event venue",
 };
 
+// ✅ Example cities (you can expand)
+const cities = ["Hyderabad", "Bangalore", "Chennai", "Mumbai", "Delhi"];
+
 export default function VenueBookingSection() {
   const [map, setMap] = useState(null);
   const [places, setPlaces] = useState([]);
@@ -35,14 +38,13 @@ export default function VenueBookingSection() {
 
   const [eventType, setEventType] = useState("wedding");
   const [city, setCity] = useState("");
-  const [searchText, setSearchText] = useState("");
+  const [mode, setMode] = useState("browse");
 
-  const [mode, setMode] = useState("browse"); // browse | pin
   const [pinnedLocation, setPinnedLocation] = useState(null);
 
   const inputRef = useRef(null);
 
-  // 🔍 Fetch Places
+  // 🔍 Fetch Places (30km radius)
   const fetchPlaces = (location) => {
     if (!map || !window.google || mode === "pin") return;
 
@@ -51,7 +53,7 @@ export default function VenueBookingSection() {
     service.nearbySearch(
       {
         location,
-        radius: 8000,
+        radius: 30000, // ✅ 30km
         keyword: eventKeywords[eventType],
       },
       (results, status) => {
@@ -62,7 +64,7 @@ export default function VenueBookingSection() {
     );
   };
 
-  // 🔎 Autocomplete
+  // 🔎 Single Search (location + venue)
   useEffect(() => {
     if (!window.google || !inputRef.current) return;
 
@@ -85,7 +87,7 @@ export default function VenueBookingSection() {
     });
   }, [map]);
 
-  // 📍 Current Location
+  // 📍 Current location
   const getCurrentLocation = () => {
     navigator.geolocation.getCurrentPosition((pos) => {
       const loc = {
@@ -98,20 +100,34 @@ export default function VenueBookingSection() {
     });
   };
 
-  // 🔄 Load
+  // 🔘 Apply Filters Button
+  const applyFilters = () => {
+    if (!map) return;
+
+    if (city && window.google) {
+      const geocoder = new window.google.maps.Geocoder();
+
+      geocoder.geocode({ address: city }, (results, status) => {
+        if (status === "OK") {
+          const loc = {
+            lat: results[0].geometry.location.lat(),
+            lng: results[0].geometry.location.lng(),
+          };
+
+          setCenter(loc);
+          map.panTo(loc);
+          fetchPlaces(loc);
+        }
+      });
+    } else {
+      fetchPlaces(center);
+    }
+  };
+
+  // 🔄 Initial Load
   useEffect(() => {
     if (map && mode === "browse") fetchPlaces(center);
   }, [map, eventType, mode]);
-
-  // 🔍 Filtered list
-  const filteredPlaces = places.filter((p) => {
-    return (
-      (!city ||
-        p.vicinity?.toLowerCase().includes(city.toLowerCase())) &&
-      (!searchText ||
-        p.name.toLowerCase().includes(searchText.toLowerCase()))
-    );
-  });
 
   return (
     <LoadScript
@@ -130,30 +146,28 @@ export default function VenueBookingSection() {
             alignItems: "center",
           }}
         >
-          {/* Search */}
+          {/* 🔍 Single Search */}
           <input
             ref={inputRef}
-            placeholder="Search location"
-            style={{ padding: "8px", width: "180px" }}
+            placeholder="Search location or venue"
+            style={{ padding: "8px", width: "220px" }}
           />
 
-          {/* Venue Search */}
-          <input
-            placeholder="Search venue"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{ padding: "8px", width: "150px" }}
-          />
-
-          {/* City */}
-          <input
-            placeholder="City"
+          {/* City Dropdown */}
+          <select
             value={city}
             onChange={(e) => setCity(e.target.value)}
-            style={{ padding: "8px", width: "120px" }}
-          />
+            style={{ padding: "8px" }}
+          >
+            <option value="">Select City</option>
+            {cities.map((c, i) => (
+              <option key={i} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
 
-          {/* Event */}
+          {/* Event Type */}
           <select
             value={eventType}
             onChange={(e) => setEventType(e.target.value)}
@@ -165,6 +179,9 @@ export default function VenueBookingSection() {
             <option value="function">Function</option>
           </select>
 
+          {/* Apply Button */}
+          <button onClick={applyFilters}>Apply</button>
+
           {/* Mode Toggle */}
           <button
             onClick={() => setMode("browse")}
@@ -174,7 +191,7 @@ export default function VenueBookingSection() {
               padding: "8px",
             }}
           >
-            Browse Venues
+            Browse
           </button>
 
           <button
@@ -203,7 +220,7 @@ export default function VenueBookingSection() {
             }}
           >
             {mode === "browse" &&
-              filteredPlaces.map((place, i) => {
+              places.map((place, i) => {
                 const lat = place.geometry.location.lat();
                 const lng = place.geometry.location.lng();
 
@@ -240,7 +257,7 @@ export default function VenueBookingSection() {
 
             {mode === "pin" && (
               <div style={{ padding: "20px" }}>
-                <h3>Click on map to set your venue location 📍</h3>
+                <h3>Click on map to set your venue 📍</h3>
               </div>
             )}
           </div>
@@ -250,7 +267,7 @@ export default function VenueBookingSection() {
             <GoogleMap
               mapContainerStyle={containerStyle}
               center={center}
-              zoom={13}
+              zoom={12}
               onLoad={(m) => setMap(m)}
               onClick={(e) => {
                 if (mode === "pin") {
@@ -269,9 +286,9 @@ export default function VenueBookingSection() {
                 }
               }}
             >
-              {/* Browse markers */}
+              {/* Markers */}
               {mode === "browse" &&
-                filteredPlaces.map((place, i) => (
+                places.map((place, i) => (
                   <Marker
                     key={i}
                     position={{
@@ -282,7 +299,7 @@ export default function VenueBookingSection() {
                   />
                 ))}
 
-              {/* Pin marker */}
+              {/* Pin */}
               {mode === "pin" && pinnedLocation && (
                 <Marker position={pinnedLocation} />
               )}
