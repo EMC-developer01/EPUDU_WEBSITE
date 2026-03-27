@@ -215,28 +215,28 @@ export default function VenueBookingSection({ isLoaded, onVenueSelect }) {
         </select>
         <button
           onClick={applyFilters}
-          style={{ backgroundColor: "black", color: "white", padding: "8px 12px", borderRadius: "6px", border: "none" }}
+          style={{ backgroundColor: "black", color: "white" }}
         >
           Apply
         </button>
 
         <button
           onClick={() => setMode("browse")}
-          style={{ backgroundColor: "black", color: "white", padding: "8px 12px", borderRadius: "6px", border: "none" }}
+          style={{ backgroundColor: "black", color: "white" }}
         >
           Browse
         </button>
 
         <button
           onClick={() => setMode("pin")}
-          style={{ backgroundColor: "black", color: "white", padding: "8px 12px", borderRadius: "6px", border: "none" }}
+          style={{ backgroundColor: "black", color: "white" }}
         >
           Set Pin
         </button>
 
         <button
           onClick={getCurrentLocation}
-          style={{ backgroundColor: "black", color: "white", padding: "8px 12px", borderRadius: "6px", border: "none" }}
+          style={{ backgroundColor: "black", color: "white" }}
         >
           📍
         </button>
