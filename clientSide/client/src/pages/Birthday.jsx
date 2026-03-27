@@ -920,7 +920,7 @@ export default function Birthday() {
             🎂 Birthday Event Booking
           </h2>
 
-          {step === 1 && isLoaded && (
+          {step === 1 && (
             <div className=' py-4 px-4 border-2 border-gray-400'>
               <div className="w-full space-y-6 px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-24 mx-auto py-8 mb-4 ">
                 <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-black- mb-8 text-center">
