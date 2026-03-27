@@ -18,7 +18,7 @@ const eventKeywords = {
 const cities = ["Hyderabad", "Bangalore", "Chennai", "Mumbai", "Delhi"];
 
 // ✅ Accept isLoaded as a prop
-export default function VenueBookingSection({ isLoaded, onVenueSelect }) {
+export default function VenueBookingSection({ isLoaded }) {
   const [map, setMap] = useState(null);
   const [places, setPlaces] = useState([]);
   const [selected, setSelected] = useState(null);
