@@ -180,6 +180,7 @@ export default function VenueBookingSection({ isLoaded, onVenueSelect }) {
     <div
       style={{
         display: "flex",
+        flexDirection: "column",  // ← fix
         width: "100%",
         minHeight: "400px",
         height: "auto",
@@ -198,6 +199,7 @@ export default function VenueBookingSection({ isLoaded, onVenueSelect }) {
           flexWrap: "wrap",
           width: "100%",
           boxSizing: "border-box",
+          flexShrink: 0,
         }}
       >
         <input
@@ -250,6 +252,7 @@ export default function VenueBookingSection({ isLoaded, onVenueSelect }) {
           display: "flex",
           flexDirection: window.innerWidth < 768 ? "column" : "row",
           width: "100%",
+          flex: 1,
         }}
       >
         {/* LEFT PANEL */}
@@ -258,6 +261,7 @@ export default function VenueBookingSection({ isLoaded, onVenueSelect }) {
             width: "100%",
             maxWidth: "400px",
             height: "100%",
+            flexShrink: 0,
             overflowY: "auto",
             padding: "10px",
             background: "#f8fafc",
