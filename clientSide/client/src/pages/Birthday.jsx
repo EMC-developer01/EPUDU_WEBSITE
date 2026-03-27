@@ -1038,14 +1038,7 @@ export default function Birthday() {
               <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-black- mb-8 text-center">
                 venue Details
               </h5>
-              <div style={{
-                width: "100vw",
-                position: "relative",
-                left: "50%",
-                right: "50%",
-                marginLeft: "-50vw",
-                marginRight: "-50vw",
-              }}
+              <div
                 className="flex flex-col lg:flex-row gap-6 w-full">
 
                 <VenueBookingSection isLoaded={isLoaded} />
