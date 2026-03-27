@@ -182,7 +182,7 @@ export default function VenueBookingSection({ isLoaded }) {
         display: "flex",
         width: "100%",
         minHeight: "400px",
-        height: "auto",
+        height: "100vh",
         flexDirection: "column",
       }}
     >
@@ -197,6 +197,8 @@ export default function VenueBookingSection({ isLoaded }) {
         flexWrap: "wrap",   // ✅ stops bar from overflowing on small screens
         width: "100%",
         boxSizing: "border-box",
+        height: "60px",
+        flexShrink: 0,
       }}>
         <input
           ref={inputRef}
@@ -225,6 +227,8 @@ export default function VenueBookingSection({ isLoaded }) {
           display: "flex",
           flexDirection: window.innerWidth < 768 ? "column" : "row",
           width: "100%",
+          flex: 1,
+          overflow: "hidden",
         }}
       >
         {/* LEFT PANEL */}
@@ -320,7 +324,7 @@ export default function VenueBookingSection({ isLoaded }) {
         {/* MAP — no LoadScript wrapper */}
         <div style={{
           flex: 1,
-          minHeight: "400px",     // ✅ takes all remaining width
+          // ✅ takes all remaining width
           height: "100%",
         }}>
           <GoogleMap
