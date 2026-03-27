@@ -1,5 +1,7 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+// import React, { useEffect, useRef, useState } from "react";
+// At the top, add useCallback and useRef
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { GoogleMap, Marker, InfoWindow } from "@react-google-maps/api";
 // ✅ No LoadScript import here
 
@@ -45,24 +47,65 @@ export default function VenueBookingSection({ isLoaded }) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) * 1000;
   };
 
-  const fetchPlacesByBounds = () => {
+  // const fetchPlacesByBounds = () => {
+  //   if (!map || !window.google || mode === "pin") return;
+  //   const bounds = map.getBounds();
+  //   if (!bounds) return;
+  //   const service = new window.google.maps.places.PlacesService(map);
+  //   service.nearbySearch(
+  //     {
+  //       location: map.getCenter(),
+  //       radius: getRadiusFromBounds(bounds),
+  //       keyword: eventKeywords[eventType],
+  //     },
+  //     (results, status) => {
+  //       if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+  //         setPlaces(results);
+  //       }
+  //     }
+  //   );
+  // };
+
+  // Replace your fetchPlacesByBounds with this debounced version
+  const fetchTimerRef = useRef(null);
+
+  const fetchPlacesByBounds = useCallback(() => {
     if (!map || !window.google || mode === "pin") return;
-    const bounds = map.getBounds();
-    if (!bounds) return;
-    const service = new window.google.maps.places.PlacesService(map);
-    service.nearbySearch(
-      {
-        location: map.getCenter(),
-        radius: getRadiusFromBounds(bounds),
-        keyword: eventKeywords[eventType],
-      },
-      (results, status) => {
-        if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-          setPlaces(results);
+
+    // ✅ Clear any pending fetch — debounce by 600ms
+    if (fetchTimerRef.current) clearTimeout(fetchTimerRef.current);
+
+    fetchTimerRef.current = setTimeout(() => {
+      const bounds = map.getBounds();
+      if (!bounds) return;
+
+      const service = new window.google.maps.places.PlacesService(map);
+      service.nearbySearch(
+        {
+          location: map.getCenter(),
+          radius: getRadiusFromBounds(bounds),
+          keyword: eventKeywords[eventType],
+        },
+        (results, status) => {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+            // ✅ Only update if results actually changed
+            setPlaces((prev) => {
+              const prevIds = prev.map((p) => p.place_id).join(",");
+              const newIds = results.map((p) => p.place_id).join(",");
+              return prevIds === newIds ? prev : results;
+            });
+          }
         }
-      }
-    );
-  };
+      );
+    }, 600); // wait 600ms after map stops moving
+  }, [map, mode, eventType]);
+
+  // ✅ Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (fetchTimerRef.current) clearTimeout(fetchTimerRef.current);
+    };
+  }, []);
 
   const getAddressFromLatLng = (lat, lng) => {
     if (!window.google) return;
@@ -152,16 +195,16 @@ export default function VenueBookingSection({ isLoaded }) {
       {/* MAIN */}
       <div style={{ display: "flex" }}>
         {/* LEFT PANEL */}
-        <div style={{ width: "35%", height: "calc(100vh - 60px)", overflowY: "auto", padding: "10px", background: "#f8fafc" }}>
+        <div style={{ width: "35%", height: "calc(100vh - 60px)", minHeight: "400px", overflowY: "auto", padding: "10px", background: "#f8fafc", boxSizing: "border-box" }}>
           {mode === "browse" && places.map((place, i) => {
             const lat = place.geometry.location.lat();
             const lng = place.geometry.location.lng();
             const image = place.photos?.[0]?.getUrl({ maxWidth: 400 }) || "https://via.placeholder.com/200";
             return (
-              <div key={i} onClick={() => { setSelected(place); map.panTo({ lat, lng }); }} style={{ marginBottom: "10px", cursor: "pointer" }}>
-                <img src={image} style={{ width: "100%", height: "120px", objectFit: "cover", borderRadius: "6px" }} />
-                <h4>{place.name}</h4>
-                <p>{place.vicinity}</p>
+              <div key={i} onClick={() => { setSelected(place); map.panTo({ lat, lng }); }} style={{ marginBottom: "10px", cursor: "pointer", minHeight: "180px", }}>
+                <img src={image} style={{ width: "100%", height: "120px", objectFit: "cover", borderRadius: "6px", display: "block" }} />
+                <h4 style={{ margin: "6px 0 2px" }}>{place.name}</h4>
+                <p style={{ margin: 0, fontSize: "12px", color: "#555" }}>{place.vicinity}</p>
               </div>
             );
           })}
@@ -199,7 +242,9 @@ export default function VenueBookingSection({ isLoaded }) {
             center={center}
             zoom={12}
             onLoad={(m) => setMap(m)}
-            onIdle={fetchPlacesByBounds}
+            onDragEnd={fetchPlacesByBounds}      // ✅ only after user drags
+            onZoomChanged={fetchPlacesByBounds}
+            // onIdle={fetchPlacesByBounds}
             onClick={(e) => {
               if (mode === "pin") {
                 const lat = e.latLng.lat();
