@@ -213,10 +213,33 @@ export default function VenueBookingSection({ isLoaded, onVenueSelect }) {
           <option value="corporate">Corporate</option>
           <option value="function">Function</option>
         </select>
-        <button style={{ background: "#0f172a", color: "#fff", }} onClick={applyFilters}>Apply</button>
-        <button style={{ background: "#0f172a", color: "#fff", }} onClick={() => setMode("browse")}>Browse</button>
-        <button style={{ background: "#0f172a", color: "#fff", }} onClick={() => setMode("pin")}>Set Pin</button>
-        <button style={{ background: "#0f172a", color: "#fff", }} onClick={getCurrentLocation}>📍</button>
+        <button
+          onClick={applyFilters}
+          style={{ backgroundColor: "black", color: "white", padding: "8px 12px", borderRadius: "6px", border: "none" }}
+        >
+          Apply
+        </button>
+
+        <button
+          onClick={() => setMode("browse")}
+          style={{ backgroundColor: "black", color: "white", padding: "8px 12px", borderRadius: "6px", border: "none" }}
+        >
+          Browse
+        </button>
+
+        <button
+          onClick={() => setMode("pin")}
+          style={{ backgroundColor: "black", color: "white", padding: "8px 12px", borderRadius: "6px", border: "none" }}
+        >
+          Set Pin
+        </button>
+
+        <button
+          onClick={getCurrentLocation}
+          style={{ backgroundColor: "black", color: "white", padding: "8px 12px", borderRadius: "6px", border: "none" }}
+        >
+          📍
+        </button>
       </div>
 
       {/* MAIN */}
