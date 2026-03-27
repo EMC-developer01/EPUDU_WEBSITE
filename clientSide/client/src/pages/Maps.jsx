@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { GoogleMap, Marker, InfoWindow } from "@react-google-maps/api";
 // ✅ No LoadScript import here
 
-const containerStyle = { width: "100%", height: "100vh" };
+const containerStyle = { width: "100%", height: "100%" };
 const defaultCenter = { lat: 17.385044, lng: 78.486671 };
 const libraries = ["places"];
 
@@ -204,9 +204,22 @@ export default function VenueBookingSection({ isLoaded }) {
       </div>
 
       {/* MAIN */}
-      <div style={{ display: "flex" }}>
+      <div style={{
+        display: "flex",
+        width: "100%",
+        height: "85vh",     // ✅ fixed viewport height instead of calc
+      }}>
         {/* LEFT PANEL */}
-        <div style={{ width: "35%", height: "calc(100vh - 60px)", minHeight: "400px", overflowY: "auto", padding: "10px", background: "#f8fafc", boxSizing: "border-box" }}>
+        <div style={{
+          width: "35%",
+          height: "100%",
+          overflowY: "auto",
+          padding: "10px",
+          background: "#f8fafc",
+          boxSizing: "border-box",
+          minHeight: "400px",
+          flexShrink: 0,      // ✅ don't let it shrink when map is large
+        }}>
           {mode === "browse" && places.map((place, i) => {
             const lat = place.geometry.location.lat();
             const lng = place.geometry.location.lng();
@@ -247,7 +260,10 @@ export default function VenueBookingSection({ isLoaded }) {
         </div>
 
         {/* MAP — no LoadScript wrapper */}
-        <div style={{ width: "65%" }}>
+        <div style={{
+          flex: 1,            // ✅ takes all remaining width
+          height: "100%",
+        }}>
           <GoogleMap
             mapContainerStyle={containerStyle}
             center={center}
