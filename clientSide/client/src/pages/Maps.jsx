@@ -196,10 +196,7 @@ export default function VenueBookingSection({ isLoaded, onVenueSelect }) {
           color: "#fff",
           alignItems: "center",
           flexWrap: "wrap",
-          width: "100vw",
-          position: "relative",
-          left: "50%",
-          marginLeft: "-50vw",
+          width: "100%",
           boxSizing: "border-box",
         }}
       >
