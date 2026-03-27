@@ -187,17 +187,22 @@ export default function VenueBookingSection({ isLoaded, onVenueSelect }) {
       }}
     >
       {/* TOP BAR */}
-      <div style={{
-        display: "flex",
-        gap: "10px",
-        padding: "12px",
-        background: "#0f172a",
-        color: "#fff",
-        alignItems: "center",
-        flexWrap: "wrap",   // ✅ stops bar from overflowing on small screens
-        width: "100%",
-        boxSizing: "border-box",
-      }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+          padding: "12px",
+          background: "#0f172a",
+          color: "#fff",
+          alignItems: "center",
+          flexWrap: "wrap",
+          width: "100vw",
+          position: "relative",
+          left: "50%",
+          marginLeft: "-50vw",
+          boxSizing: "border-box",
+        }}
+      >
         <input
           ref={inputRef}
           placeholder="Search location or venue"
