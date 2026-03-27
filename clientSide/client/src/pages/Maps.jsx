@@ -180,7 +180,6 @@ export default function VenueBookingSection({ isLoaded, onVenueSelect }) {
     <div
       style={{
         display: "flex",
-        flexDirection: "column",  // ← fix
         width: "100%",
         minHeight: "400px",
         height: "auto",
@@ -188,20 +187,17 @@ export default function VenueBookingSection({ isLoaded, onVenueSelect }) {
       }}
     >
       {/* TOP BAR */}
-      <div
-        style={{
-          display: "flex",
-          gap: "10px",
-          padding: "12px",
-          background: "#0f172a",
-          color: "#fff",
-          alignItems: "center",
-          flexWrap: "wrap",
-          width: "100%",
-          boxSizing: "border-box",
-          flexShrink: 0,
-        }}
-      >
+      <div style={{
+        display: "flex",
+        gap: "10px",
+        padding: "12px",
+        background: "#0f172a",
+        color: "#fff",
+        alignItems: "center",
+        flexWrap: "wrap",   // ✅ stops bar from overflowing on small screens
+        width: "100%",
+        boxSizing: "border-box",
+      }}>
         <input
           ref={inputRef}
           placeholder="Search location or venue"
@@ -217,33 +213,10 @@ export default function VenueBookingSection({ isLoaded, onVenueSelect }) {
           <option value="corporate">Corporate</option>
           <option value="function">Function</option>
         </select>
-        <button
-          onClick={applyFilters}
-          style={{ backgroundColor: "black", color: "white" }}
-        >
-          Apply
-        </button>
-
-        <button
-          onClick={() => setMode("browse")}
-          style={{ backgroundColor: "black", color: "white" }}
-        >
-          Browse
-        </button>
-
-        <button
-          onClick={() => setMode("pin")}
-          style={{ backgroundColor: "black", color: "white" }}
-        >
-          Set Pin
-        </button>
-
-        <button
-          onClick={getCurrentLocation}
-          style={{ backgroundColor: "black", color: "white" }}
-        >
-          📍
-        </button>
+        <button onClick={applyFilters}>Apply</button>
+        <button onClick={() => setMode("browse")}>Browse</button>
+        <button onClick={() => setMode("pin")}>Set Pin</button>
+        <button onClick={getCurrentLocation}>📍</button>
       </div>
 
       {/* MAIN */}
@@ -252,7 +225,6 @@ export default function VenueBookingSection({ isLoaded, onVenueSelect }) {
           display: "flex",
           flexDirection: window.innerWidth < 768 ? "column" : "row",
           width: "100%",
-          flex: 1,
         }}
       >
         {/* LEFT PANEL */}
@@ -261,7 +233,6 @@ export default function VenueBookingSection({ isLoaded, onVenueSelect }) {
             width: "100%",
             maxWidth: "400px",
             height: "100%",
-            flexShrink: 0,
             overflowY: "auto",
             padding: "10px",
             background: "#f8fafc",
