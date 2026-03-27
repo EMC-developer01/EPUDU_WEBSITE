@@ -20,7 +20,7 @@ import toast from 'react-hot-toast';
 import { H3Icon } from '@heroicons/react/24/solid';
 import api from './common/api';
 import logo from "../../dist/logo-try-1.png";
-import { LoadScript } from '@react-google-maps/api';
+// import { LoadScript } from '@react-google-maps/api';
 import VenueBookingSection from './Maps';
 
 
@@ -924,7 +924,7 @@ export default function Birthday() {
             <div className=' py-4 px-4 border-2 border-gray-400'>
               <div className="w-full space-y-6 px-4 sm:px-6 lg:px-12 xl:px-16 2xl:px-24 mx-auto py-8 mb-4 ">
                 <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-black- mb-8 text-center">
-                  📝 Person Details
+                  Person Details
                 </h5>
                 {/* Responsive Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
@@ -1036,16 +1036,16 @@ export default function Birthday() {
                 </div>
               </div>
               <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-black- mb-8 text-center">
-                📝 venue Details
+               venue Details
               </h5>
-              <div style={{ display: step === 1 ? "block" : "none"} }className="flex flex-col lg:flex-row gap-6">
+              <div className="flex flex-col lg:flex-row gap-6 w-full">
 
                 <VenueBookingSection />
 
               </div>
 
               <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-black- mb-8 text-center pt-5">
-                📝 Invitation Card
+                Invitation Card
               </h5>
               <div className="flex flex-col lg:flex-row gap-6  py-8 mb-4">
                 {/* Event Timings & Guest Details */}
