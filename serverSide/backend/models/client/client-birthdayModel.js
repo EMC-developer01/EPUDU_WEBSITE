@@ -29,10 +29,14 @@ const birthdaySchema = new mongoose.Schema(
       default: "Birthday",
     },
     // Step 2: Venue Details
+    // In your client-birthdayModel.js — venue subdocument
     venue: {
-      name: String,
-      address: String,
-      city: String,
+      name: { type: String, default: "" },
+      address: { type: String, default: "" },
+      city: { type: String, default: "" },
+      lat: { type: Number, default: null },  // ✅ add
+      lng: { type: Number, default: null },  // ✅ add
+      estimatedCost: { type: Number, default: 0 },     // ✅ add
     },
 
     // Step 3: Timings & Capacity

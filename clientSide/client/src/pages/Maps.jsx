@@ -18,7 +18,7 @@ const eventKeywords = {
 const cities = ["Hyderabad", "Bangalore", "Chennai", "Mumbai", "Delhi"];
 
 // ✅ Accept isLoaded as a prop
-export default function VenueBookingSection({ isLoaded }) {
+export default function VenueBookingSection({ isLoaded, onVenueSelect }) {
   const [map, setMap] = useState(null);
   const [places, setPlaces] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -92,7 +92,16 @@ export default function VenueBookingSection({ isLoaded }) {
             setPlaces((prev) => {
               const prevIds = prev.map((p) => p.place_id).join(",");
               const newIds = results.map((p) => p.place_id).join(",");
-              return prevIds === newIds ? prev : results;
+
+              if (prevIds === newIds) return prev;
+
+              // ✅ Add default cost internally
+              const updatedResults = results.map((place) => ({
+                ...place,
+                estimatedCost: 20000, // ₹20,000 default
+              }));
+
+              return updatedResults;
             });
           }
         }
@@ -168,8 +177,15 @@ export default function VenueBookingSection({ isLoaded }) {
   if (!isLoaded) return <div className="p-4 text-center text-gray-500">Loading map...</div>;
 
   return (
-    <div style={{ width: "100%", display: "flex", flexDirection: "column" }}>
-
+    <div
+      style={{
+        display: "flex",
+        width: "100%",
+        minHeight: "400px",
+        height: "auto",
+        flexDirection: "row",
+      }}
+    >
       {/* TOP BAR */}
       <div style={{
         display: "flex",
@@ -197,35 +213,58 @@ export default function VenueBookingSection({ isLoaded }) {
           <option value="corporate">Corporate</option>
           <option value="function">Function</option>
         </select>
-        <button onClick={applyFilters}>Apply</button>
-        <button onClick={() => setMode("browse")}>Browse</button>
-        <button onClick={() => setMode("pin")}>Set Pin</button>
-        <button onClick={getCurrentLocation}>📍</button>
+        <button style={{ background: "#0f172a", color: "#fff", }} onClick={applyFilters}>Apply</button>
+        <button style={{ background: "#0f172a", color: "#fff", }} onClick={() => setMode("browse")}>Browse</button>
+        <button style={{ background: "#0f172a", color: "#fff", }} onClick={() => setMode("pin")}>Set Pin</button>
+        <button style={{ background: "#0f172a", color: "#fff", }} onClick={getCurrentLocation}>📍</button>
       </div>
 
       {/* MAIN */}
-      <div style={{
-        display: "flex",
-        width: "100%",
-        height: "85vh",     // ✅ fixed viewport height instead of calc
-      }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: window.innerWidth < 768 ? "column" : "row",
+          width: "100%",
+        }}
+      >
         {/* LEFT PANEL */}
-        <div style={{
-          width: "35%",
-          height: "100%",
-          overflowY: "auto",
-          padding: "10px",
-          background: "#f8fafc",
-          boxSizing: "border-box",
-          minHeight: "400px",
-          flexShrink: 0,      // ✅ don't let it shrink when map is large
-        }}>
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "400px",
+            height: "100%",
+            overflowY: "auto",
+            padding: "10px",
+            background: "#f8fafc",
+            boxSizing: "border-box",
+          }}
+        >
           {mode === "browse" && places.map((place, i) => {
             const lat = place.geometry.location.lat();
             const lng = place.geometry.location.lng();
             const image = place.photos?.[0]?.getUrl({ maxWidth: 400 }) || "https://via.placeholder.com/200";
+
             return (
-              <div key={i} onClick={() => { setSelected(place); map.panTo({ lat, lng }); }} style={{ marginBottom: "10px", cursor: "pointer", minHeight: "180px", }}>
+              <div
+                key={i}
+                onClick={() => {
+                  setSelected(place);
+                  map.panTo({ lat, lng });
+
+                  // ✅ Send selected venue data up to birthday.jsx
+                  if (onVenueSelect) {
+                    onVenueSelect({
+                      name: place.name,
+                      address: place.vicinity,
+                      city: city || "",
+                      lat,
+                      lng,
+                      estimatedCost: place.estimatedCost || 20000,
+                    });
+                  }
+                }}
+                style={{ marginBottom: "10px", cursor: "pointer", minHeight: "180px" }}
+              >
                 <img src={image} style={{ width: "100%", height: "120px", objectFit: "cover", borderRadius: "6px", display: "block" }} />
                 <h4 style={{ margin: "6px 0 2px" }}>{place.name}</h4>
                 <p style={{ margin: 0, fontSize: "12px", color: "#555" }}>{place.vicinity}</p>
@@ -244,7 +283,26 @@ export default function VenueBookingSection({ isLoaded }) {
                   <textarea value={pinnedAddress} readOnly style={{ width: "100%", height: "80px", padding: "8px" }} />
                   <button
                     onClick={() => {
-                      localStorage.setItem("selectedVenue", JSON.stringify({ lat: pinnedLocation.lat, lng: pinnedLocation.lng, address: pinnedAddress }));
+                      const data = {
+                        lat: pinnedLocation.lat,
+                        lng: pinnedLocation.lng,
+                        address: pinnedAddress,
+                      };
+
+                      localStorage.setItem("selectedVenue", JSON.stringify(data));
+
+                      // ✅ Send pinned location up to birthday.jsx
+                      if (onVenueSelect) {
+                        onVenueSelect({
+                          name: "Custom Pinned Location",
+                          address: pinnedAddress,
+                          city: city || "",
+                          lat: pinnedLocation.lat,
+                          lng: pinnedLocation.lng,
+                          estimatedCost: 0,
+                        });
+                      }
+
                       alert("Location Saved!");
                     }}
                     style={{ marginTop: "10px", background: "green", color: "#fff", padding: "10px", border: "none", borderRadius: "6px" }}
@@ -261,7 +319,8 @@ export default function VenueBookingSection({ isLoaded }) {
 
         {/* MAP — no LoadScript wrapper */}
         <div style={{
-          flex: 1,            // ✅ takes all remaining width
+          flex: 1,
+          minHeight: "400px",     // ✅ takes all remaining width
           height: "100%",
         }}>
           <GoogleMap

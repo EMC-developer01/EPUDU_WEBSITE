@@ -732,6 +732,36 @@ export default function Birthday() {
     return isNaN(n) ? "0.00" : n.toFixed(2);
   };
 
+  // ✅ Receives venue selection from maps.jsx and saves into formData
+  const handleVenueSelect = (venueData) => {
+    // Save into formData.venue (this gets sent to backend via updateSteps)
+    setFormData((prev) => ({
+      ...prev,
+      venue: {
+        name: venueData.name || "",
+        address: venueData.address || "",
+        city: venueData.city || "",
+        lat: venueData.lat || "",
+        lng: venueData.lng || "",
+        estimatedCost: venueData.estimatedCost || 0,
+      },
+    }));
+
+    // ✅ Also update venue cost in costs state so it feeds into total budget
+    setCosts((prev) => ({
+      ...prev,
+      venue: venueData.estimatedCost || 0,
+      total: prev.total - (prev.venue || 0) + (venueData.estimatedCost || 0),
+    }));
+
+    // ✅ Update selectedVenue so it shows on the invitation card
+    setSelectedVenue({
+      name: venueData.name,
+      location: venueData.city || venueData.address,
+    });
+
+    console.log("✅ Venue selected and saved to formData:", venueData);
+  };
 
   // useEffect(() => {
   //   const filterVenues = async () => {
@@ -1041,7 +1071,7 @@ export default function Birthday() {
               <div
                 className="flex flex-col lg:flex-row gap-6 w-full">
 
-                <VenueBookingSection isLoaded={isLoaded} />
+                <VenueBookingSection isLoaded={isLoaded} onVenueSelect={handleVenueSelect} />
 
               </div>
 
