@@ -1038,7 +1038,7 @@ export default function Birthday() {
               <h5 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-black- mb-8 text-center">
                 📝 venue Details
               </h5>
-              <div className="flex flex-col lg:flex-row gap-6">
+              <div style={{ display: step === 1 ? "block" : "none"} }className="flex flex-col lg:flex-row gap-6">
 
                 <VenueBookingSection />
 
