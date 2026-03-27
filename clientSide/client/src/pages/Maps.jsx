@@ -185,13 +185,13 @@ export default function VenueBookingSection({ isLoaded }) {
         <input
           ref={inputRef}
           placeholder="Search location or venue"
-          style={{ padding: "8px", width: "220px", borderRadius: "6px", border: "none" }}
+          style={{ padding: "8px", width: "220px", borderRadius: "6px", border: "none", background: "#0f172a", color: "#fff", }}
         />
         <select value={city} onChange={(e) => setCity(e.target.value)} style={{ padding: "8px", borderRadius: "6px" }}>
           <option value="">City</option>
           {cities.map((c, i) => <option key={i}>{c}</option>)}
         </select>
-        <select value={eventType} onChange={(e) => setEventType(e.target.value)} style={{ padding: "8px", borderRadius: "6px" }}>
+        <select value={eventType} onChange={(e) => setEventType(e.target.value)} style={{ padding: "8px", borderRadius: "6px", background: "#0f172a", color: "#fff", }}>
           <option value="wedding">Wedding</option>
           <option value="birthday">Birthday</option>
           <option value="corporate">Corporate</option>
