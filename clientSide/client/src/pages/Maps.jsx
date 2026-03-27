@@ -168,9 +168,20 @@ export default function VenueBookingSection({ isLoaded }) {
   if (!isLoaded) return <div className="p-4 text-center text-gray-500">Loading map...</div>;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
+    <div style={{ width: "100%", display: "flex", flexDirection: "column" }}>
+
       {/* TOP BAR */}
-      <div style={{ display: "flex", gap: "10px", padding: "12px", background: "#0f172a", color: "#fff", alignItems: "center" }}>
+      <div style={{
+        display: "flex",
+        gap: "10px",
+        padding: "12px",
+        background: "#0f172a",
+        color: "#fff",
+        alignItems: "center",
+        flexWrap: "wrap",   // ✅ stops bar from overflowing on small screens
+        width: "100%",
+        boxSizing: "border-box",
+      }}>
         <input
           ref={inputRef}
           placeholder="Search location or venue"
