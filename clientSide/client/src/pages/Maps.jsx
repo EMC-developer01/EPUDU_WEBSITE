@@ -29,6 +29,7 @@ export default function VenueBookingSection({ isLoaded }) {
   const [pinnedLocation, setPinnedLocation] = useState(null);
   const [pinnedAddress, setPinnedAddress] = useState("");
   const inputRef = useRef(null);
+  const [showPopup, setShowPopup] = useState(false);
 
   // ✅ Guard all google API calls with isLoaded
   const getRadiusFromBounds = (bounds) => {
@@ -46,6 +47,8 @@ export default function VenueBookingSection({ isLoaded }) {
       Math.sin(dLng / 2) ** 2;
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) * 1000;
   };
+
+
 
   // const fetchPlacesByBounds = () => {
   //   if (!map || !window.google || mode === "pin") return;
@@ -260,6 +263,7 @@ export default function VenueBookingSection({ isLoaded }) {
                 key={i}
                 onClick={() => {
                   setSelected(place);
+                  setShowPopup(true);
 
                   const lat = place.geometry.location.lat();
                   const lng = place.geometry.location.lng();
@@ -273,10 +277,12 @@ export default function VenueBookingSection({ isLoaded }) {
                     lat,
                     lng,
                     estimatedCost: place.estimatedCost || 20000,
+                    image: place.photos?.[0]?.getUrl({ maxWidth: 400 }) || "",
                   };
 
-                  saveVenueData(data); // ✅ auto save
+                  saveVenueData(data);
                 }}
+
                 style={{ marginBottom: "10px", cursor: "pointer", minHeight: "180px" }}
               >
                 <img src={image} style={{ width: "100%", height: "120px", objectFit: "cover", borderRadius: "6px", display: "block" }} />
@@ -355,17 +361,82 @@ export default function VenueBookingSection({ isLoaded }) {
               />
             ))}
             {mode === "pin" && pinnedLocation && <Marker position={pinnedLocation} />}
-            {selected && (
-              <InfoWindow
-                position={{ lat: selected.geometry.location.lat(), lng: selected.geometry.location.lng() }}
-                onCloseClick={() => setSelected(null)}
-              >
-                <div><h4>{selected.name}</h4><p>{selected.vicinity}</p></div>
-              </InfoWindow>
-            )}
           </GoogleMap>
         </div>
       </div>
+      {
+        showPopup && selected && (
+          <div style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: "rgba(0,0,0,0.6)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 999,
+          }}>
+            <div style={{
+              width: "90%",
+              maxWidth: "400px",
+              background: "#fff",
+              borderRadius: "10px",
+              overflow: "hidden",
+            }}>
+
+              {/* IMAGE */}
+              <img
+                src={selected.photos?.[0]?.getUrl({ maxWidth: 400 }) || "https://via.placeholder.com/400"}
+                style={{ width: "100%", height: "200px", objectFit: "cover" }}
+              />
+
+              {/* DETAILS */}
+              <div style={{ padding: "15px" }}>
+                <h3>{selected.name}</h3>
+                <p>{selected.vicinity}</p>
+                <p><b>Estimated Cost:</b> ₹{selected.estimatedCost || 20000}</p>
+
+                {/* BUTTONS */}
+                <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                  <button
+                    onClick={() => {
+                      alert("Booking Confirmed ✅");
+                      setShowPopup(false);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: "10px",
+                      background: "#16a34a",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "6px",
+                    }}
+                  >
+                    Book Now
+                  </button>
+
+                  <button
+                    onClick={() => setShowPopup(false)}
+                    style={{
+                      flex: 1,
+                      padding: "10px",
+                      background: "#ef4444",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "6px",
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      }
     </div>
+
   );
 }
