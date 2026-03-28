@@ -16,9 +16,9 @@ export default function Home() {
   const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
   const [showLoginOverlay, setShowLoginOverlay] = useState(false);
   const API = `${API_URL}/api/admin/Client-homepages-images/all`;
-  const IMAGE_BASE = `${API_URL}/uploads/homepageImages`;
+  // const IMAGE_BASE = `${API_URL}/uploads/homepageImages`;
   const serviceAPI = `${API_URL}/api/admin/client-homepage-services`;
-  const Service_IMAGE_BASE = `${MEDIA_URL}/homepageservices`;
+  // const Service_IMAGE_BASE = `${MEDIA_URL}/homepageservices`;
 
   const [birthdayImg, setBirthdayImg] = useState([]);
   const [weddingImg, setWeddingImg] = useState([]);
@@ -111,7 +111,7 @@ export default function Home() {
             <div className="bg-whit backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
               <img
                 key={bIndex}
-                src={`${IMAGE_BASE}/${birthdayImg[bIndex]?.image}`}
+                src={birthdayImg[bIndex]?.image}
                 className={`${imgClass} animate-slideFade`}
                 alt="Birthday"
               />
@@ -138,7 +138,7 @@ export default function Home() {
             <div className="bg-white-200 backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
               <img
                 key={wIndex}
-                src={`${IMAGE_BASE}/${weddingImg[wIndex]?.image}`}
+                src={weddingImg[wIndex]?.image}
                 className={`${imgClass} animate-slideFade`}
                 alt="Wedding"
               />
@@ -162,7 +162,7 @@ export default function Home() {
             <div className="bg-White-200 backdrop-blur-lg rounded-2xl shadow-2xl hover:scale-[1.03]">
               <img
                 key={fIndex}
-                src={`${IMAGE_BASE}/${functionsImg[fIndex]?.image}`}
+                src={functionsImg[fIndex]?.image}
                 className={`${imgClass} animate-slideFade`}
                 alt="Functions"
               />
@@ -201,7 +201,7 @@ export default function Home() {
                hover:scale-[1.03] transition"
               >
                 <img
-                  src={`${Service_IMAGE_BASE}/${service.image}`}
+                  src={service.image}
                   alt={service.title}
                   className="w-full h-52 object-cover rounded-t-2xl"
                 />
