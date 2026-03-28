@@ -91,9 +91,10 @@ export default function EventGalaxyPanel() {
     const getVideoUrl = (videoPath) => {
         if (!videoPath) return "";
 
-        const fileName = videoPath.split("/").pop(); // ✅ get only filename
+        // remove "uploads/" if present
+        const cleanedPath = videoPath.replace("uploads/", "");
 
-        return `${MEDIA_URL}/homepageVideos/${fileName}`;
+        return `${MEDIA_URL}/${cleanedPath}`;
     };
 
 
