@@ -18,7 +18,7 @@ const eventKeywords = {
 const cities = ["Hyderabad", "Bangalore", "Chennai", "Mumbai", "Delhi"];
 
 // ✅ Accept isLoaded as a prop
-export default function VenueBookingSection({ isLoaded }) {
+export default function VenueBookingSection({ isLoaded, onVenueSelect }) {
   const [map, setMap] = useState(null);
   const [places, setPlaces] = useState([]);
   const [selected, setSelected] = useState(null);
@@ -178,6 +178,7 @@ export default function VenueBookingSection({ isLoaded }) {
   const saveVenueData = (data) => {
     localStorage.setItem("selectedVenue", JSON.stringify(data));
 
+    // ✅ This was broken before — onVenueSelect was never received as a prop
     if (onVenueSelect) {
       onVenueSelect(data);
     }
@@ -402,7 +403,23 @@ export default function VenueBookingSection({ isLoaded }) {
                 <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
                   <button
                     onClick={() => {
-                      alert("Booking Confirmed ✅");
+                      // ✅ Build venue data from the selected place
+                      const lat = selected.geometry.location.lat();
+                      const lng = selected.geometry.location.lng();
+
+                      const data = {
+                        name: selected.name,
+                        address: selected.vicinity,
+                        city: city || "",
+                        lat,
+                        lng,
+                        estimatedCost: selected.estimatedCost || 20000,
+                        image: selected.photos?.[0]?.getUrl({ maxWidth: 400 }) || "",
+                      };
+
+                      // ✅ Save to localStorage AND call onVenueSelect → updates Birthday.jsx formData
+                      saveVenueData(data);
+
                       setShowPopup(false);
                     }}
                     style={{

@@ -733,8 +733,8 @@ export default function Birthday() {
   };
 
   // ✅ Receives venue selection from maps.jsx and saves into formData
-  const handleVenueSelect = (venueData) => {
-    // Save into formData.venue (this gets sent to backend via updateSteps)
+  const handleVenueSelect = async (venueData) => {
+    // ✅ Update formData with venue
     setFormData((prev) => ({
       ...prev,
       venue: {
@@ -747,18 +747,46 @@ export default function Birthday() {
       },
     }));
 
-    // ✅ Also update venue cost in costs state so it feeds into total budget
+    // ✅ Update venue cost in costs state
     setCosts((prev) => ({
       ...prev,
       venue: venueData.estimatedCost || 0,
       total: prev.total - (prev.venue || 0) + (venueData.estimatedCost || 0),
     }));
 
-    // ✅ Update selectedVenue so it shows on the invitation card
+    // ✅ Update selectedVenue for invitation card display
     setSelectedVenue({
       name: venueData.name,
       location: venueData.city || venueData.address,
     });
+
+    // ✅ NEW: Immediately save venue to backend if birthdayId exists
+    const id = birthdayId || localStorage.getItem("birthdayId");
+    if (id) {
+      try {
+        await fetch(`${API_URL}/client/birthday/update-step`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            birthdayId: id,
+            step: 1,
+            formData: {
+              venue: {
+                name: venueData.name || "",
+                address: venueData.address || "",
+                city: venueData.city || "",
+                lat: venueData.lat || "",
+                lng: venueData.lng || "",
+                estimatedCost: venueData.estimatedCost || 0,
+              },
+            },
+          }),
+        });
+        console.log("✅ Venue saved to backend immediately");
+      } catch (err) {
+        console.error("❌ Failed to save venue to backend:", err);
+      }
+    }
 
     console.log("✅ Venue selected and saved to formData:", venueData);
   };
