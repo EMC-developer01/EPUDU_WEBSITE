@@ -61,7 +61,7 @@ export default function Banner() {
             }`}
         >
           <img
-            src={`${MEDIA_URL}/banners/${banner.image}`}
+            src={banner.image}
             alt="Banner"
             className="w-full h-full object-cover"
           />

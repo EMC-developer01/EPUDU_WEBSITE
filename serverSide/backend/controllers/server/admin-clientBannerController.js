@@ -17,7 +17,10 @@ export const getAllBanners = async (req, res) => {
 export const updateBanner = async (req, res) => {
     const update = { ...req.body };
 
-    if (req.file) update.image = req.file.filename;
+    // ✅ prevent image overwrite if not sent
+    if (!req.body.image) {
+        delete update.image;
+    }
 
     const banner = await ClientBanner.findByIdAndUpdate(
         req.params.id,

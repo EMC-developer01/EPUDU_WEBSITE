@@ -1,5 +1,4 @@
 import express from "express";
-import multer from "multer";
 import {
     addBanner,
     getAllBanners,
@@ -17,16 +16,14 @@ import {
 //     },
 // });
 
-const upload = multer({ 
-    storage: multer.memoryStorage(),
- });
+
 
 const router = express.Router();
 
 /* ---------------- ROUTES ---------------- */
-router.post("/add", upload.single("image"), addBanner);
+router.post("/add", addBanner);
 router.get("/all", getAllBanners);
-router.put("/update/:id", upload.single("image"), updateBanner);
+router.put("/update/:id", updateBanner);
 router.patch("/status/:id", toggleBannerStatus);
 
 export default router;

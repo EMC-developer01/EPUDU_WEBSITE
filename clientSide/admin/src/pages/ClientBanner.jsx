@@ -16,15 +16,13 @@ import {
 } from "@/components/ui/table";
 import { Edit, Power, Image as ImageIcon } from "lucide-react";
 
-const API = "http://localhost:4000/api/admin/client-banner";
-const IMAGE_BASE = "http://localhost:4000/uploads/banners";
 
 export default function ClientBanner() {
     const API_URL = import.meta.env.VITE_API_URL;
     const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
     const API = `${API_URL}/api/admin/client-banner`;
-    const IMAGE_BASE = `${MEDIA_URL}/uploads/banners`;
+    // const IMAGE_BASE = `${MEDIA_URL}/uploads/banners`;
 
     const [banners, setBanners] = useState([]);
     const [editingId, setEditingId] = useState(null);
@@ -78,7 +76,12 @@ export default function ClientBanner() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        let imageUrl = form.image;
+        let imageUrl = "";
+
+        if (editingId) {
+            const existing = banners.find(b => b._id === editingId);
+            imageUrl = existing?.image;
+        }
 
         if (form.image instanceof File) {
             imageUrl = await uploadToS3(form.image);
@@ -89,9 +92,11 @@ export default function ClientBanner() {
             image: imageUrl,
         };
 
-        editingId
-            ? await axios.put(`${API}/update/${editingId}`, payload)
-            : await axios.post(`${API}/add`, payload);
+        if (editingId) {
+            await axios.put(`${API}/update/${editingId}`, payload);
+        } else {
+            await axios.post(`${API}/add`, payload);
+        }
 
         resetForm();
         fetchBanners();
@@ -105,7 +110,7 @@ export default function ClientBanner() {
             subtitle: item.subtitle,
             isActive: item.isActive,
         });
-        setPreview(`${IMAGE_BASE}/${item.image}`);
+        setPreview(item.image);
     };
 
     const toggleStatus = async (id, status) => {
@@ -220,7 +225,7 @@ export default function ClientBanner() {
 
                                                 <TableCell>
                                                     <img
-                                                        src={`${IMAGE_BASE}/${item.image}`}
+                                                        src={item.image}
                                                         className="w-20 h-12 rounded object-cover"
                                                     />
                                                 </TableCell>
