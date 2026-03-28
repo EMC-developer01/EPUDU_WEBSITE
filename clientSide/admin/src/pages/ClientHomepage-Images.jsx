@@ -74,7 +74,7 @@ export default function ClientHomepageImages() {
         // If new file selected → upload to S3
         if (form.image instanceof File) {
             const { data } = await axios.post(
-                `${API_URL}/api/upload/get-upload-url/homepageImages`,
+                `${API_URL}/api/get-upload-url/homepageImages`,
                 {
                     fileName: form.image.name,
                     fileType: form.image.type,
