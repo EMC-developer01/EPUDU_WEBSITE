@@ -7,18 +7,34 @@ export const createImage = async (req, res) => {
     res.json(image);
 };
 
-export const updateImage = async (req, res) => {
-    await ClientHomepageImage.findByIdAndUpdate(req.params.id, req.body);
-    res.json({ success: true });
+const fixS3Url = (url) => {
+    if (!url) return "";
+
+    // already correct
+    if (url.includes(`s3.${process.env.AWS_REGION}.amazonaws.com`)) {
+        return url;
+    }
+
+    // fix old wrong URLs
+    return url.replace(
+        "s3.amazonaws.com",
+        `s3.${process.env.AWS_REGION}.amazonaws.com`
+    );
 };
 
 export const getImages = async (req, res) => {
     const images = await ClientHomepageImage.find().sort({ createdAt: -1 });
-    res.json(images);
-};
 
+    const updatedImages = images.map((img) => ({
+        ...img._doc,
+        image: fixS3Url(img.image),
+    }));
+
+    res.json(updatedImages);
+};
 
 export const toggleStatus = async (req, res) => {
     await ClientHomepageImage.findByIdAndUpdate(req.params.id, req.body);
     res.json({ success: true });
 };
+
