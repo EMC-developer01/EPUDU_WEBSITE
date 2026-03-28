@@ -14,7 +14,7 @@ export default function EventGalaxyPanel() {
 
     const API = `${API_URL}/api/admin/Client-homepages-images/all`;
     console.log(API)
-    const IMAGE_BASE = `${MEDIA_URL}/homepageImages`;
+    // const IMAGE_BASE = `${MEDIA_URL}/homepageImages`;
     const VIDEO_API = `${API_URL}/api/admin/client-homepage-videos/all`;
     const VIDEO_BASE = `${MEDIA_URL}/`;
 
@@ -23,6 +23,14 @@ export default function EventGalaxyPanel() {
     const [loading, setLoading] = useState(true);
     const [bgVideos, setBgVideos] = useState([]);
     const [currentVideo, setCurrentVideo] = useState(0);
+    const fixS3Url = (url) => {
+        if (!url) return fallback;
+
+        return url.replace(
+            "s3.amazonaws.com",
+            "s3.ap-south-2.amazonaws.com"
+        );
+    };
 
 
 
@@ -33,7 +41,7 @@ export default function EventGalaxyPanel() {
                 const res = await api.get(API);
 
                 const activeEvents = res.data.filter(item => item.isActive);
-                console.log(activeEvents),
+                console.log(activeEvents);
 
 
                     setEvents(activeEvents);
@@ -42,7 +50,9 @@ export default function EventGalaxyPanel() {
                 const selectedImages = activeEvents.slice(0, 5);
                 console.log(selectedImages);
 
-                const imagesForLetters = selectedImages.map(i => i.image ? `${IMAGE_BASE}/${i.image}` : fallback);
+                const imagesForLetters = selectedImages.map(
+                    i => i.image ? fixS3Url(i.image) : fallback
+                );
                 setLogoImages(imagesForLetters);
                 console.log(imagesForLetters);
 
@@ -233,7 +243,7 @@ export default function EventGalaxyPanel() {
                             >
                                 <div className="flex items-center gap-4 ">
                                     <img
-                                        src={`${IMAGE_BASE}/${e.image}`}
+                                        src={fixS3Url(e.image)}
                                         alt={e.imageName}
                                         className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover border border-blue"
                                     />
