@@ -40,7 +40,7 @@ export const getUploadUrl = async (req, res) => {
         res.json({
             uploadUrl,
             key,
-            fileUrl: `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${key}`
+            fileUrl: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`
         });
 
     } catch (error) {
