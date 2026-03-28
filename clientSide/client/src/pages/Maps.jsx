@@ -172,6 +172,13 @@ export default function VenueBookingSection({ isLoaded }) {
   useEffect(() => {
     if (isLoaded && map && mode === "browse") fetchPlacesByBounds();
   }, [isLoaded, map, eventType, mode]); // ✅ depends on isLoaded
+  const saveVenueData = (data) => {
+    localStorage.setItem("selectedVenue", JSON.stringify(data));
+
+    if (onVenueSelect) {
+      onVenueSelect(data);
+    }
+  };
 
   // ✅ Guard render — don't render map until loaded
   if (!isLoaded) return <div className="p-4 text-center text-gray-500">Loading map...</div>;
@@ -253,19 +260,22 @@ export default function VenueBookingSection({ isLoaded }) {
                 key={i}
                 onClick={() => {
                   setSelected(place);
+
+                  const lat = place.geometry.location.lat();
+                  const lng = place.geometry.location.lng();
+
                   map.panTo({ lat, lng });
 
-                  // ✅ Send selected venue data up to birthday.jsx
-                  if (onVenueSelect) {
-                    onVenueSelect({
-                      name: place.name,
-                      address: place.vicinity,
-                      city: city || "",
-                      lat,
-                      lng,
-                      estimatedCost: place.estimatedCost || 20000,
-                    });
-                  }
+                  const data = {
+                    name: place.name,
+                    address: place.vicinity,
+                    city: city || "",
+                    lat,
+                    lng,
+                    estimatedCost: place.estimatedCost || 20000,
+                  };
+
+                  saveVenueData(data); // ✅ auto save
                 }}
                 style={{ marginBottom: "10px", cursor: "pointer", minHeight: "180px" }}
               >
@@ -285,34 +295,6 @@ export default function VenueBookingSection({ isLoaded }) {
                   <p><b>Lng:</b> {pinnedLocation.lng}</p>
                   <p><b>Address:</b></p>
                   <textarea value={pinnedAddress} readOnly style={{ width: "100%", height: "80px", padding: "8px" }} />
-                  <button
-                    onClick={() => {
-                      const data = {
-                        lat: pinnedLocation.lat,
-                        lng: pinnedLocation.lng,
-                        address: pinnedAddress,
-                      };
-
-                      localStorage.setItem("selectedVenue", JSON.stringify(data));
-
-                      // ✅ Send pinned location up to birthday.jsx
-                      if (onVenueSelect) {
-                        onVenueSelect({
-                          name: "Custom Pinned Location",
-                          address: pinnedAddress,
-                          city: city || "",
-                          lat: pinnedLocation.lat,
-                          lng: pinnedLocation.lng,
-                          estimatedCost: 0,
-                        });
-                      }
-
-                      alert("Location Saved!");
-                    }}
-                    style={{ marginTop: "10px", background: "green", color: "#fff", padding: "10px", border: "none", borderRadius: "6px" }}
-                  >
-                    Save Location
-                  </button>
                 </>
               ) : (
                 <p>Click on map to select location</p>
@@ -339,8 +321,29 @@ export default function VenueBookingSection({ isLoaded }) {
               if (mode === "pin") {
                 const lat = e.latLng.lat();
                 const lng = e.latLng.lng();
+
                 setPinnedLocation({ lat, lng });
-                getAddressFromLatLng(lat, lng);
+
+                const geocoder = new window.google.maps.Geocoder();
+                geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+                  let address = "Address not found";
+
+                  if (status === "OK" && results[0]) {
+                    address = results[0].formatted_address;
+                    setPinnedAddress(address);
+                  }
+
+                  const data = {
+                    name: "Custom Pinned Location",
+                    address,
+                    city: city || "",
+                    lat,
+                    lng,
+                    estimatedCost: 0,
+                  };
+
+                  saveVenueData(data); // ✅ auto save instantly
+                });
               }
             }}
           >
