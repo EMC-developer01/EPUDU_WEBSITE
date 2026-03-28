@@ -4,9 +4,9 @@ import ClientHomepageService from "../../models/server/admin-ClientHomepageservi
 export const addService = async (req, res) => {
   try {
     const service = await ClientHomepageService.create({
-      ...req.body,
-      image: req.file.filename,
+      ...req.body, // image already S3 URL
     });
+
     res.status(201).json(service);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -21,15 +21,24 @@ export const getAllServices = async (_, res) => {
 
 /* UPDATE */
 export const updateService = async (req, res) => {
-  const data = { ...req.body };
-  if (req.file) data.image = req.file.filename;
+  try {
+    const data = { ...req.body };
 
-  const service = await ClientHomepageService.findByIdAndUpdate(
-    req.params.id,
-    data,
-    { new: true }
-  );
-  res.json(service);
+    // ❗ prevent image overwrite if not sent
+    if (!data.image) {
+      delete data.image;
+    }
+
+    const service = await ClientHomepageService.findByIdAndUpdate(
+      req.params.id,
+      data,
+      { new: true }
+    );
+
+    res.json(service);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 /* STATUS TOGGLE */

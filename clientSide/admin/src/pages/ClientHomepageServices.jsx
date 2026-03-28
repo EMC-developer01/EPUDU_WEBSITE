@@ -20,7 +20,7 @@ const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
 
 const API = `${API_URL}/api/admin/client-homepage-services`;
-const IMAGE_BASE = `${MEDIA_URL}/uploads/homepageservices`;
+// const IMAGE_BASE = `${MEDIA_URL}/uploads/homepageservices`;
 
 function ClientHomepageServices() {
     const [services, setServices] = useState([]);
@@ -68,12 +68,35 @@ function ClientHomepageServices() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const formData = new FormData();
-        Object.keys(form).forEach((k) => formData.append(k, form[k]));
+        let imageUrl = preview; // 👈 keep old image while editing
 
-        editingId
-            ? await axios.put(`${API}/update/${editingId}`, formData)
-            : await axios.post(`${API}/add`, formData);
+        // Upload new image to S3 if selected
+        if (form.image instanceof File) {
+            const { data } = await axios.post(
+                `${API_URL}/api/get-upload-url/homepageServices`,
+                {
+                    fileName: form.image.name,
+                    fileType: form.image.type,
+                }
+            );
+
+            await axios.put(data.uploadUrl, form.image, {
+                headers: { "Content-Type": form.image.type },
+            });
+
+            imageUrl = data.fileUrl;
+        }
+
+        const payload = {
+            ...form,
+            image: imageUrl,
+        };
+
+        if (editingId) {
+            await axios.put(`${API}/update/${editingId}`, payload);
+        } else {
+            await axios.post(`${API}/add`, payload);
+        }
 
         resetForm();
         fetchServices();
@@ -89,7 +112,8 @@ function ClientHomepageServices() {
             btn: item.btn,
             isActive: item.isActive,
         });
-        setPreview(`${IMAGE_BASE}/${item.image}`);
+
+        setPreview(item.image); // ✅ FIXED
     };
 
     const toggleStatus = async (id, status) => {
@@ -260,7 +284,7 @@ function ClientHomepageServices() {
 
                                                 <TableCell>
                                                     <img
-                                                        src={`${IMAGE_BASE}/${item.image}`}
+                                                        src={item.image}
                                                         className="w-14 h-14 rounded-lg object-cover"
                                                     />
                                                 </TableCell>

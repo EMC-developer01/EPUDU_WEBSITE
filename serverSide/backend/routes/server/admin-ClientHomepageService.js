@@ -1,5 +1,5 @@
 import express from "express";
-import multer from "multer";
+// import multer from "multer";
 
 import { addService, getAllServices, updateService, updateStatus } from "../../controllers/server/admin-clientHomepageService.js";
 
@@ -11,15 +11,15 @@ const router = express.Router();
 //     },
 // });
 
-const upload = multer({ 
-    storage: multer.memoryStorage(),
- });
+// const upload = multer({ 
+//     storage: multer.memoryStorage(),
+//  });
 
 
 
-router.post("/add", upload.single("image"), addService);
+router.post("/add", addService);
 router.get("/all", getAllServices);
-router.put("/update/:id", upload.single("image"), updateService);
+router.put("/update/:id", updateService);
 router.patch("/status/:id", updateStatus);
 
 export default router;
