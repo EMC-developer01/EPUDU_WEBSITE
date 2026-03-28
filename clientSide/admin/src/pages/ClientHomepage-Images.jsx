@@ -24,7 +24,7 @@ export default function ClientHomepageImages() {
     const MEDIA_URL = import.meta.env.VITE_MEDIA_URL;
 
     const API = `${API_URL}/api/admin/Client-homepages-images`;
-    const IMAGE_BASE = `${MEDIA_URL}/uploads/homepageImages`;
+    // const IMAGE_BASE = `${MEDIA_URL}/uploads/homepageImages`;
 
     const [images, setImages] = useState([]);
     const [editingId, setEditingId] = useState(null);
@@ -69,14 +69,34 @@ export default function ClientHomepageImages() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const formData = new FormData();
-        Object.keys(form).forEach((key) =>
-            formData.append(key, form[key])
-        );
+        let imageUrl = form.image;
+
+        // If new file selected → upload to S3
+        if (form.image instanceof File) {
+            const { data } = await axios.post(
+                `${API_URL}/api/upload/get-upload-url/homepageImages`,
+                {
+                    fileName: form.image.name,
+                    fileType: form.image.type,
+                }
+            );
+
+            // Upload to S3
+            await axios.put(data.uploadUrl, form.image, {
+                headers: { "Content-Type": form.image.type },
+            });
+
+            imageUrl = data.fileUrl;
+        }
+
+        const payload = {
+            ...form,
+            image: imageUrl,
+        };
 
         editingId
-            ? await axios.put(`${API}/update/${editingId}`, formData)
-            : await axios.post(`${API}/add`, formData);
+            ? await axios.put(`${API}/update/${editingId}`, payload)
+            : await axios.post(`${API}/add`, payload);
 
         resetForm();
         fetchImages();
@@ -91,7 +111,7 @@ export default function ClientHomepageImages() {
             description: item.description,
             isActive: item.isActive,
         });
-        setPreview(`${IMAGE_BASE}/${item.image}`);
+        setPreview(`${item.image}`);
     };
 
     const toggleStatus = async (id, status) => {
@@ -300,7 +320,7 @@ export default function ClientHomepageImages() {
 
                                                 <TableCell>
                                                     <img
-                                                        src={`${IMAGE_BASE}/${item.image}`}
+                                                        src={`${item.image}`}
                                                         className="w-16 h-16 rounded-lg object-cover"
                                                     />
                                                 </TableCell>

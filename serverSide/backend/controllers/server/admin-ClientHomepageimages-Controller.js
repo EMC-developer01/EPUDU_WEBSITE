@@ -2,10 +2,14 @@ import ClientHomepageImage from "../../models/server/admin-clientHomepageImagesM
 
 export const createImage = async (req, res) => {
     const image = await ClientHomepageImage.create({
-        image: req.file.filename,
-        ...req.body,
+        ...req.body, // includes image (S3 URL)
     });
     res.json(image);
+};
+
+export const updateImage = async (req, res) => {
+    await ClientHomepageImage.findByIdAndUpdate(req.params.id, req.body);
+    res.json({ success: true });
 };
 
 export const getImages = async (req, res) => {
@@ -13,14 +17,6 @@ export const getImages = async (req, res) => {
     res.json(images);
 };
 
-export const updateImage = async (req, res) => {
-    const data = req.file
-        ? { ...req.body, image: req.file.filename }
-        : req.body;
-
-    await ClientHomepageImage.findByIdAndUpdate(req.params.id, data);
-    res.json({ success: true });
-};
 
 export const toggleStatus = async (req, res) => {
     await ClientHomepageImage.findByIdAndUpdate(req.params.id, req.body);

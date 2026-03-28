@@ -1,5 +1,5 @@
 import express from "express";
-import multer from "multer";
+// import multer from "multer";
 import {
     createImage,
     getImages,
@@ -17,20 +17,20 @@ const router = express.Router();
 //     },
 // });
 
-const upload = multer({ 
-    storage: multer.memoryStorage(),
- });
+// const upload = multer({ 
+//     storage: multer.memoryStorage(),
+//  });
 
 /* ---------------- ROUTES ---------------- */
 
 // ADD IMAGE
-router.post("/add", upload.single("image"), createImage);
+router.post("/add", createImage);
 
 // GET ALL IMAGES
 router.get("/all", getImages);
 
 // UPDATE IMAGE
-router.put("/update/:id", upload.single("image"), updateImage);
+router.put("/update/:id",  updateImage);
 
 // ACTIVATE / DEACTIVATE
 router.patch("/status/:id", toggleStatus);
