@@ -91,8 +91,9 @@ export default function EventGalaxyPanel() {
     const getVideoUrl = (videoPath) => {
         if (!videoPath) return "";
 
-        // Remove duplicate folders
-        return `${MEDIA_URL}/${videoPath.replace("uploads/", "").replace("homepageVideos/", "")}homepageVideos/${videoPath.split("/").pop()}`;
+        const fileName = videoPath.split("/").pop(); // ✅ get only filename
+
+        return `${MEDIA_URL}/homepageVideos/${fileName}`;
     };
 
 
