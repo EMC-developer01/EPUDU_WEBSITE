@@ -16,13 +16,15 @@ export default function EventGalaxyPanel() {
     console.log(API)
     const IMAGE_BASE = `${MEDIA_URL}/homepageImages`;
     const VIDEO_API = `${API_URL}/api/admin/client-homepage-videos/all`;
-    const VIDEO_BASE = `${MEDIA_URL}/homepageVideos`;
+    const VIDEO_BASE = `${MEDIA_URL}/`;
 
     const [events, setEvents] = useState([]);
     const [logoImages, setLogoImages] = useState([]);
     const [loading, setLoading] = useState(true);
     const [bgVideos, setBgVideos] = useState([]);
     const [currentVideo, setCurrentVideo] = useState(0);
+
+
 
     // ---------------- FETCH EVENTS ----------------
     useEffect(() => {
@@ -86,6 +88,13 @@ export default function EventGalaxyPanel() {
         return () => clearInterval(interval);
     }, [bgVideos]);
 
+    const getVideoUrl = (videoPath) => {
+        if (!videoPath) return "";
+
+        // Remove duplicate folders
+        return `${MEDIA_URL}/${videoPath.replace("uploads/", "").replace("homepageVideos/", "")}homepageVideos/${videoPath.split("/").pop()}`;
+    };
+
 
 
     return (
@@ -94,7 +103,7 @@ export default function EventGalaxyPanel() {
             {bgVideos.length > 0 && (
                 <motion.video
                     key={currentVideo}
-                    src={`${VIDEO_BASE}/${bgVideos[currentVideo].video}`}
+                    src={getVideoUrl(bgVideos[currentVideo].video)}
                     autoPlay
                     muted
                     loop
