@@ -66,6 +66,15 @@ export default function ClientHomepageImages() {
         }
     };
 
+    const fixS3Url = (url) => {
+        if (!url) return "";
+
+        return url.replace(
+            "s3.amazonaws.com",
+            "s3.ap-south-2.amazonaws.com"
+        );
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -81,13 +90,15 @@ export default function ClientHomepageImages() {
                 }
             );
 
-            // Upload to S3
             await axios.put(data.uploadUrl, form.image, {
                 headers: { "Content-Type": form.image.type },
             });
 
             imageUrl = data.fileUrl;
         }
+
+        // ✅ IMPORTANT FIX (this was missing)
+        imageUrl = fixS3Url(imageUrl);
 
         const payload = {
             ...form,
@@ -111,7 +122,7 @@ export default function ClientHomepageImages() {
             description: item.description,
             isActive: item.isActive,
         });
-        setPreview(`${item.image}`);
+        setPreview(fixS3Url(item.image));
     };
 
     const toggleStatus = async (id, status) => {
