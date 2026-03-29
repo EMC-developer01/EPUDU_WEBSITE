@@ -975,7 +975,7 @@ export default function Birthday() {
         <div className="w-full max-w-[2560px] mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8 lg:p-10 xl:p-12 2xl:p-16">
 
           <h2 className="text-3xl md:text-4xl lg:text-5xl 2xl:text-6xl font-bold text-black- mb-8 text-center">
-            🎂 Birthday Event Booking
+            EVENTS BOOKING
           </h2>
 
           {step === 1 && (

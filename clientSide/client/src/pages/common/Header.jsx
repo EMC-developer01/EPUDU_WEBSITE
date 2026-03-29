@@ -288,7 +288,7 @@ export default function Header() {
 
                       <Link
                         key={item}
-                        to={`/${item}`}
+                        to={"/birthday"}
                         style={textStyle}
                       >
                         {item}
@@ -378,7 +378,7 @@ export default function Header() {
             {["birthday", "wedding", "functions"].map((item) => (
               <Link
                 key={item}
-                to={`/${item}`}
+                to={"/birthday"}
                 style={{
                   display: "block",
                   padding: "10px 15px",
